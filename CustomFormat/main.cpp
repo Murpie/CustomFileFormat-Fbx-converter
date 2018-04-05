@@ -22,7 +22,8 @@ int main()
 		getchar();
 		exit(-1);
 	}
-
+	int geoCount = ourScene->GetGeometryCount();
+	FbxGeometry* geo = ourScene->GetGeometry(0);
 	FbxExporter* exporter = FbxExporter::Create(manager, "");
 
 	if (!exporter->Initialize(filename, -1, manager->GetIOSettings()))
