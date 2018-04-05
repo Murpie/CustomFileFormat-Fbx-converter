@@ -6,7 +6,7 @@ int main()
 
 	FbxManager* manager = FbxManager::Create();
 
-	FbxScene::Create(manager, "");
+	FbxScene* ourScene = FbxScene::Create(manager, "");
 
 	FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
 	manager->SetIOSettings(ios);
