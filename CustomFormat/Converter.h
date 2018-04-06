@@ -1,6 +1,8 @@
 #pragma once
 
 #include <fbxsdk.h>
+#include <stdlib.h>
+#include <iostream>
 
 class Converter
 {
@@ -11,8 +13,8 @@ public:
 	FbxNode* rootNode;
 	FbxMesh* mesh;
 
-	void loadMesh(const char* fileName);
-	void printName(FbxNode* nodeName);
+	void loadMesh(FbxNode* node);
+	void printName(FbxMesh* meshName);
 
 private:
 	FbxManager * manager;

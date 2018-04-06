@@ -9,6 +9,23 @@ Converter::Converter()
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+
+	const char* filename = "testShapes.fbx";
+
+	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
+	{
+		printf("Call to fbximporter::initialize failed.\n");
+		printf("Error returned: %s\n\n", importer->GetStatus().GetErrorString());
+		getchar();
+		exit(-1);
+	}
+
+	importer->Import(ourScene);
+	importer->Destroy();
+
+	rootNode = ourScene->GetRootNode();
+
+	loadMesh(rootNode);
 }
 
 
@@ -17,53 +34,44 @@ Converter::~Converter()
 	manager->Destroy();
 }
 
-void Converter::loadMesh(const char* fileName)
+void Converter::loadMesh(FbxNode* node)
 {
-	FbxImporter* importer = FbxImporter::Create(manager, "");
-
-	if (!importer->Initialize(fileName, -1, manager->GetIOSettings()))
+	for (int i = 0; i < rootNode->GetChildCount(); i++)
 	{
-		printf("Call to fbximporter::initialize failed.\n");
-		printf("Error returned: %s\n\n", importer->GetStatus().GetErrorString());
-		getchar();
-		exit(-1);
-	}
+		FbxNode* child = node->GetChild(i);
+		FBXSDK_printf("Current Mesh Node: %s\n", child->GetName());
+		FbxMesh* mesh = child->GetMesh();
 
-	rootNode = ourScene->GetRootNode();
-
-	if (rootNode)
-	{
-		if (rootNode->GetChildCount() > 0)
+		FbxLayerElementNormal* normalElement = mesh->GetElementNormal();
+		if (normalElement)
 		{
-			printf("Several childs were found\n\n");
-			for (int i = 0; i < rootNode->GetChildCount(); i++)
+			for (int vertexIndex = 0; vertexIndex < mesh->GetControlPointsCount(); vertexIndex++)
 			{
-				printName(rootNode->GetChild(i));
+				int normalIndex = 0;
+
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+				{
+					normalIndex = vertexIndex;
+				}
+
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+				{
+					normalIndex = normalElement->GetIndexArray().GetAt(vertexIndex);
+				}
+
+				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
+
+				FBXSDK_printf("Normals for vertex[%d]: %f %f %f %f \n", vertexIndex, normal[0], normal[1], normal[2], normal[3]);
+
 			}
 		}
-		else
-		{
-			printf("A single child was found\n\n");
-			printName(rootNode);
-		}
-	}
-	else
-	{
-		printf("Error: Node not found\n\n");
 	}
 }
 
-void Converter::printName(FbxNode* nodeName)
+void Converter::printName(FbxMesh* meshName)
 {
-	mesh = nodeName->GetMesh();
-
-	if (mesh)
+	if (meshName)
 	{
 		printf("Name: %s\n\n", mesh->GetName());
-		printf("Hello");
-	}
-	else
-	{
-		printf("Error: Mesh not loaded!\n\n");
 	}
 }
