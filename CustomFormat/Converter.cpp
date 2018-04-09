@@ -70,56 +70,15 @@ void Converter::loadMesh(FbxNode* node)
 			}
 		}*/
 
-		//GetPolygon
-		int vertexId = 0;
-		char header[100];
+		//Get vertices
 		FbxVector4* controlPoints = mesh->GetControlPoints();
-
 		for (int i = 0; i < polygonCount; i++)
 		{
 			FBXSDK_printf("\n\nPolygon: %d\n", i);
-			int polygonSize = mesh->GetPolygonSize(i);
-
-			for (int j = 0; j < polygonSize; j++)
-			{
-				int polygonVertexIndex = mesh->GetPolygonVertex(i, j);
-				switch (j)
-				{
-				case 0:
-					FBXSDK_printf("X: %f\t", controlPoints[polygonVertexIndex]);
-					break;
-				case 1:
-					FBXSDK_printf("Y: %f\t", controlPoints[polygonVertexIndex]);
-					break;
-				case 2:
-					FBXSDK_printf("Z: %f\t", controlPoints[polygonVertexIndex]);
-					break;
-				case 3:
-					FBXSDK_printf("???: %f\t", controlPoints[polygonVertexIndex]);
-					break;
-				default:
-					break;
-				}
-			}
-
-			/*for (int k = 0; k < mesh->GetElementUVCount(); k++)
-			{
-				FbxGeometryElementUV* uv = mesh->GetElementUV(k);
-				FBXSDK_printf("UV: %d\n", k);
-				switch (uv->GetReferenceMode())
-				{
-				case FbxGeometryElement::eByControlPoint:
-					switch (uv->GetReferenceMode())
-					{
-					case FbxGeometryElement::eDirect:
-						FBXSDK_printf("U: &f\tV: %f", uv->GetDirectArray().GetAt(polygonVertexIndex[0]), )
-					default:
-						break;
-					}
-				default:
-					break;
-				}
-			}*/
+			
+			FBXSDK_printf("X: %f\t", controlPoints[i][0]);
+			FBXSDK_printf("Y: %f\t", controlPoints[i][1]);
+			FBXSDK_printf("Z: %f\t", controlPoints[i][2]);
 		}
 	}
 }
