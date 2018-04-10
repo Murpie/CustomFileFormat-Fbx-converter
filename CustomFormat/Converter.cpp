@@ -39,11 +39,11 @@ void Converter::loadMesh(FbxNode* node)
 	for (int i = 0; i < rootNode->GetChildCount(); i++)
 	{
 		FbxNode* child = node->GetChild(i);
-		FBXSDK_printf("\nCurrent Mesh Node: %s\t", child->GetName());
+		FBXSDK_printf("--------------------------------------------\nCurrent Mesh Node: %s\t", child->GetName());
 		FbxMesh* mesh = child->GetMesh();
 		int polygonCount = mesh->GetPolygonCount();
 
-		FBXSDK_printf("Polygon Count: %d\n", polygonCount);
+		FBXSDK_printf("Polygon Count: %d\n--------------------------------------------\n", polygonCount);
 
 		//Normals
 		FbxLayerElementNormal* normalElement = mesh->GetElementNormal();
@@ -75,7 +75,7 @@ void Converter::loadMesh(FbxNode* node)
 
 		for (int i = 0; i < polygonCount; i++)
 		{
-			FBXSDK_printf("\n\nPolygon: %d\n", i);
+			FBXSDK_printf("Polygon: %d\n", i);
 			int normalIndex = 0;
 
 			if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
@@ -96,7 +96,7 @@ void Converter::loadMesh(FbxNode* node)
 			FBXSDK_printf(" Z: %f\t\n", controlPoints[i][2]);
 			FBXSDK_printf("NX: %f\t", normal[0]);
 			FBXSDK_printf("NY: %f\t", normal[1]);
-			FBXSDK_printf("NZ: %f\t\n", normal[2]);
+			FBXSDK_printf("NZ: %f\t\n\n", normal[2]);
 		}
 	}
 }
