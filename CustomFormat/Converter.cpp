@@ -90,7 +90,6 @@ void Converter::loadMesh(FbxNode* node)
 
 			FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
 
-
 			FBXSDK_printf(" X: %f\t", controlPoints[i][0]);
 			FBXSDK_printf(" Y: %f\t", controlPoints[i][1]);
 			FBXSDK_printf(" Z: %f\t\n", controlPoints[i][2]);
