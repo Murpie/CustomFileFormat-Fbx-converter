@@ -14,6 +14,7 @@ public:
 	FbxMesh* mesh;
 
 	void loadMesh(FbxNode* node);
+	void exportFile();
 	void printName(FbxMesh* meshName);
 
 private:

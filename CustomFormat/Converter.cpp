@@ -23,9 +23,13 @@ Converter::Converter()
 	importer->Import(ourScene);
 	importer->Destroy();
 
+
+
+
 	rootNode = ourScene->GetRootNode();
 
-	loadMesh(rootNode);
+	//loadMesh(rootNode);
+	exportFile();
 }
 
 
@@ -74,6 +78,7 @@ void Converter::loadMesh(FbxNode* node)
 				}
 
 				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
+
 				FBXSDK_printf("NX: %f\t", normal[0]);
 				FBXSDK_printf("NY: %f\t", normal[1]);
 				FBXSDK_printf("NZ: %f\t\n", normal[2]);
@@ -99,6 +104,11 @@ void Converter::loadMesh(FbxNode* node)
 			}
 		}
 	}
+}
+
+void Converter::exportFile()
+{
+
 }
 
 void Converter::printName(FbxMesh* meshName)
