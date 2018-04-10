@@ -4,7 +4,7 @@
 int main()
 {
 	Converter converter;
-	//best main
+	//best main 3 by emil
 	getchar();
 	return 0;
 }
