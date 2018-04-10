@@ -25,6 +25,7 @@
   <ItemGroup>
     <None Include="testCube.fbx" />
     <None Include="testShapes.fbx" />
+    <None Include="wierdBox.fbx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Converter.h">
