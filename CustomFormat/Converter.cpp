@@ -10,7 +10,7 @@ Converter::Converter()
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 
-	const char* filename = "testShapes.fbx";
+	const char* filename = "wierdBox.fbx";
 
 	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
 	{
@@ -43,34 +43,12 @@ void Converter::loadMesh(FbxNode* node)
 		FbxMesh* mesh = child->GetMesh();
 		int polygonCount = mesh->GetPolygonCount();
 
-		FBXSDK_printf("Polygon Count: %d\n", polygonCount);
+		FBXSDK_printf("\nPolygon Count: %d\n", polygonCount);
 
 		//Normals
 		FbxLayerElementNormal* normalElement = mesh->GetElementNormal();
-		/*if (normalElement)
-		{
-			for (int vertexIndex = 0; vertexIndex < mesh->GetControlPointsCount(); vertexIndex++)
-			{
-				int normalIndex = 0;
 
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-				{
-					normalIndex = vertexIndex;
-				}
-
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-				{
-					normalIndex = normalElement->GetIndexArray().GetAt(vertexIndex);
-				}
-
-				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
-
-				FBXSDK_printf("Normals for vertex[%d]: %f %f %f %f \n", vertexIndex, normal[0], normal[1], normal[2], normal[3]);
-
-			}
-		}*/
-
-		//Get vertices
+		//Vertices
 		FbxVector4* controlPoints = mesh->GetControlPoints();
 
 		for (int i = 0; i < polygonCount; i++)
@@ -78,24 +56,47 @@ void Converter::loadMesh(FbxNode* node)
 			FBXSDK_printf("\n\nPolygon: %d\n", i);
 			int normalIndex = 0;
 
-			if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+			//Print vertices
+			FBXSDK_printf("X: %f\t", controlPoints[i][0]);
+			FBXSDK_printf("Y: %f\t", controlPoints[i][1]);
+			FBXSDK_printf("Z: %f\t\n", controlPoints[i][2]);
+
+			if (normalElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
 			{
-				normalIndex = i;
-			}
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+				{
+					normalIndex = i;
+				}
 
-			if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+				{
+					normalIndex = normalElement->GetIndexArray().GetAt(i);
+				}
+
+				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
+				FBXSDK_printf("NX: %f\t", normal[0]);
+				FBXSDK_printf("NY: %f\t", normal[1]);
+				FBXSDK_printf("NZ: %f\t\n", normal[2]);
+			}
+			else if (normalElement->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
 			{
-				normalIndex = normalElement->GetIndexArray().GetAt(i);
+				int polygonSize = mesh->GetPolygonSize(i);
+
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+				{
+					normalIndex = i;
+				}
+
+				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+				{
+					normalIndex = normalElement->GetIndexArray().GetAt(i);
+				}
+
+				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
+				FBXSDK_printf("PNX: %f\t", normal[0]);
+				FBXSDK_printf("PNY: %f\t", normal[1]);
+				FBXSDK_printf("PNZ: %f\t\n", normal[2]);
 			}
-
-			FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
-
-			FBXSDK_printf(" X: %f\t", controlPoints[i][0]);
-			FBXSDK_printf(" Y: %f\t", controlPoints[i][1]);
-			FBXSDK_printf(" Z: %f\t\n", controlPoints[i][2]);
-			FBXSDK_printf("NX: %f\t", normal[0]);
-			FBXSDK_printf("NY: %f\t", normal[1]);
-			FBXSDK_printf("NZ: %f\t\n", normal[2]);
 		}
 	}
 }
