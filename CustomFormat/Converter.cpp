@@ -1,6 +1,6 @@
 #include "Converter.h"
-
-
+#include <fstream>
+#include <iostream>
 
 Converter::Converter()
 {
@@ -23,7 +23,7 @@ Converter::Converter()
 	importer->Import(ourScene);
 	importer->Destroy();
 
-
+	std::ofstream outfile("testt.leap", std::ofstream::binary);
 
 
 	rootNode = ourScene->GetRootNode();
