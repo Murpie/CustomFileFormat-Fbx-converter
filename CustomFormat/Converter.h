@@ -22,5 +22,9 @@ private:
 	FbxIOSettings* settings;
 	FbxScene* ourScene;
 	FbxImporter* importer;
+	FbxVector4* controlPoints;
+	FbxLayerElementNormal* normalElement;
+
+	int polygonCount;
 };
 

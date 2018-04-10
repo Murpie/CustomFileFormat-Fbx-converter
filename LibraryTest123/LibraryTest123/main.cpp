@@ -1,36 +1,35 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
-using namespace std;
 
 #include "CustomImporter.h"
 
 #pragma comment(lib, "Format Importer.lib")
 
 int main() {
-
-	CustomImporter loader;
-
-	string meshArray[] = { "hello.obj" };
-	string cameraArray[] = { "hello.obj", "hello.obj" };
-	string lighthArray[] = { "hello.obj", "hello.obj" };
-
-	float verticeX;
-
-	for (int i = 0; i < sizeof(meshArray) / sizeof(meshArray[0]); i++)
-	{
-		Mesh* mesh = loader.getMesh(meshArray[i]);
-		verticeX = mesh->vertices[0].x;
-		//Save Info To Gameobject
-		loader.deleteObject(mesh);
-	}
-
-	cout << verticeX << endl;
-
-	Camera* camera = loader.getCamera("cameraFile");
-	Light* light = loader.getLight("lightFile");
 	
+	std::ifstream infile("testt.leap", std::ifstream::binary);
 
+	Counter counterReader;
+
+	infile.read((char*)&counterReader, sizeof(Counter));
+	Vertex *vertices = new Vertex[counterReader.vertexCount];
+
+	/*for (int i = 0; i < counterReader.vertexCount; i++)
+	{
+		infile.read((char*)vertices->x, sizeof(Vertex)*);
+	}*/
+
+
+	infile.close();
+
+	/*for (int i = 0; i < counterReader.vertexCount * 3; i++)
+	{
+		printf("X: %f Y: %f Z: %f\n", vertices->x, vertices->y, vertices->z);
+	}*/
+	
+	std::cout << sizeof(vertices) << std::endl;
 
 	getchar();
 
