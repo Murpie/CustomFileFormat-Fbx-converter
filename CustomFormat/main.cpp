@@ -4,6 +4,9 @@
 int main()
 {
 	Converter converter;
-	//best main 3 by emil
+
+	converter.importMesh("wierdBox.fbx");
+
+	getchar();
 	return 0;
 }

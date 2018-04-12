@@ -10,12 +10,8 @@ public:
 	Converter();
 	~Converter();
 
-	
-
-	void loadMesh(FbxNode* node);
-	void exportFile();
-	void exportFile2();
-	void printName(FbxMesh* meshName);
+	void importMesh(const char* filename);
+	void exportFile(FbxNode* currentNode);
 
 private:
 	FbxManager * manager;
@@ -24,11 +20,8 @@ private:
 	FbxImporter* importer;
 
 	FbxVector4* controlPoints;
-	FbxLayerElementNormal* normalElement;
-	FbxVector4 normal;
-	FbxVector4 vtxNormal;
-	FbxNode* child;
 	FbxNode* rootNode;
+	FbxNode* child;
 	FbxMesh* mesh;
 
 	int polygonCount;

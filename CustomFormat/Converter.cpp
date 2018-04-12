@@ -12,8 +12,15 @@ Converter::Converter()
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 
-	const char* filename = "wierdBox.fbx";
+}
 
+Converter::~Converter()
+{
+	manager->Destroy();
+}
+
+void Converter::importMesh(const char* filename)
+{
 	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
 	{
 		printf("Call to fbximporter::initialize failed.\n");
@@ -27,173 +34,85 @@ Converter::Converter()
 
 	rootNode = ourScene->GetRootNode();
 
-	loadMesh(rootNode);
-	//exportFile();
-	exportFile2();
+	exportFile(rootNode);
 }
 
-
-Converter::~Converter()
+void Converter::exportFile(FbxNode* currentNode)
 {
-	manager->Destroy();
-}
-
-void Converter::loadMesh(FbxNode* node)
-{
-	for (int i = 0; i < rootNode->GetChildCount(); i++)
+	child = currentNode->GetChild(0);
+	printf("Node: %s", currentNode->GetName());
+	
+	mesh = child->GetMesh();
+	
+	if (mesh)
 	{
-		child = node->GetChild(i);
-		mesh = child->GetMesh();
 		polygonCount = mesh->GetPolygonCount();
-
-		//Normals
-		normalElement = mesh->GetElementNormal();
 
 		//Vertices
 		controlPoints = mesh->GetControlPoints();
-	}
-}
 
-void Converter::exportFile()
-{
-	Counter counter;
-	counter.vertexCount = polygonCount * 3;
-	int loop = 0;
+		Counter counter;
+		counter.vertexCount = polygonCount * 3;
 
-	Vertex *vertices = new Vertex[counter.vertexCount];
+		Vertex *vertices = new Vertex[counter.vertexCount];
+
+		std::vector<FbxVector4> pos;
+		std::vector<FbxVector4> norm;
+		std::vector<FbxVector2> uv;
+		FbxVector4 temp;
+		FbxVector2 tempUv;
 	
-	for (int i = 0; i < polygonCount; i++)
-	{
-		int normalIndex = 0;
 
-		if (normalElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
+		bool ItIsFalse = false;
+
+		printf("\nMesh: %s\n", child->GetName());
+
+		int i = 0;
+		for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 		{
-			int polygonSize = mesh->GetPolygonSize(i);
-
-			for (int vertexIndex = 0; vertexIndex < polygonSize; vertexIndex++)
+			for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
 			{
-				vertices[loop].x = controlPoints[i][0];
-				vertices[loop].y = controlPoints[i][1];
-				vertices[loop].z = controlPoints[i][2];
-				std::cout << loop << " x: " << vertices[vertexIndex].x << "  y: " << vertices[vertexIndex].y << "  z: " << vertices[vertexIndex].z << std::endl;
+				//Positions
+				pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-				{
-					normalIndex = loop;
-				}
+				//Normals
+				mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
+				norm.push_back(temp);
 
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-				{
-					normalIndex = normalElement->GetIndexArray().GetAt(loop);
-				}
+				//UVs
+				FbxStringList uvSetNamesList;
+				mesh->GetUVSetNames(uvSetNamesList);
 
-				normal = normalElement->GetDirectArray().GetAt(normalIndex);
+				const char* uvNames = uvSetNamesList.GetStringAt(0);
+
+				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
 			
-				vertices[loop].nx = normal[0];
-				vertices[loop].ny = normal[1];
-				vertices[loop].nz = normal[2];
+				uv.push_back(tempUv);
 
-				std::cout << "nx: " << vertices[vertexIndex].nx << "  ny: " << vertices[vertexIndex].ny << "  nz: " << vertices[vertexIndex].nz << std::endl << std::endl;
-				loop++;
+				printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
+				printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
+				printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+
+				vertices[i].x = pos[i][0];
+				vertices[i].y = pos[i][1];
+				vertices[i].z = pos[i][2];
+
+				vertices[i].nx = norm[i][0];
+				vertices[i].ny = norm[i][1];
+				vertices[i].nz = norm[i][2];
+
+				vertices[i].u = uv[i][0];
+				vertices[i].v = uv[i][1];
+
+				i++;
 			}
 		}
-	}
-	getchar();
 
-	/*
-	std::cout << std::endl << 0 << "   x: " << vertices[0].x << "   y: " << vertices[0].y << "   z: " << vertices[0].z << std::endl;
-	std::cout << std::endl << 1 << "   x: " << vertices[1].x << "   y: " << vertices[1].y << "   z: " << vertices[1].z << std::endl;
-	getchar();
+		std::ofstream outfile("testt.leap", std::ofstream::binary);
 
-	std::ofstream outfile("readTextFile.txt", std::ios::app);
-	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-	*/
+		outfile.write((const char*)&counter, sizeof(Counter));
+		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 
-	std::ofstream outfile("testt.leap", std::ofstream::binary);
-
-	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-
-	outfile.close();
-}
-
-void Converter::exportFile2()
-{
-	Counter counter;
-	counter.vertexCount = polygonCount * 3;
-
-	Vertex *vertices = new Vertex[counter.vertexCount];
-
-	std::vector<FbxVector4> pos;
-	std::vector<FbxVector4> norm;
-	std::vector<FbxVector2> uv;
-	FbxVector4 temp;
-	FbxVector2 tempUv;
-	
-
-	bool ItIsFalse = false;
-
-	printf("Mesh: %s\n", child->GetName());
-
-	int i = 0;
-	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
-	{
-		for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
-		{
-			//Positions
-			pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
-
-			//Normals
-			mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
-			norm.push_back(temp);
-
-			//UVs
-			FbxStringList uvSetNamesList;
-			mesh->GetUVSetNames(uvSetNamesList);
-
-			const char* uvNames = uvSetNamesList.GetStringAt(0);
-
-			mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
-			
-			uv.push_back(tempUv);
-
-			printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-			printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-			printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
-
-			vertices[i].x = pos[i][0];
-			vertices[i].y = pos[i][1];
-			vertices[i].z = pos[i][2];
-
-			vertices[i].nx = norm[i][0];
-			vertices[i].ny = norm[i][1];
-			vertices[i].nz = norm[i][2];
-
-			vertices[i].u = uv[i][0];
-			vertices[i].v = uv[i][1];
-
-			i++;
-		}
-	}
-	
-	std::ofstream outfile("testt.leap", std::ofstream::binary);
-
-	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-
-	outfile.close();
-
-	if (child->GetChildCount() > 0)
-	{
-		loadMesh(child);
-	}
-}
-
-void Converter::printName(FbxMesh* meshName)
-{
-	if (meshName)
-	{
-		printf("Name: %s\n\n", mesh->GetName());
+		outfile.close();
 	}
 }
