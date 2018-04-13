@@ -56,7 +56,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		Counter counter;
 		counter.vertexCount = polygonCount * 3;
 
-		Vertex *vertices = new Vertex[counter.vertexCount];
+		Vertex* vertices = new Vertex[counter.vertexCount];
 
 		std::vector<FbxVector4> pos;
 		std::vector<FbxVector4> norm;
