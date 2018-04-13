@@ -16,6 +16,8 @@ Converter::Converter()
 
 Converter::~Converter()
 {
+	ourScene->Destroy();
+	settings->Destroy();
 	manager->Destroy();
 }
 
@@ -114,5 +116,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 
 		outfile.close();
+
+		free(vertices);
 	}
 }
