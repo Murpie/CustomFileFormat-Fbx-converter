@@ -4,7 +4,10 @@
 int main()
 {
 	Converter converter;
-	//best main
+
+
+	converter.importMesh("wierdBox.fbx");
+
 	getchar();
 	return 0;
 }

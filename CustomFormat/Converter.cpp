@@ -1,6 +1,8 @@
 #include "Converter.h"
-
-
+#include <fstream>
+#include <iostream>
+#include "MeshStructs.h"
+#include <vector>
 
 Converter::Converter()
 {
@@ -10,8 +12,15 @@ Converter::Converter()
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 
-	const char* filename = "testShapes.fbx";
+}
 
+Converter::~Converter()
+{
+	manager->Destroy();
+}
+
+void Converter::importMesh(const char* filename)
+{
 	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
 	{
 		printf("Call to fbximporter::initialize failed.\n");
@@ -25,85 +34,85 @@ Converter::Converter()
 
 	rootNode = ourScene->GetRootNode();
 
-	loadMesh(rootNode);
+	exportFile(rootNode);
 }
 
-
-Converter::~Converter()
+void Converter::exportFile(FbxNode* currentNode)
 {
-	manager->Destroy();
-}
-
-void Converter::loadMesh(FbxNode* node)
-{
-	for (int i = 0; i < rootNode->GetChildCount(); i++)
+	child = currentNode->GetChild(0);
+	printf("Node: %s", currentNode->GetName());
+	
+	mesh = child->GetMesh();
+	
+	if (mesh)
 	{
-		FbxNode* child = node->GetChild(i);
-		FBXSDK_printf("--------------------------------------------\nCurrent Mesh Node: %s\t", child->GetName());
-		FbxMesh* mesh = child->GetMesh();
-		int polygonCount = mesh->GetPolygonCount();
+		polygonCount = mesh->GetPolygonCount();
 
-		FBXSDK_printf("Polygon Count: %d\n--------------------------------------------\n", polygonCount);
+		//Vertices
+		controlPoints = mesh->GetControlPoints();
 
-		//Normals
-		FbxLayerElementNormal* normalElement = mesh->GetElementNormal();
-		/*if (normalElement)
+		Counter counter;
+		counter.vertexCount = polygonCount * 3;
+
+		Vertex *vertices = new Vertex[counter.vertexCount];
+
+		std::vector<FbxVector4> pos;
+		std::vector<FbxVector4> norm;
+		std::vector<FbxVector2> uv;
+		FbxVector4 temp;
+		FbxVector2 tempUv;
+	
+
+		bool ItIsFalse = false;
+
+		printf("\nMesh: %s\n", child->GetName());
+
+		int i = 0;
+		for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 		{
-			for (int vertexIndex = 0; vertexIndex < mesh->GetControlPointsCount(); vertexIndex++)
+			for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
 			{
-				int normalIndex = 0;
+				//Positions
+				pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-				{
-					normalIndex = vertexIndex;
-				}
+				//Normals
+				mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
+				norm.push_back(temp);
 
-				if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-				{
-					normalIndex = normalElement->GetIndexArray().GetAt(vertexIndex);
-				}
+				//UVs
+				FbxStringList uvSetNamesList;
+				mesh->GetUVSetNames(uvSetNamesList);
 
-				FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
+				const char* uvNames = uvSetNamesList.GetStringAt(0);
 
-				FBXSDK_printf("Normals for vertex[%d]: %f %f %f %f \n", vertexIndex, normal[0], normal[1], normal[2], normal[3]);
+				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
+			
+				uv.push_back(tempUv);
 
+				printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
+				printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
+				printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+
+				vertices[i].x = pos[i][0];
+				vertices[i].y = pos[i][1];
+				vertices[i].z = pos[i][2];
+
+				vertices[i].nx = norm[i][0];
+				vertices[i].ny = norm[i][1];
+				vertices[i].nz = norm[i][2];
+
+				vertices[i].u = uv[i][0];
+				vertices[i].v = uv[i][1];
+
+				i++;
 			}
-		}*/
-
-		//Get vertices
-		FbxVector4* controlPoints = mesh->GetControlPoints();
-
-		for (int i = 0; i < polygonCount; i++)
-		{
-			FBXSDK_printf("Polygon: %d\n", i);
-			int normalIndex = 0;
-
-			if (normalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-			{
-				normalIndex = i;
-			}
-
-			if (normalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-			{
-				normalIndex = normalElement->GetIndexArray().GetAt(i);
-			}
-
-			FbxVector4 normal = normalElement->GetDirectArray().GetAt(normalIndex);
-
-			FBXSDK_printf(" X: %f\t", controlPoints[i][0]);
-			FBXSDK_printf(" Y: %f\t", controlPoints[i][1]);
-			FBXSDK_printf(" Z: %f\t\n", controlPoints[i][2]);
-			FBXSDK_printf("NX: %f\t", normal[0]);
-			FBXSDK_printf("NY: %f\t", normal[1]);
-			FBXSDK_printf("NZ: %f\t\n\n", normal[2]);
 		}
-	}
-}
 
-void Converter::printName(FbxMesh* meshName)
-{
-	if (meshName)
-	{
-		printf("Name: %s\n\n", mesh->GetName());
+		std::ofstream outfile("testt.leap", std::ofstream::binary);
+
+		outfile.write((const char*)&counter, sizeof(Counter));
+		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
+
+		outfile.close();
 	}
 }
