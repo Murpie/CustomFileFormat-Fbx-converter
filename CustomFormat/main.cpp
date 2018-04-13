@@ -5,6 +5,7 @@ int main()
 {
 	Converter converter;
 
+
 	converter.importMesh("wierdBox.fbx");
 
 	getchar();
