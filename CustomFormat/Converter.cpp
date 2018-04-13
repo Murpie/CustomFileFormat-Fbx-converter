@@ -46,66 +46,67 @@ void Converter::exportFile(FbxNode* currentNode)
 	
 	if (mesh)
 	{
-		//Vertex Information
+		polygonCount = mesh->GetPolygonCount();
+
+		//Vertices
+		controlPoints = mesh->GetControlPoints();
+
 		Counter counter;
 		counter.vertexCount = polygonCount * 3;
+
 		Vertex *vertices = new Vertex[counter.vertexCount];
+
+		std::vector<FbxVector4> pos;
+		std::vector<FbxVector4> norm;
+		std::vector<FbxVector2> uv;
+		FbxVector4 temp;
+		FbxVector2 tempUv;
+	
+
+		bool ItIsFalse = false;
+
+		printf("\nMesh: %s\n", child->GetName());
+
+		int i = 0;
+		for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 		{
-			polygonCount = mesh->GetPolygonCount();
-			controlPoints = mesh->GetControlPoints();
-
-			std::vector<FbxVector4> pos;
-			std::vector<FbxVector4> norm;
-			std::vector<FbxVector2> uv;
-			FbxVector4 temp;
-			FbxVector2 tempUv;
-
-			bool ItIsFalse = false;
-
-			printf("\nMesh: %s\n", child->GetName());
-
-
-			int i = 0;
-			for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
+			for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
 			{
-				for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
-				{
-					//Positions
-					pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+				//Positions
+				pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
-					//Normals
-					mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
-					norm.push_back(temp);
+				//Normals
+				mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
+				norm.push_back(temp);
 
-					//UVs
-					FbxStringList uvSetNamesList;
-					mesh->GetUVSetNames(uvSetNamesList);
-					const char* uvNames = uvSetNamesList.GetStringAt(0);
-					mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
-					uv.push_back(tempUv);
+				//UVs
+				FbxStringList uvSetNamesList;
+				mesh->GetUVSetNames(uvSetNamesList);
 
-					printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-					printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-					printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+				const char* uvNames = uvSetNamesList.GetStringAt(0);
 
-					vertices[i].x = pos[i][0];
-					vertices[i].y = pos[i][1];
-					vertices[i].z = pos[i][2];
+				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
+			
+				uv.push_back(tempUv);
 
-					vertices[i].nx = norm[i][0];
-					vertices[i].ny = norm[i][1];
-					vertices[i].nz = norm[i][2];
+				printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
+				printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
+				printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
 
-					vertices[i].u = uv[i][0];
-					vertices[i].v = uv[i][1];
+				vertices[i].x = pos[i][0];
+				vertices[i].y = pos[i][1];
+				vertices[i].z = pos[i][2];
 
-					i++;
-				}
+				vertices[i].nx = norm[i][0];
+				vertices[i].ny = norm[i][1];
+				vertices[i].nz = norm[i][2];
+
+				vertices[i].u = uv[i][0];
+				vertices[i].v = uv[i][1];
+
+				i++;
 			}
 		}
-
-		//Material & Texture Information
-		
 
 		std::ofstream outfile("testt.leap", std::ofstream::binary);
 
