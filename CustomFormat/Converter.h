@@ -8,9 +8,10 @@ class Converter
 {
 public:
 	Converter();
+	Converter(const char* fileName);
 	~Converter();
 
-	void importMesh(const char* filename);
+	void importMesh();
 	void exportFile(FbxNode* currentNode);
 
 private:
@@ -26,5 +27,7 @@ private:
 
 	int polygonCount;
 	int polygonSize;
+
+	const char* meshName;
 };
 

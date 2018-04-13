@@ -21,6 +21,14 @@ struct Vertex {
 	float weightID[4];
 };
 
+struct MaterialInformation {
+	float ambient[3];
+	float diffuse[3];
+	float emissive[3];
+	float opacity[3];
+	char* textureFilePath[100];
+};
+
 struct BoundingBoxVertex {
 	float bx, by, bz;
 };

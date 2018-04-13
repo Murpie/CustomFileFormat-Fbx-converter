@@ -4,6 +4,8 @@
 #include "MeshStructs.h"
 #include <vector>
 
+#pragma warning(disable : 4996)
+
 Converter::Converter()
 {
 	manager = FbxManager::Create();
@@ -11,7 +13,18 @@ Converter::Converter()
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+	this->meshName = "mesh.fbx";
 
+}
+
+Converter::Converter(const char * fileName)
+{
+	manager = FbxManager::Create();
+	settings = FbxIOSettings::Create(manager, IOSROOT);
+	manager->SetIOSettings(settings);
+	ourScene = FbxScene::Create(manager, "");
+	importer = FbxImporter::Create(manager, "");
+	this->meshName = fileName;
 }
 
 Converter::~Converter()
@@ -21,9 +34,9 @@ Converter::~Converter()
 	manager->Destroy();
 }
 
-void Converter::importMesh(const char* filename)
+void Converter::importMesh()
 {
-	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
+	if (!importer->Initialize(meshName, -1, manager->GetIOSettings()))
 	{
 		printf("Call to fbximporter::initialize failed.\n");
 		printf("Error returned: %s\n\n", importer->GetStatus().GetErrorString());
@@ -91,9 +104,9 @@ void Converter::exportFile(FbxNode* currentNode)
 			
 				uv.push_back(tempUv);
 
-				printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-				printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-				printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+				//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
+				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
+				//printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
 
 				vertices[i].x = pos[i][0];
 				vertices[i].y = pos[i][1];
@@ -110,7 +123,17 @@ void Converter::exportFile(FbxNode* currentNode)
 			}
 		}
 
-		std::ofstream outfile("testt.leap", std::ofstream::binary);
+		size_t len = strlen(meshName);
+		char* ret = new char[len + 2];
+		strcpy(ret, meshName);
+		ret[len - 3] = 'l';
+		ret[len - 2] = 'e';
+		ret[len - 1] = 'a';
+		ret[len] = 'p';
+		ret[len + 1] = '\0';
+		meshName = ret;
+
+		std::ofstream outfile(meshName, std::ofstream::binary);
 
 		outfile.write((const char*)&counter, sizeof(Counter));
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
@@ -118,5 +141,11 @@ void Converter::exportFile(FbxNode* currentNode)
 		outfile.close();
 
 		free(vertices);
+		free(ret);
+	}
+	else
+	{
+		printf("Access violation: Mesh not found\n\n");
+		exit(-2);
 	}
 }
