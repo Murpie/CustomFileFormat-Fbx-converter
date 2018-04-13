@@ -13,6 +13,22 @@ struct Counter
 	unsigned int meshType;
 };
 
+struct Material
+{
+	float ambient[3];
+	float diffuse[3];
+	float emissive[3];
+	float opacity[3];
+};
+
+struct Texture
+{
+	char* name;
+	float scaleUV[2];
+	float translationUV[2];
+	float rotationUVW[3];
+};
+
 struct Vertex {
 	float x, y, z;
 	float nx, ny, nz;
