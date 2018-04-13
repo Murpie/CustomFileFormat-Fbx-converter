@@ -8,7 +8,7 @@ CustomImporter::~CustomImporter()
 {
 }
 
-Mesh * CustomImporter::getMesh(const std::string & meshName)
+Mesh * CustomImporter::getMesh(const char* meshName)
 {
 	//Check file type and get error if not correct.
 
@@ -17,7 +17,7 @@ Mesh * CustomImporter::getMesh(const std::string & meshName)
 	return newMesh;
 }
 
-Camera * CustomImporter::getCamera(const std::string & cameraName)
+Camera * CustomImporter::getCamera(const char* cameraName)
 {
 	//Check file type and get error if not correct.
 
@@ -26,7 +26,7 @@ Camera * CustomImporter::getCamera(const std::string & cameraName)
 	return newCamera;
 }
 
-Light * CustomImporter::getLight(const std::string & lightName)
+Light * CustomImporter::getLight(const char* lightName)
 {
 	//Check file type and get error if not correct.
 
@@ -35,7 +35,7 @@ Light * CustomImporter::getLight(const std::string & lightName)
 	return newLight;
 }
 
-Material * CustomImporter::getMaterial(const std::string & materialName)
+Material * CustomImporter::getMaterial(const char* materialName)
 {
 	Material* newMaterial = new Material(materialName);
 

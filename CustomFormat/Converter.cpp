@@ -108,16 +108,16 @@ void Converter::exportFile(FbxNode* currentNode)
 				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
 				//printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
 
-				vertices[i].x = pos[i][0];
-				vertices[i].y = pos[i][1];
-				vertices[i].z = pos[i][2];
+				vertices[i].x = (float)pos[i][0];
+				vertices[i].y = (float)pos[i][1];
+				vertices[i].z = (float)pos[i][2];
 
-				vertices[i].nx = norm[i][0];
-				vertices[i].ny = norm[i][1];
-				vertices[i].nz = norm[i][2];
+				vertices[i].nx = (float)norm[i][0];
+				vertices[i].ny = (float)norm[i][1];
+				vertices[i].nz = (float)norm[i][2];
 
-				vertices[i].u = uv[i][0];
-				vertices[i].v = uv[i][1];
+				vertices[i].u = (float)uv[i][0];
+				vertices[i].v = (float)uv[i][1];
 
 				i++;
 			}

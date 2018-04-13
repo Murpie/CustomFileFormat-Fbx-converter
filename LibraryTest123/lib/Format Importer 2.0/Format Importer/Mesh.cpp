@@ -4,12 +4,8 @@ Mesh::Mesh()
 {
 }
 
-Mesh::Mesh(const std::string& fileName)
+Mesh::Mesh(const char* fileName)
 {
-	Vertex temp;
-	this->vertices.push_back(temp);
-	Animation aTemp;
-	this->animations.push_back(aTemp);
 	loader(fileName);
 }
 
@@ -17,7 +13,17 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::loader(const std::string& fileName)
+void Mesh::loader(const char* fileName)
 {
-	//Fill data from file
+	vertices = new Vertex[counterReader.vertexCount];
+	
+	std::ifstream infile(fileName, std::ifstream::binary);
+
+	/*Animation aTemp;
+	this->animations.push_back(aTemp);*/
+
+	infile.read((char*)&counterReader, sizeof(Counter));
+	infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
+
+	infile.close();
 }

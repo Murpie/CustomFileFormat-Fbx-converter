@@ -2,23 +2,25 @@
 #include "MeshStructs.h"
 #include <vector>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
 class Mesh
 {
 private:
-	void loader(const std::string& fileName); 
+	void loader(const char* fileName); 
 
 public:
 	Mesh();
-	Mesh(const std::string& fileName);
+	Mesh(const char* fileName);
 	~Mesh();
 	
-	vector <Vertex> vertices;
+	Vertex* vertices;
 	vector <BoundingBox> boundingBoxes;
 	vector <Joint> joints;
 	vector <Animation> animations;
 	vector <BlendShape> blendShapes;
 	vector <Group> group;
+	Counter counterReader;
 };
