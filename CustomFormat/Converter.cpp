@@ -54,8 +54,31 @@ void Converter::importMesh()
 void Converter::exportFile(FbxNode* currentNode)
 {
 	child = currentNode->GetChild(0);
-	printf("Node: %s", currentNode->GetName());
-	
+	printf("Node: %s\n", currentNode->GetName());
+
+	int materialCount = child->GetMaterialCount();
+	std::cout << "Material count: " << materialCount << std::endl << std::endl;
+
+	FbxPropertyT<FbxDouble3> lKFbxDouble3;
+	FbxColor color;
+	if (materialCount > 0)
+	{
+		for (int mat = 0; mat < materialCount; mat++)
+		{
+			FbxSurfaceMaterial *material = child->GetMaterial(mat);
+			std::cout << "Material name: " << material->GetName() << std::endl;
+			FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
+
+			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
+			{
+				lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Ambient;
+
+			}
+		}
+	}
+
+	getchar();
+
 	mesh = child->GetMesh();
 	
 	if (mesh)
@@ -96,12 +119,12 @@ void Converter::exportFile(FbxNode* currentNode)
 				//UVs
 				FbxStringList uvSetNamesList;
 				mesh->GetUVSetNames(uvSetNamesList);
-
 				const char* uvNames = uvSetNamesList.GetStringAt(0);
-
 				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
-			
 				uv.push_back(tempUv);
+
+				//Material
+
 
 				//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
 				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
@@ -122,7 +145,7 @@ void Converter::exportFile(FbxNode* currentNode)
 			}
 		}
 
-		size_t len = strlen(meshName);
+		/*size_t len = strlen(meshName);
 		char* ret = new char[len + 2];
 		strcpy(ret, meshName);
 		ret[len - 3] = 'l';
@@ -137,10 +160,10 @@ void Converter::exportFile(FbxNode* currentNode)
 		outfile.write((const char*)&counter, sizeof(Counter));
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 
-		outfile.close();
+		outfile.close();*/
 
-		free(vertices);
-		free(ret);
+		delete[] vertices;
+		//delete[] ret;
 	}
 	else
 	{
@@ -148,3 +171,16 @@ void Converter::exportFile(FbxNode* currentNode)
 		exit(-2);
 	}
 }
+
+/*
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+
+int main()
+{
+std::ifstream src("C:/Users/Elin/Downloads/Colors.png", std::ios::binary);
+std::ofstream dst("C:/Users/Elin/Desktop/NewColors.png", std::ios::binary);
+dst << src.rdbuf();
+}
+*/
