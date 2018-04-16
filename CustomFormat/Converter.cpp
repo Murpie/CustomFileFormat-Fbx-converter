@@ -1,7 +1,6 @@
 #include "Converter.h"
-#include <fstream>
-#include <iostream>
 #include "MeshStructs.h"
+#include <fstream>
 #include <vector>
 
 #pragma warning(disable : 4996)

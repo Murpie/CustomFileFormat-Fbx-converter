@@ -13,6 +13,11 @@ Mesh::~Mesh()
 {
 }
 
+int Mesh::getVertexCount()
+{
+	return this->counterReader.vertexCount;
+}
+
 void Mesh::loader(const char* fileName)
 {
 	vertices = new Vertex[counterReader.vertexCount];
@@ -22,8 +27,11 @@ void Mesh::loader(const char* fileName)
 	/*Animation aTemp;
 	this->animations.push_back(aTemp);*/
 
-	infile.read((char*)&counterReader, sizeof(Counter));
-	infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
+	if (infile.is_open())
+	{
+		infile.read((char*)&counterReader, sizeof(Counter));
+		infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
+		infile.close();
+	}
 
-	infile.close();
 }

@@ -15,6 +15,8 @@ public:
 	Mesh();
 	Mesh(const char* fileName);
 	~Mesh();
+
+	int getVertexCount();
 	
 	Vertex* vertices;
 	vector <BoundingBox> boundingBoxes;
