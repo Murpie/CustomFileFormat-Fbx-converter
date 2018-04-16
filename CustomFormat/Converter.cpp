@@ -122,6 +122,21 @@ void Converter::exportFile(FbxNode* currentNode)
 			}
 		}
 
+		//Material & Texture
+
+		//Attached the mesh's material to ourMaterial
+		FbxSurfaceLambert* ourMaterial = child->GetSrcObject<FbxSurfaceLambert>(0);
+		if (ourMaterial)
+		{
+			FBXSDK_printf("Found Material!\n");
+		}
+		else
+		{
+			FBXSDK_printf("Error: Material missing\n");
+		}
+		getchar();
+
+		//Custom Creation
 		size_t len = strlen(meshName);
 		char* ret = new char[len + 2];
 		strcpy(ret, meshName);
