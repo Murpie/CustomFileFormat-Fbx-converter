@@ -1,27 +1,15 @@
 #include <fbxsdk.h>
+#include "Converter.h"
+#include <crtdbg.h>
 
 int main()
 {
-	printf("hello");
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	
+	Converter converter("Snowman.fbx");
 
-	FbxManager* manager = FbxManager::Create();
+	converter.importMesh();
 
-	FbxScene* ourScene = FbxScene::Create(manager, "");
-
-	FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
-	manager->SetIOSettings(ios);
-
-	FbxImporter* fbximporter = FbxImporter::Create(manager, "");
-
-	const char* filename = "testCube.fbx";
-
-	if (!fbximporter->Initialize(filename, -1, manager->GetIOSettings()))
-	{
-		printf("Call to fbximporter::initialize failed.\n");
-		printf("Error returned: %s\n\n", fbximporter->GetStatus().GetErrorString());
-		getchar();
-		exit(-1);
-	}
-
+	getchar();
 	return 0;
 }
