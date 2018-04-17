@@ -5,12 +5,16 @@
 
 #pragma warning(disable : 4996)
 
+void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
+void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+void displayCurveKeys(FbxAnimCurve* curve);
+
 Converter::Converter()
 {
 	manager = FbxManager::Create();
 	settings = FbxIOSettings::Create(manager, IOSROOT);
 	manager->SetIOSettings(settings);
-	ourScene = FbxScene::Create(manager, "");
+	scene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = "mesh.fbx";
 
@@ -21,14 +25,14 @@ Converter::Converter(const char * fileName)
 	manager = FbxManager::Create();
 	settings = FbxIOSettings::Create(manager, IOSROOT);
 	manager->SetIOSettings(settings);
-	ourScene = FbxScene::Create(manager, "");
+	scene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
 }
 
 Converter::~Converter()
 {
-	ourScene->Destroy();
+	scene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
 }
@@ -43,12 +47,13 @@ void Converter::importMesh()
 		exit(-1);
 	}
 
-	importer->Import(ourScene);
+	importer->Import(scene);
 	importer->Destroy();
 
-	rootNode = ourScene->GetRootNode();
+	rootNode = scene->GetRootNode();
 
-	exportFile(rootNode);
+	exportAnimation(scene, rootNode);
+	//exportFile(rootNode);
 }
 
 void Converter::exportFile(FbxNode* currentNode)
@@ -188,6 +193,100 @@ void Converter::exportFile(FbxNode* currentNode)
 	}
 }
 
+void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
+{
+	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
+	{
+		FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>(i);
+
+		FbxString outputString = "Animation Stack Name: ";
+		outputString += animStack->GetName();
+		outputString += "\n";
+		FBXSDK_printf(outputString);
+
+		int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
+		outputString = "   contains ";
+		if (animLayers == 0)
+			outputString += "no layers";
+		if (animLayers)
+		{
+			outputString += animLayers;
+			outputString += " Animation layer(s)\n\n";
+		}
+		FBXSDK_printf(outputString);
+
+		for (int j = 0; j < animLayers; j++)
+		{
+			FbxAnimLayer* currentAnimLayer = animStack->GetMember<FbxAnimLayer>(j);
+			outputString = "Current Animation Layer: ";
+			outputString += j;
+			outputString += "\n";
+			FBXSDK_printf(outputString);
+
+			getAnimation(currentAnimLayer, node);
+		}
+	}
+}
+
+void getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
+{
+	int modelCount;
+	FbxString outputString;
+
+	outputString = "   Node Name: ";
+	outputString += node->GetName();
+	outputString += "\n\n";
+	FBXSDK_printf(outputString);
+
+	getAnimationChannels(node, animLayer);
+	FBXSDK_printf("\n");
+
+	for (modelCount = 0; modelCount < node->GetChildCount(); modelCount++)
+	{
+		getAnimation(animLayer, node->GetChild(modelCount));
+	}
+}
+
+void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
+{
+	FbxAnimCurve* animCurve = NULL;
+
+	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	if (animCurve)
+	{
+		FBXSDK_printf("   TX\n");
+		displayCurveKeys(animCurve);
+	}
+
+	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	if (animCurve)
+	{
+		FBXSDK_printf("   RX\n");
+		displayCurveKeys(animCurve);
+	}
+}
+
+void displayCurveKeys(FbxAnimCurve* curve)
+{
+	FbxTime keyTime;
+	float keyValue;
+	char timeString[256];
+	FbxString outputString;
+	int keyCount = curve->KeyGetCount();
+
+	for (int i = 0; i < keyCount; i++)
+	{
+		keyValue = static_cast<float>(curve->KeyGetValue(i));
+		keyTime = curve->KeyGetTime(i);
+
+		outputString = "      Key Time: ";
+		outputString += keyTime.GetTimeString(timeString, FbxUShort(256));
+		outputString += ".... Key Value: ";
+		outputString += keyValue;
+		outputString += "\n";
+		FBXSDK_printf(outputString);
+	}
+}
 /*
 #include <iostream>
 #include <fstream>

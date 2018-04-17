@@ -13,11 +13,12 @@ public:
 
 	void importMesh();
 	void exportFile(FbxNode* currentNode);
+	void exportAnimation(FbxScene* scene, FbxNode* node);
 
 private:
 	FbxManager * manager;
 	FbxIOSettings* settings;
-	FbxScene* ourScene;
+	FbxScene* scene;
 	FbxImporter* importer;
 
 	FbxVector4* controlPoints;
