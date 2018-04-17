@@ -16,7 +16,7 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
 }
-
+//-----------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
 	delete meshInfo;
@@ -28,7 +28,7 @@ Converter::~Converter()
 	settings->Destroy();
 	manager->Destroy();
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
 {
 	if (!importer->Initialize(meshName, -1, manager->GetIOSettings()))
@@ -46,7 +46,7 @@ void Converter::importMesh()
 
 	exportFile(rootNode);
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
 	child = currentNode->GetChild(0);
@@ -76,7 +76,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		exit(-2);
 	}
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadGlobaltransform()
 {
 	meshInfo = new MeshInfo[1];						//There will always just be a single mesh, for now
@@ -91,8 +91,12 @@ void Converter::loadGlobaltransform()
 		meshInfo->globalRotation[i] = tempRotation[i];
 		meshInfo->globalScaling[i] = tempScaling[i];
 	}
-}
 
+	FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+	FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+	FBXSDK_printf("Scaling: %f %f %f\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadVertex()
 {
 	polygonCount = mesh->GetPolygonCount();
@@ -148,12 +152,11 @@ void Converter::loadVertex()
 		}
 	}
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadMaterial()
 {
 	//Material & Texture
 	int materialCount = child->GetMaterialCount();
-	std::cout << "Material count: " << materialCount << std::endl << std::endl;
 
 	//Material attributes
 	FbxPropertyT<FbxDouble3> lKFbxDouble3;
@@ -167,7 +170,7 @@ void Converter::loadMaterial()
 		for (int mat = 0; mat < materialCount; mat++)
 		{
 			FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
-			std::cout << "Material name: " << lMaterial->GetName() << std::endl;
+			std::cout << "\nMaterial name: " << lMaterial->GetName() << std::endl << std::endl;
 
 			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
 			{
@@ -242,7 +245,7 @@ void Converter::loadMaterial()
 
 					textureName = texture->GetFileName();
 
-					FBXSDK_printf("Path: %s\n", textureName);
+					FBXSDK_printf("Texture file found!\nPath: %s\n", textureName);
 				}
 			}
 		}
@@ -279,7 +282,7 @@ void Converter::loadMaterial()
 	//Opacity
 	matInfo->opacity = (float)transparency;
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCameras()
 {
 	FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
@@ -290,12 +293,8 @@ void Converter::loadCameras()
 	{
 		globalCameraSettings.GetCameraProducerPerspective();
 	}
-
-	/*FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
-	FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-	FBXSDK_printf("Scaling: %f %f %f\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);*/
 }
-
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
 	size_t len = strlen(meshName);
