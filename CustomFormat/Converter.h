@@ -3,11 +3,11 @@
 #include <fbxsdk.h>
 #include <stdlib.h>
 #include <iostream>
+#include "MeshStructs.h"
 
 class Converter
 {
 public:
-	Converter();
 	Converter(const char* fileName);
 	~Converter();
 
@@ -15,10 +15,18 @@ public:
 	void exportFile(FbxNode* currentNode);
 
 private:
+	void loadVertex();
+	void loadMaterial();
+	void createCustomFile();
+
 	FbxManager * manager;
 	FbxIOSettings* settings;
 	FbxScene* ourScene;
 	FbxImporter* importer;
+
+	Counter counter;
+	Vertex* vertices;
+	MaterialInformation* matInfo;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
@@ -31,5 +39,6 @@ private:
 
 	const char* meshName;
 	const char* textureName;
+	char* ret;
 };
 
