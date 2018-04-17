@@ -56,13 +56,22 @@ void Converter::exportFile(FbxNode* currentNode)
 	if (mesh)
 	{
 		//Load in Vertex data
-		loadVertex();
+		//loadVertex();
 
 		//Load Material & Texture File information
-		loadMaterial();
+		//loadMaterial();
+
+		FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
+		FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
+		FbxString currentCameraName = globalSettings.GetDefaultCamera();
+
+		if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
+		{
+			globalCameraSettings.GetCameraProducerPerspective();
+		}
 
 		//Create the Custom File
-		createCustomFile();
+		//createCustomFile();
 	}
 	else
 	{
