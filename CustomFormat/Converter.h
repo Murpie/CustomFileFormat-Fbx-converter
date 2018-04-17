@@ -27,7 +27,9 @@ private:
 
 	int polygonCount;
 	int polygonSize;
+	int textureCount;
 
 	const char* meshName;
+	const char* textureName;
 };
 

@@ -5,6 +5,9 @@
 
 #pragma warning(disable : 4996)
 
+#define COLOR_RANGE 3
+#define UV_RANGE 2
+
 Converter::Converter()
 {
 	manager = FbxManager::Create();
@@ -56,8 +59,6 @@ void Converter::exportFile(FbxNode* currentNode)
 	child = currentNode->GetChild(0);
 	printf("Node: %s\n", currentNode->GetName());
 
-	
-
 	mesh = child->GetMesh();
 	
 	if (mesh)
@@ -78,7 +79,6 @@ void Converter::exportFile(FbxNode* currentNode)
 		FbxVector4 temp;
 		FbxVector2 tempUv;
 	
-
 		bool ItIsFalse = false;
 
 		printf("\nMesh: %s\n", child->GetName());
@@ -101,9 +101,6 @@ void Converter::exportFile(FbxNode* currentNode)
 				const char* uvNames = uvSetNamesList.GetStringAt(0);
 				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
 				uv.push_back(tempUv);
-
-				//Material
-
 
 				//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
 				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
@@ -139,9 +136,8 @@ void Converter::exportFile(FbxNode* currentNode)
 		{
 			for (int mat = 0; mat < materialCount; mat++)
 			{
-				FbxSurfaceMaterial *material = child->GetMaterial(mat);
-				std::cout << "Material name: " << material->GetName() << std::endl;
 				FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
+				std::cout << "Material name: " << lMaterial->GetName() << std::endl;
 
 				if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
 				{
@@ -204,15 +200,57 @@ void Converter::exportFile(FbxNode* currentNode)
 				lString += "\n\n";
 				FBXSDK_printf(lString);
 
+				//File Texture path from Material
+				FbxProperty fileTextureProp = lMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+
+				if (fileTextureProp != NULL)
+				{
+					textureCount = fileTextureProp.GetSrcObjectCount<FbxFileTexture>();
+					for (int i = 0; i < textureCount; i++)
+					{
+						FbxFileTexture* texture = FbxCast<FbxFileTexture>(fileTextureProp.GetSrcObject<FbxFileTexture>(i));
+
+						textureName = texture->GetFileName();
+
+						FBXSDK_printf("Path: %s\n", textureName);
+					}
+				}
 			}
 		}
-		getchar();
 
-		//File Texture path from Material
+		//Create custom materialInformation
+		MaterialInformation* matInfo = new MaterialInformation[materialCount];
+
+		//Colormaps
+		for (int k = 0; k < COLOR_RANGE; k++)
+		{
+			switch (k)
+			{
+			case 0:
+				matInfo->ambient[k] = (float)ambient.mRed;
+				matInfo->diffuse[k] = (float)diffuse.mRed;
+				matInfo->emissive[k] = (float)emissive.mRed;
+				break;
+			case 1:
+				matInfo->ambient[k] = (float)ambient.mGreen;
+				matInfo->diffuse[k] = (float)diffuse.mGreen;
+				matInfo->emissive[k] = (float)emissive.mGreen;
+				break;
+			case 2:
+				matInfo->ambient[k] = (float)ambient.mBlue;
+				matInfo->diffuse[k] = (float)diffuse.mBlue;
+				matInfo->emissive[k] = (float)emissive.mBlue;
+				break;
+			default:
+				break;
+			}
+		}
+
+		//Opacity
+		matInfo->opacity = (float)transparency;
 
 		//Custom Creation
 		size_t len = strlen(meshName);
-		/*size_t len = strlen(meshName);
 		char* ret = new char[len + 2];
 		strcpy(ret, meshName);
 		ret[len - 3] = 'l';
@@ -226,11 +264,20 @@ void Converter::exportFile(FbxNode* currentNode)
 
 		outfile.write((const char*)&counter, sizeof(Counter));
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
+		outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
-		outfile.close();*/
+		outfile.close();
+
+		if (textureCount != 0)
+		{
+			std::ifstream src(textureName, std::ios::binary);
+			std::ofstream dst("NewColors.png", std::ios::binary);
+			dst << src.rdbuf();
+		}
 
 		delete vertices;
-		//delete ret;
+		delete matInfo;
+		delete ret;
 	}
 	else
 	{
