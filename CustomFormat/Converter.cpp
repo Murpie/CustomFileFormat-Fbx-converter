@@ -120,10 +120,6 @@ void Converter::loadVertex()
 			mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
 			uv.push_back(tempUv);
 
-			//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-			//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-			//printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
-
 			vertices[i].x = (float)pos[i][0];
 			vertices[i].y = (float)pos[i][1];
 			vertices[i].z = (float)pos[i][2];
