@@ -13,6 +13,12 @@ struct Counter
 	unsigned int meshType;
 };
 
+struct MeshInfo {
+	float globalTranslation[3];
+	float globalRotation[3];
+	float globalScaling[3];
+};
+
 struct Vertex {
 	float x, y, z;
 	float nx, ny, nz;

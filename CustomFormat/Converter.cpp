@@ -19,6 +19,7 @@ Converter::Converter(const char * fileName)
 
 Converter::~Converter()
 {
+	delete meshInfo;
 	delete vertices;
 	delete matInfo;
 	delete ret;
@@ -51,6 +52,8 @@ void Converter::exportFile(FbxNode* currentNode)
 	child = currentNode->GetChild(0);
 	printf("Node: %s\n", currentNode->GetName());
 
+	loadGlobaltransform();
+	
 	mesh = child->GetMesh();
 	
 	if (mesh)
@@ -61,14 +64,8 @@ void Converter::exportFile(FbxNode* currentNode)
 		//Load Material & Texture File information
 		loadMaterial();
 
-		/*FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
-		FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
-		FbxString currentCameraName = globalSettings.GetDefaultCamera();
-
-		if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
-		{
-			globalCameraSettings.GetCameraProducerPerspective();
-		}*/
+		//Load Cameras
+		//loadCameras();
 
 		//Create the Custom File
 		createCustomFile();
@@ -77,6 +74,22 @@ void Converter::exportFile(FbxNode* currentNode)
 	{
 		printf("Access violation: Mesh not found\n\n");
 		exit(-2);
+	}
+}
+
+void Converter::loadGlobaltransform()
+{
+	meshInfo = new MeshInfo[1];						//There will always just be a single mesh, for now
+
+	FbxDouble3 tempTranslation = child->LclTranslation.Get();
+	FbxDouble3 tempRotation = child->LclRotation.Get();
+	FbxDouble3 tempScaling = child->LclScaling.Get();
+
+	for (int i = 0; i < COLOR_RANGE; i++)
+	{
+		meshInfo->globalTranslation[i] = tempTranslation[i];
+		meshInfo->globalRotation[i] = tempRotation[i];
+		meshInfo->globalScaling[i] = tempScaling[i];
 	}
 }
 
@@ -267,6 +280,22 @@ void Converter::loadMaterial()
 	matInfo->opacity = (float)transparency;
 }
 
+void Converter::loadCameras()
+{
+	FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
+	FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
+	FbxString currentCameraName = globalSettings.GetDefaultCamera();
+
+	if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
+	{
+		globalCameraSettings.GetCameraProducerPerspective();
+	}
+
+	/*FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+	FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+	FBXSDK_printf("Scaling: %f %f %f\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);*/
+}
+
 void Converter::createCustomFile()
 {
 	size_t len = strlen(meshName);
@@ -284,6 +313,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 	outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 
 	outfile.close();
 
