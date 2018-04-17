@@ -56,28 +56,7 @@ void Converter::exportFile(FbxNode* currentNode)
 	child = currentNode->GetChild(0);
 	printf("Node: %s\n", currentNode->GetName());
 
-	int materialCount = child->GetMaterialCount();
-	std::cout << "Material count: " << materialCount << std::endl << std::endl;
-
-	FbxPropertyT<FbxDouble3> lKFbxDouble3;
-	FbxColor color;
-	if (materialCount > 0)
-	{
-		for (int mat = 0; mat < materialCount; mat++)
-		{
-			FbxSurfaceMaterial *material = child->GetMaterial(mat);
-			std::cout << "Material name: " << material->GetName() << std::endl;
-			FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
-
-			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
-			{
-				lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Ambient;
-
-			}
-		}
-	}
-
-	getchar();
+	
 
 	mesh = child->GetMesh();
 	
@@ -146,18 +125,90 @@ void Converter::exportFile(FbxNode* currentNode)
 		}
 
 		//Material & Texture
+		int materialCount = child->GetMaterialCount();
+		std::cout << "Material count: " << materialCount << std::endl << std::endl;
 
-		//Attached the mesh's material to ourMaterial
-		FbxSurfaceLambert* ourMaterial = child->GetSrcObject<FbxSurfaceLambert>(0);
-		if (ourMaterial)
+		//Material attributes
+		FbxPropertyT<FbxDouble3> lKFbxDouble3;
+		FbxPropertyT<FbxDouble> transparency;
+		FbxColor ambient;
+		FbxColor diffuse;
+		FbxColor emissive;
+
+		if (materialCount > 0)
 		{
-			FBXSDK_printf("Found Material!\n");
-		}
-		else
-		{
-			FBXSDK_printf("Error: Material missing\n");
+			for (int mat = 0; mat < materialCount; mat++)
+			{
+				FbxSurfaceMaterial *material = child->GetMaterial(mat);
+				std::cout << "Material name: " << material->GetName() << std::endl;
+				FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
+
+				if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
+				{
+					lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Ambient;
+					ambient.Set(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+
+					lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Diffuse;
+					diffuse.Set(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+
+					lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Emissive;
+					emissive.Set(lKFbxDouble3.Get()[0], lKFbxDouble3.Get()[1], lKFbxDouble3.Get()[2]);
+
+					transparency = ((FbxSurfaceLambert*)lMaterial)->TransparencyFactor;
+				}
+
+				FbxString lString;
+				lString = "            Ambient: ";
+				lString += (float)ambient.mRed;
+				lString += " (red), ";
+				lString += (float)ambient.mGreen;
+				lString += " (green), ";
+				lString += (float)ambient.mBlue;
+				lString += " (blue), ";
+				lString += "";
+				lString += "\n\n";
+				FBXSDK_printf(lString);
+
+				lString = nullptr;
+				lString = "            Diffuse: ";
+				lString += (float)diffuse.mRed;
+				lString += " (red), ";
+				lString += (float)diffuse.mGreen;
+				lString += " (green), ";
+				lString += (float)diffuse.mBlue;
+				lString += " (blue), ";
+				lString += "";
+				lString += "\n\n";
+				FBXSDK_printf(lString);
+
+
+				lString = nullptr;
+				lString = "            Emissive: ";
+				lString += (float)emissive.mRed;
+				lString += " (red), ";
+				lString += (float)emissive.mGreen;
+				lString += " (green), ";
+				lString += (float)emissive.mBlue;
+				lString += " (blue), ";
+				lString += "";
+				lString += "\n\n";
+				FBXSDK_printf(lString);
+
+				lString = nullptr;
+				FbxString lFloatValue = (float)transparency;
+				lFloatValue = transparency <= -HUGE_VAL ? "-INFINITY" : lFloatValue.Buffer();
+				lFloatValue = transparency >= HUGE_VAL ? "INFINITY" : lFloatValue.Buffer();
+				lString = "            Opacity: ";
+				lString += lFloatValue;
+				lString += "";
+				lString += "\n\n";
+				FBXSDK_printf(lString);
+
+			}
 		}
 		getchar();
+
+		//File Texture path from Material
 
 		//Custom Creation
 		size_t len = strlen(meshName);
@@ -178,8 +229,8 @@ void Converter::exportFile(FbxNode* currentNode)
 
 		outfile.close();*/
 
-		delete[] vertices;
-		//delete[] ret;
+		delete vertices;
+		//delete ret;
 	}
 	else
 	{
