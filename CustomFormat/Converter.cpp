@@ -1,8 +1,9 @@
 #include "Converter.h"
-#include <fstream>
-#include <iostream>
 #include "MeshStructs.h"
+#include <fstream>
 #include <vector>
+
+#pragma warning(disable : 4996)
 
 Converter::Converter()
 {
@@ -11,17 +12,30 @@ Converter::Converter()
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+	this->meshName = "mesh.fbx";
 
+}
+
+Converter::Converter(const char * fileName)
+{
+	manager = FbxManager::Create();
+	settings = FbxIOSettings::Create(manager, IOSROOT);
+	manager->SetIOSettings(settings);
+	ourScene = FbxScene::Create(manager, "");
+	importer = FbxImporter::Create(manager, "");
+	this->meshName = fileName;
 }
 
 Converter::~Converter()
 {
+	ourScene->Destroy();
+	settings->Destroy();
 	manager->Destroy();
 }
 
-void Converter::importMesh(const char* filename)
+void Converter::importMesh()
 {
-	if (!importer->Initialize(filename, -1, manager->GetIOSettings()))
+	if (!importer->Initialize(meshName, -1, manager->GetIOSettings()))
 	{
 		printf("Call to fbximporter::initialize failed.\n");
 		printf("Error returned: %s\n\n", importer->GetStatus().GetErrorString());
@@ -40,8 +54,31 @@ void Converter::importMesh(const char* filename)
 void Converter::exportFile(FbxNode* currentNode)
 {
 	child = currentNode->GetChild(0);
-	printf("Node: %s", currentNode->GetName());
-	
+	printf("Node: %s\n", currentNode->GetName());
+
+	int materialCount = child->GetMaterialCount();
+	std::cout << "Material count: " << materialCount << std::endl << std::endl;
+
+	FbxPropertyT<FbxDouble3> lKFbxDouble3;
+	FbxColor color;
+	if (materialCount > 0)
+	{
+		for (int mat = 0; mat < materialCount; mat++)
+		{
+			FbxSurfaceMaterial *material = child->GetMaterial(mat);
+			std::cout << "Material name: " << material->GetName() << std::endl;
+			FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
+
+			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
+			{
+				lKFbxDouble3 = ((FbxSurfaceLambert*)lMaterial)->Ambient;
+
+			}
+		}
+	}
+
+	getchar();
+
 	mesh = child->GetMesh();
 	
 	if (mesh)
@@ -54,7 +91,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		Counter counter;
 		counter.vertexCount = polygonCount * 3;
 
-		Vertex *vertices = new Vertex[counter.vertexCount];
+		Vertex* vertices = new Vertex[counter.vertexCount];
 
 		std::vector<FbxVector4> pos;
 		std::vector<FbxVector4> norm;
@@ -82,37 +119,84 @@ void Converter::exportFile(FbxNode* currentNode)
 				//UVs
 				FbxStringList uvSetNamesList;
 				mesh->GetUVSetNames(uvSetNamesList);
-
 				const char* uvNames = uvSetNamesList.GetStringAt(0);
-
 				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
-			
 				uv.push_back(tempUv);
 
-				printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-				printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-				printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+				//Material
 
-				vertices[i].x = pos[i][0];
-				vertices[i].y = pos[i][1];
-				vertices[i].z = pos[i][2];
 
-				vertices[i].nx = norm[i][0];
-				vertices[i].ny = norm[i][1];
-				vertices[i].nz = norm[i][2];
+				//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
+				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
+				//printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
 
-				vertices[i].u = uv[i][0];
-				vertices[i].v = uv[i][1];
+				vertices[i].x = (float)pos[i][0];
+				vertices[i].y = (float)pos[i][1];
+				vertices[i].z = (float)pos[i][2];
+
+				vertices[i].nx = (float)norm[i][0];
+				vertices[i].ny = (float)norm[i][1];
+				vertices[i].nz = (float)norm[i][2];
+
+				vertices[i].u = (float)uv[i][0];
+				vertices[i].v = (float)uv[i][1];
 
 				i++;
 			}
 		}
 
-		std::ofstream outfile("testt.leap", std::ofstream::binary);
+		//Material & Texture
+
+		//Attached the mesh's material to ourMaterial
+		FbxSurfaceLambert* ourMaterial = child->GetSrcObject<FbxSurfaceLambert>(0);
+		if (ourMaterial)
+		{
+			FBXSDK_printf("Found Material!\n");
+		}
+		else
+		{
+			FBXSDK_printf("Error: Material missing\n");
+		}
+		getchar();
+
+		//Custom Creation
+		size_t len = strlen(meshName);
+		/*size_t len = strlen(meshName);
+		char* ret = new char[len + 2];
+		strcpy(ret, meshName);
+		ret[len - 3] = 'l';
+		ret[len - 2] = 'e';
+		ret[len - 1] = 'a';
+		ret[len] = 'p';
+		ret[len + 1] = '\0';
+		meshName = ret;
+
+		std::ofstream outfile(meshName, std::ofstream::binary);
 
 		outfile.write((const char*)&counter, sizeof(Counter));
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 
-		outfile.close();
+		outfile.close();*/
+
+		delete[] vertices;
+		//delete[] ret;
+	}
+	else
+	{
+		printf("Access violation: Mesh not found\n\n");
+		exit(-2);
 	}
 }
+
+/*
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+
+int main()
+{
+std::ifstream src("C:/Users/Elin/Downloads/Colors.png", std::ios::binary);
+std::ofstream dst("C:/Users/Elin/Desktop/NewColors.png", std::ios::binary);
+dst << src.rdbuf();
+}
+*/

@@ -1,0 +1,26 @@
+#include "CustomImporter.h"
+
+//#pragma comment(lib, "Format Importer.lib")
+
+int main()
+{
+	CustomImporter importer;
+
+	Mesh* mesh = importer.getMesh("Snowman.leap");
+
+	int vertexCount = mesh->getVertexCount();
+
+	printf("%d\n", vertexCount);
+
+	for (int i = 0; i < vertexCount; i++)
+	{
+		printf("Vertex: %d \nPositions: %f %f %f\n", i, mesh->vertices[i].x, mesh->vertices[i].y, mesh->vertices[i].z);
+		printf("Normals: %f %f %f\n", mesh->vertices[i].nx, mesh->vertices[i].ny, mesh->vertices[i].nz);
+		printf("UVs: %f %f\n\n", mesh->vertices[i].u, mesh->vertices[i].v);
+	}
+
+	getchar();
+	//delete(mesh);
+	//importer.deleteObject(mesh);
+	return 0;
+}

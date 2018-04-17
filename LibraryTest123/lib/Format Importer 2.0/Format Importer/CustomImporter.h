@@ -14,10 +14,10 @@ public:
 	CustomImporter();
 	~CustomImporter();
 
-	Mesh* getMesh(const std::string& meshName);
-	Camera* getCamera(const std::string& cameraName);
-	Light* getLight(const std::string& lightName);
-	Material* getMaterial(const std::string& materialName);
+	Mesh* getMesh(const char* meshName);
+	Camera* getCamera(const char* cameraName);
+	Light* getLight(const char* lightName);
+	Material* getMaterial(const char* materialName);
 
 	void deleteObject(Mesh* mesh);
 	void deleteObject(Camera* camera);
