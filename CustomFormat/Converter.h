@@ -15,8 +15,10 @@ public:
 	void exportFile(FbxNode* currentNode);
 
 private:
+	void loadGlobaltransform();
 	void loadVertex();
 	void loadMaterial();
+	void loadCameras();
 	void createCustomFile();
 
 	FbxManager * manager;
@@ -25,6 +27,7 @@ private:
 	FbxImporter* importer;
 
 	Counter counter;
+	MeshInfo* meshInfo;
 	Vertex* vertices;
 	MaterialInformation* matInfo;
 
