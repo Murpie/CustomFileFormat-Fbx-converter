@@ -19,7 +19,6 @@ Converter::Converter(const char * fileName)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
-	delete meshInfo;
 	delete vertices;
 	delete matInfo;
 	delete ret;
@@ -45,18 +44,28 @@ void Converter::importMesh()
 	rootNode = ourScene->GetRootNode();
 
 	exportFile(rootNode);
+
+	if (rootNode->GetChildCount() > 0)
+	{
+		for (int i = 0; i < rootNode->GetChildCount(); i++)
+		{
+			exportFile(rootNode->GetChild(i));
+		}
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
-	child = currentNode->GetChild(0);
+	//child = currentNode->GetChild(0);
 	printf("Node: %s\n", currentNode->GetName());
 
-	loadGlobaltransform();
+	loadGlobaltransform(currentNode);
 	
-	mesh = child->GetMesh();
+	mesh = currentNode->GetMesh();
+	light = currentNode->GetLight();
+	camera = currentNode->GetCamera();
 	
-	if (mesh)
+	if (currentNode)
 	{
 		//Load in Vertex data
 		//loadVertex();
@@ -65,36 +74,49 @@ void Converter::exportFile(FbxNode* currentNode)
 		//loadMaterial();
 
 		//Load Cameras
-		loadCameras();
+		if (camera)
+		{
+			loadCamera(camera);
+		}
+
+		//Load Lights
+		if (light)
+		{
+			loadLights(light);
+		}
 
 		//Create the Custom File
 		//createCustomFile();
 	}
 	else
 	{
-		printf("Access violation: Mesh not found\n\n");
+		printf("Access violation: Node not found\n\n");
 		exit(-2);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadGlobaltransform()
+void Converter::loadGlobaltransform(FbxNode* currentNode)
 {
 	meshInfo = new MeshInfo[1];						//There will always just be a single mesh, for now
 
-	FbxDouble3 tempTranslation = child->LclTranslation.Get();
-	FbxDouble3 tempRotation = child->LclRotation.Get();
-	FbxDouble3 tempScaling = child->LclScaling.Get();
-
-	for (int i = 0; i < COLOR_RANGE; i++)
+	if (meshInfo)
 	{
-		meshInfo->globalTranslation[i] = tempTranslation[i];
-		meshInfo->globalRotation[i] = tempRotation[i];
-		meshInfo->globalScaling[i] = tempScaling[i];
-	}
+		FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+		FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+		FbxDouble3 tempScaling = currentNode->LclScaling.Get();
 
-	FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
-	FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-	FBXSDK_printf("Scaling: %f %f %f\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+		for (int i = 0; i < COLOR_RANGE; i++)
+		{
+			meshInfo->globalTranslation[i] = tempTranslation[i];
+			meshInfo->globalRotation[i] = tempRotation[i];
+			meshInfo->globalScaling[i] = tempScaling[i];
+		}
+
+		FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+		FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+		FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+	}
+	delete meshInfo;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadVertex()
@@ -283,14 +305,11 @@ void Converter::loadMaterial()
 	matInfo->opacity = (float)transparency;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadCameras()
+void Converter::loadCamera(FbxCamera* currentNode)
 {
-	const FbxArray<FbxNode*> cameraArray;
-
 	FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
 	FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
 	FbxString currentCameraName = globalSettings.GetDefaultCamera();
-
 
 	if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
 	{
@@ -316,25 +335,29 @@ void Converter::loadCameras()
 
 	if (camera)
 	{
-		position = camera->Position.Get();
-		upVector = camera->UpVector.Get();
-		forwardVector = camera->InterestPosition.Get();
-		roll = camera->Roll.Get();
-		aspectWidth = camera->AspectWidth.Get();
-		aspectHeight = camera->AspectHeight.Get();
-		fov = camera->FieldOfView.Get();
-		nearPlane = camera->NearPlane.Get();
-		farPlane = camera->FarPlane.Get();
+		position = currentNode->Position.Get();
+		upVector = currentNode->UpVector.Get();
+		forwardVector = currentNode->InterestPosition.Get();
+		roll = currentNode->Roll.Get();
+		aspectWidth = currentNode->AspectWidth.Get();
+		aspectHeight = currentNode->AspectHeight.Get();
+		fov = currentNode->FieldOfView.Get();
+		nearPlane = currentNode->NearPlane.Get();
+		farPlane = currentNode->FarPlane.Get();
 
-		FBXSDK_printf("\n\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+		FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
 		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
 		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
 		FBXSDK_printf("\tRoll: %.2f\n", roll);
 		FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
 		FBXSDK_printf("\tField of View: %.f\n", fov);
-		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n", nearPlane, farPlane);
-		getchar();
+		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
 	}
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadLights(FbxLight* currentLight)
+{
+	FBXSDK_printf("%s", currentLight->GetName());
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
