@@ -1,5 +1,6 @@
 #include "Converter.h"
 #include "MeshStructs.h"
+#include <fbxsdk\core\base\fbxtime.h>
 #include <fstream>
 #include <vector>
 
@@ -17,7 +18,6 @@ Converter::Converter()
 	scene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = "mesh.fbx";
-
 }
 
 Converter::Converter(const char * fileName)
@@ -28,6 +28,7 @@ Converter::Converter(const char * fileName)
 	scene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
+
 }
 
 Converter::~Converter()
@@ -101,12 +102,11 @@ void Converter::exportFile(FbxNode* currentNode)
 		std::vector<FbxVector4> pos;
 		std::vector<FbxVector4> norm;
 		std::vector<FbxVector2> uv;
-		FbxVector4 temp;
-		FbxVector2 tempUv;
+		FbxVector4 tempNorm;
+		FbxVector2 tempUV;
 	
 
 		bool ItIsFalse = false;
-
 		printf("\nMesh: %s\n", child->GetName());
 
 		int i = 0;
@@ -118,22 +118,15 @@ void Converter::exportFile(FbxNode* currentNode)
 				pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
 				//Normals
-				mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
-				norm.push_back(temp);
+				mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, tempNorm);
+				norm.push_back(tempNorm);
 
 				//UVs
 				FbxStringList uvSetNamesList;
 				mesh->GetUVSetNames(uvSetNamesList);
 				const char* uvNames = uvSetNamesList.GetStringAt(0);
-				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
-				uv.push_back(tempUv);
-
-				//Material
-
-
-				//printf("Vertex[%d]: %f %f %f\n", i, pos[i][0], pos[i][1], pos[i][2]);
-				//printf("Normal[%d]: %f %f %f\n", i, norm[i][0], norm[i][1], norm[i][2]);
-				//printf("UV[%d]:     %f %f\n\n", i, uv[i][0], uv[i][1]);
+				mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUV, ItIsFalse);
+				uv.push_back(tempUV);
 
 				vertices[i].x = (float)pos[i][0];
 				vertices[i].y = (float)pos[i][1];
@@ -166,7 +159,6 @@ void Converter::exportFile(FbxNode* currentNode)
 
 		//Custom Creation
 		size_t len = strlen(meshName);
-		/*size_t len = strlen(meshName);
 		char* ret = new char[len + 2];
 		strcpy(ret, meshName);
 		ret[len - 3] = 'l';
@@ -181,7 +173,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		outfile.write((const char*)&counter, sizeof(Counter));
 		outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 
-		outfile.close();*/
+		outfile.close();
 
 		delete[] vertices;
 		//delete[] ret;
@@ -195,8 +187,11 @@ void Converter::exportFile(FbxNode* currentNode)
 
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
+	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{
+		//AnimStack: The Animation stack is a collection of animation layers.
+		//GetSrcObject: Returns the source object with which this object connects at the specified index.
 		FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>(i);
 
 		FbxString outputString = "Animation Stack Name: ";
@@ -204,6 +199,8 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		outputString += "\n";
 		FBXSDK_printf(outputString);
 
+		//AnimLayer: The animation layer is a collection of animation curve nodes. 
+		//GetMemberCount: Returns the number of objects contained within the collection.
 		int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
 		outputString = "   contains ";
 		if (animLayers == 0)
@@ -217,6 +214,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 
 		for (int j = 0; j < animLayers; j++)
 		{
+			//GetMember: Returns the member of the collection at the given index. 
 			FbxAnimLayer* currentAnimLayer = animStack->GetMember<FbxAnimLayer>(j);
 			outputString = "Current Animation Layer: ";
 			outputString += j;
@@ -233,9 +231,9 @@ void getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 	int modelCount;
 	FbxString outputString;
 
-	outputString = "   Node Name: ";
+	outputString = "   Node/Joint Name: ";
 	outputString += node->GetName();
-	outputString += "\n\n";
+	outputString += "\n";
 	FBXSDK_printf(outputString);
 
 	getAnimationChannels(node, animLayer);
@@ -249,34 +247,64 @@ void getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 
 void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 {
+	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
 	FbxAnimCurve* animCurve = NULL;
 
+	//LclTranslation: This property contains the translation information of the node. 
 	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
 	{
 		FBXSDK_printf("   TX\n");
 		displayCurveKeys(animCurve);
 	}
-
+	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	if (animCurve)
+	{
+		FBXSDK_printf("   TY\n");
+		displayCurveKeys(animCurve);
+	}
+	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	if (animCurve)
+	{
+		FBXSDK_printf("   TZ\n");
+		displayCurveKeys(animCurve);
+	}
+	//----------------------------------------------------------------------------------
 	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
 	{
 		FBXSDK_printf("   RX\n");
 		displayCurveKeys(animCurve);
 	}
+	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	if (animCurve)
+	{
+		FBXSDK_printf("   RY\n");
+		displayCurveKeys(animCurve);
+	}
+	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	if (animCurve)
+	{
+		FBXSDK_printf("   RZ\n");
+		displayCurveKeys(animCurve);
+	}
 }
 
 void displayCurveKeys(FbxAnimCurve* curve)
 {
+	//FbxTime: Class to encapsulate time units, is just used to represent a moment. Can measure time in hour, minute, second, frame, field, residual and also combination of these units.
 	FbxTime keyTime;
 	float keyValue;
 	char timeString[256];
 	FbxString outputString;
+	//KeyGetCount: Get the number of keys.
 	int keyCount = curve->KeyGetCount();
 
 	for (int i = 0; i < keyCount; i++)
 	{
+		//Get key value depending on current curve and LclRotation/Translation/Scale and FBXSDK_CURVENODE_COMPONENT_??
 		keyValue = static_cast<float>(curve->KeyGetValue(i));
+		//KeyGetTime: Returns key time (time at which this key is occurring). 
 		keyTime = curve->KeyGetTime(i);
 
 		outputString = "      Key Time: ";
@@ -287,15 +315,3 @@ void displayCurveKeys(FbxAnimCurve* curve)
 		FBXSDK_printf(outputString);
 	}
 }
-/*
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-
-int main()
-{
-std::ifstream src("C:/Users/Elin/Downloads/Colors.png", std::ios::binary);
-std::ofstream dst("C:/Users/Elin/Desktop/NewColors.png", std::ios::binary);
-dst << src.rdbuf();
-}
-*/
