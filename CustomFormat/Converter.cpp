@@ -16,7 +16,7 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
 }
-//-----------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
 	delete meshInfo;
@@ -59,16 +59,16 @@ void Converter::exportFile(FbxNode* currentNode)
 	if (mesh)
 	{
 		//Load in Vertex data
-		loadVertex();
+		//loadVertex();
 
 		//Load Material & Texture File information
-		loadMaterial();
+		//loadMaterial();
 
 		//Load Cameras
-		//loadCameras();
+		loadCameras();
 
 		//Create the Custom File
-		createCustomFile();
+		//createCustomFile();
 	}
 	else
 	{
@@ -186,7 +186,7 @@ void Converter::loadMaterial()
 				transparency = ((FbxSurfaceLambert*)lMaterial)->TransparencyFactor;
 			}
 
-			FbxString lString;
+			lString = nullptr;
 			lString = "            Ambient: ";
 			lString += (float)ambient.mRed;
 			lString += " (red), ";
@@ -285,13 +285,55 @@ void Converter::loadMaterial()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCameras()
 {
+	const FbxArray<FbxNode*> cameraArray;
+
 	FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
 	FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
 	FbxString currentCameraName = globalSettings.GetDefaultCamera();
 
+
 	if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
 	{
-		globalCameraSettings.GetCameraProducerPerspective();
+		camera = globalCameraSettings.GetCameraProducerPerspective();
+	}
+	else
+	{
+		FbxNode* cameraNode = ourScene->FindNodeByName(currentCameraName);
+		if (cameraNode)
+		{
+			camera = cameraNode->GetCamera();
+		}
+	}
+
+	FbxVector4 position;
+	FbxVector4 upVector;
+	FbxVector4 forwardVector;
+	float roll;
+	
+	float aspectWidth, aspectHeight;
+	float fov;
+	float nearPlane, farPlane;
+
+	if (camera)
+	{
+		position = camera->Position.Get();
+		upVector = camera->UpVector.Get();
+		forwardVector = camera->InterestPosition.Get();
+		roll = camera->Roll.Get();
+		aspectWidth = camera->AspectWidth.Get();
+		aspectHeight = camera->AspectHeight.Get();
+		fov = camera->FieldOfView.Get();
+		nearPlane = camera->NearPlane.Get();
+		farPlane = camera->FarPlane.Get();
+
+		FBXSDK_printf("\n\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
+		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
+		FBXSDK_printf("\tRoll: %.2f\n", roll);
+		FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
+		FBXSDK_printf("\tField of View: %.f\n", fov);
+		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n", nearPlane, farPlane);
+		getchar();
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------

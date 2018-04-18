@@ -35,6 +35,8 @@ private:
 	FbxNode* rootNode;
 	FbxNode* child;
 	FbxMesh* mesh;
+	FbxCamera* camera;
+	FbxString lString;;
 
 	int polygonCount;
 	int polygonSize;
