@@ -13,6 +13,12 @@ struct Counter
 	unsigned int meshType;
 };
 
+struct MeshInfo {
+	float globalTranslation[3];
+	float globalRotation[3];
+	float globalScaling[3];
+};
+
 struct Vertex {
 	float x, y, z;
 	float nx, ny, nz;
@@ -25,7 +31,7 @@ struct MaterialInformation {
 	float ambient[3];
 	float diffuse[3];
 	float emissive[3];
-	float opacity[3];
+	float opacity;
 	char* textureFilePath[100];
 };
 
