@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh.h"
+#include "LeapMesh.h"
 #include <vector>
 #include <iostream>
 
@@ -11,7 +11,7 @@ public:
 	LeapImporter();
 	~LeapImporter();
 
-	Mesh* getMesh(const char* meshName);
+	LeapMesh* getMesh(const char* meshName);
 
-	void deleteObject(Mesh* mesh);
+	void deleteObject(LeapMesh* mesh);
 };

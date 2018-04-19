@@ -6,19 +6,20 @@
 
 using namespace std;
 
-class Mesh
+class LeapMesh
 {
 private:
 	void loader(const char* fileName);
 
 public:
-	Mesh();
-	Mesh(const char* fileName);
-	~Mesh();
+	LeapMesh();
+	LeapMesh(const char* fileName);
+	~LeapMesh();
 
 	int getVertexCount();
 
-	Vertex* vertices;
+	VertexInformation* vertices;
+	
 	Counter counterReader;
 
 	/*vector <BoundingBox> boundingBoxes;

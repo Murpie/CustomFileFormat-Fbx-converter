@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LeapImporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MeshStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LeapMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Mesh.cpp">
+    <ClCompile Include="LeapImporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LeapImporter.cpp">
+    <ClCompile Include="LeapMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
