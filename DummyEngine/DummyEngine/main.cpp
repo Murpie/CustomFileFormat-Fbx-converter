@@ -1,10 +1,8 @@
-#include "CustomImporter.h"
-
-//#pragma comment(lib, "Format Importer.lib")
+#include "LeapImporter.h"
 
 int main()
 {
-	CustomImporter importer;
+	LeapImporter importer;
 
 	Mesh* mesh = importer.getMesh("Snowman.leap");
 
@@ -20,7 +18,6 @@ int main()
 	}
 
 	getchar();
-	//delete(mesh);
-	//importer.deleteObject(mesh);
+	importer.deleteObject(mesh);
 	return 0;
 }

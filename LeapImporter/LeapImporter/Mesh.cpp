@@ -20,19 +20,19 @@ int Mesh::getVertexCount()
 
 void Mesh::loader(const char* fileName)
 {
-	vertices = new Vertex[counterReader.vertexCount];
 	
 	std::ifstream infile(fileName, std::ifstream::binary);
 
-	/*Animation aTemp;
-	this->animations.push_back(aTemp);*/
+	infile.read((char*)&counterReader, sizeof(Counter));
+	
+	vertices = new Vertex[counterReader.vertexCount];
+
+	infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
 
 	if (infile.is_open())
 	{
-		infile.read((char*)&counterReader, sizeof(Counter));
-		infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
-		infile.read((char*)customMeshType, sizeof(CustomMayaAttributes));
 		infile.close();
 	}
 
+	return;
 }

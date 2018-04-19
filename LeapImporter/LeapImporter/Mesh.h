@@ -9,7 +9,7 @@ using namespace std;
 class Mesh
 {
 private:
-	void loader(const char* fileName); 
+	void loader(const char* fileName);
 
 public:
 	Mesh();
@@ -17,13 +17,13 @@ public:
 	~Mesh();
 
 	int getVertexCount();
-	
+
 	Vertex* vertices;
-	vector <BoundingBox> boundingBoxes;
+	Counter counterReader;
+
+	/*vector <BoundingBox> boundingBoxes;
 	vector <Joint> joints;
 	vector <Animation> animations;
 	vector <BlendShape> blendShapes;
-	vector <Group> group;
-	Counter counterReader;
-	CustomMayaAttributes* customMeshType;
+	vector <Group> group;*/
 };
