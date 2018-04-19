@@ -15,10 +15,11 @@ public:
 	void exportFile(FbxNode* currentNode);
 
 private:
-	void loadGlobaltransform();
-	void loadVertex();
-	void loadMaterial();
-	void loadCameras();
+	void loadGlobaltransform(FbxNode* currentNode);
+	void loadVertex(FbxMesh* currentMesh);
+	void loadMaterial(FbxNode* currentNode);
+	void loadCamera(FbxCamera* currentNode);
+	void loadLights(FbxLight* currentLight);
 	void createCustomFile();
 
 	FbxManager * manager;
@@ -35,6 +36,9 @@ private:
 	FbxNode* rootNode;
 	FbxNode* child;
 	FbxMesh* mesh;
+	FbxLight* light;
+	FbxCamera* camera;
+	FbxString lString;;
 
 	int polygonCount;
 	int polygonSize;
