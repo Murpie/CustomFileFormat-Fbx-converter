@@ -19,7 +19,17 @@ public:
 	int getVertexCount();
 
 	VertexInformation* vertices;
-	
+	MeshInfo* transform;
+	MaterialInformation* material;
+	BoundingBox* BBox;
+	BoundingBoxVertex* BBoxVertices;
+	JointInformation* joints;
+	AnimationInformation* animation;
+	KeyFrame* keyFrame;
+	KeyFrameData* keyFrameData;
+	BlendShape* blendShape;
+	BlendShapeVertex* blendShapeVertices;
+	Group* group;
 	Counter counterReader;
 
 	/*vector <BoundingBox> boundingBoxes;
