@@ -52,12 +52,14 @@ void Converter::importMesh()
 			exportFile(rootNode->GetChild(i));
 		}
 	}
+
+	//Create the Custom File
+	createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
-	//child = currentNode->GetChild(0);
-	printf("Node: %s\n", currentNode->GetName());
+	printf("\nNode: %s\n", currentNode->GetName());
 
 	loadGlobaltransform(currentNode);
 	
@@ -68,10 +70,16 @@ void Converter::exportFile(FbxNode* currentNode)
 	if (currentNode)
 	{
 		//Load in Vertex data
-		//loadVertex();
+		if (mesh)
+		{
+			loadVertex(mesh);
+		}
 
 		//Load Material & Texture File information
-		//loadMaterial();
+		if (mesh)
+		{
+			loadMaterial(currentNode);
+		}
 
 		//Load Cameras
 		if (camera)
@@ -84,9 +92,6 @@ void Converter::exportFile(FbxNode* currentNode)
 		{
 			loadLights(light);
 		}
-
-		//Create the Custom File
-		//createCustomFile();
 	}
 	else
 	{
@@ -119,12 +124,12 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 	delete meshInfo;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadVertex()
+void Converter::loadVertex(FbxMesh* currentMesh)
 {
-	polygonCount = mesh->GetPolygonCount();
+	polygonCount = currentMesh->GetPolygonCount();
 
 	//Vertices
-	controlPoints = mesh->GetControlPoints();
+	controlPoints = currentMesh->GetControlPoints();
 
 	counter.vertexCount = polygonCount * 3;
 
@@ -138,25 +143,23 @@ void Converter::loadVertex()
 
 	bool ItIsFalse = false;
 
-	printf("\nMesh: %s\n", child->GetName());
-
 	int i = 0;
 	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 	{
-		for (int vertexIndex = 0; vertexIndex < mesh->GetPolygonSize(polygonIndex); vertexIndex++)
+		for (int vertexIndex = 0; vertexIndex < currentMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
 			//Positions
-			pos.push_back(controlPoints[mesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			pos.push_back(controlPoints[currentMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
 			//Normals
-			mesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
+			currentMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
 			norm.push_back(temp);
 
 			//UVs
 			FbxStringList uvSetNamesList;
-			mesh->GetUVSetNames(uvSetNamesList);
+			currentMesh->GetUVSetNames(uvSetNamesList);
 			const char* uvNames = uvSetNamesList.GetStringAt(0);
-			mesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
+			currentMesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
 			uv.push_back(tempUv);
 
 			vertices[i].x = (float)pos[i][0];
@@ -170,15 +173,19 @@ void Converter::loadVertex()
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
+			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+
 			i++;
 		}
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadMaterial()
+void Converter::loadMaterial(FbxNode* currentNode)
 {
 	//Material & Texture
-	int materialCount = child->GetMaterialCount();
+	int materialCount = currentNode->GetMaterialCount();
 
 	//Material attributes
 	FbxPropertyT<FbxDouble3> lKFbxDouble3;
@@ -191,7 +198,7 @@ void Converter::loadMaterial()
 	{
 		for (int mat = 0; mat < materialCount; mat++)
 		{
-			FbxSurfaceMaterial *lMaterial = child->GetMaterial(mat);
+			FbxSurfaceMaterial *lMaterial = currentNode->GetMaterial(mat);
 			std::cout << "\nMaterial name: " << lMaterial->GetName() << std::endl << std::endl;
 
 			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
@@ -357,7 +364,33 @@ void Converter::loadCamera(FbxCamera* currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
 {
-	FBXSDK_printf("%s", currentLight->GetName());
+	FbxString lightType = currentLight->LightType.Get();
+	FbxDouble3 lightColor = currentLight->Color.Get();
+	FbxFloat intensity = currentLight->Intensity.Get();
+	FbxFloat innerCone = currentLight->InnerAngle.Get();
+	FbxFloat outerCone = currentLight->OuterAngle.Get();
+
+	if (lightType == "0")
+	{
+		FBXSDK_printf("\tLight Type: Point Light\n");
+	}
+	else if(lightType == "1")
+	{
+		FBXSDK_printf("\tLight Type: Directional Light\n");
+	}
+	else if(lightType == "2")
+	{
+		FBXSDK_printf("\tLight Type: Spotlight\n");
+	}
+
+	FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
+	FBXSDK_printf("\tIntensity: %.2f\n", intensity);
+
+	if (lightType == "2")
+	{
+		FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
+		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
@@ -376,8 +409,8 @@ void Converter::createCustomFile()
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-	outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	outfile.close();
 

@@ -16,8 +16,8 @@ public:
 
 private:
 	void loadGlobaltransform(FbxNode* currentNode);
-	void loadVertex();
-	void loadMaterial();
+	void loadVertex(FbxMesh* currentMesh);
+	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void createCustomFile();
