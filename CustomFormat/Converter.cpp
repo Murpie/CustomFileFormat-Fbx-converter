@@ -81,6 +81,12 @@ void Converter::exportFile(FbxNode* currentNode)
 			loadMaterial(currentNode);
 		}
 
+		//Load Maya Custom Attributes
+		if (mesh)
+		{
+			loadCustomMayaAttrbutes(currentNode);
+		}
+
 		//Load Cameras
 		if (camera)
 		{
@@ -392,6 +398,25 @@ void Converter::loadLights(FbxLight* currentLight)
 		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
 	}
 }
+void Converter::loadCustomMayaAttrbutes(FbxNode * currentNode)
+{
+	customMayaAttribute = new CustomMayaAttributes[1];
+
+	int attributeValue = -1;
+	std::string attributeName = "";
+
+	FbxProperty prop = currentNode->FindProperty(CUSTOM_ATTRIBUTE, false);
+	if (prop.IsValid())
+	{
+		attributeName = prop.GetName();
+		attributeValue = prop.Get<int>();
+		
+		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
+		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
+
+		customMayaAttribute->meshType = attributeValue;
+	}
+}
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
@@ -411,6 +436,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
 
 	outfile.close();
 

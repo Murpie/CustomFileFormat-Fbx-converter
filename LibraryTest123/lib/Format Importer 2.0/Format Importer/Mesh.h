@@ -25,4 +25,5 @@ public:
 	vector <BlendShape> blendShapes;
 	vector <Group> group;
 	Counter counterReader;
+	CustomMayaAttributes* customMeshType;
 };

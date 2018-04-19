@@ -31,6 +31,7 @@ void Mesh::loader(const char* fileName)
 	{
 		infile.read((char*)&counterReader, sizeof(Counter));
 		infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
+		infile.read((char*)customMeshType, sizeof(CustomMayaAttributes));
 		infile.close();
 	}
 

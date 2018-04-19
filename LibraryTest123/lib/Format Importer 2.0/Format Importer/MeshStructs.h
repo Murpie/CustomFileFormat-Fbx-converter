@@ -76,3 +76,7 @@ struct Group {
 	char groupName[100];
 	char parentName[100];
 };
+
+struct CustomMayaAttributes {
+	int meshType;
+};
