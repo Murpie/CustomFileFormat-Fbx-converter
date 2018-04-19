@@ -8,16 +8,6 @@ void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
 void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
 void displayCurveKeys(FbxAnimCurve* curve);
 
-Converter::Converter()
-{
-	manager = FbxManager::Create();
-	settings = FbxIOSettings::Create(manager, IOSROOT);
-	manager->SetIOSettings(settings);
-	scene = FbxScene::Create(manager, "");
-	importer = FbxImporter::Create(manager, "");
-	this->meshName = "mesh.fbx";
-}
-
 #define COLOR_RANGE 3
 #define UV_RANGE 2
 
@@ -26,7 +16,7 @@ Converter::Converter(const char * fileName)
 	manager = FbxManager::Create();
 	settings = FbxIOSettings::Create(manager, IOSROOT);
 	manager->SetIOSettings(settings);
-	scene = FbxScene::Create(manager, "");
+	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
 
@@ -58,6 +48,7 @@ void Converter::importMesh()
 
 	rootNode = ourScene->GetRootNode();
 
+	/*
 	exportFile(rootNode);
 
 	if (rootNode->GetChildCount() > 0)
@@ -67,12 +58,11 @@ void Converter::importMesh()
 			exportFile(rootNode->GetChild(i));
 		}
 	}
-	exportAnimation(scene, rootNode);
-	//exportFile(rootNode);
-}
+	*/
+	exportAnimation(ourScene, rootNode);
 
 	//Create the Custom File
-	createCustomFile();
+	//createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -430,7 +420,14 @@ void Converter::createCustomFile()
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
-		outfile.close();
+	outfile.close();
+
+	if (textureCount != 0)
+	{
+		std::ifstream src(textureName, std::ios::binary);
+		std::ofstream dst("NewColors.png", std::ios::binary);
+		dst << src.rdbuf();
+	}
 }
 
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
@@ -444,6 +441,10 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 
 		FbxString outputString = "Animation Stack Name: ";
 		outputString += animStack->GetName();
+		
+		char animationName[sizeof(animStack->GetName())];
+		animationName = animStack->GetName();
+
 		outputString += "\n";
 		FBXSDK_printf(outputString);
 
@@ -548,13 +549,6 @@ void displayCurveKeys(FbxAnimCurve* curve)
 	//KeyGetCount: Get the number of keys.
 	int keyCount = curve->KeyGetCount();
 
-	if (textureCount != 0)
-	{
-		std::ifstream src(textureName, std::ios::binary);
-		std::ofstream dst("NewColors.png", std::ios::binary);
-		dst << src.rdbuf();
-	}
-}
 	for (int i = 0; i < keyCount; i++)
 	{
 		//Get key value depending on current curve and LclRotation/Translation/Scale and FBXSDK_CURVENODE_COMPONENT_??

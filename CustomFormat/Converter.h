@@ -25,13 +25,14 @@ private:
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
-	FbxScene* scene;
+	FbxScene* ourScene;
 	FbxImporter* importer;
 
 	Counter counter;
 	MeshInfo* meshInfo;
 	Vertex* vertices;
 	MaterialInformation* matInfo;
+	Animation* animation;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
