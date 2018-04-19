@@ -2,7 +2,7 @@
 
 #include <fbxsdk.h>
 #include <stdlib.h>
-#include <iostream>
+#include <iostream>   
 #include "MeshStructs.h"
 
 class Converter
@@ -47,5 +47,12 @@ private:
 	const char* meshName;
 	const char* textureName;
 	char* ret;
+
+	//
+	FbxMesh* bBoxMesh;
+	std::vector<BoundingBox> vBBox;
+	//BoundingBox bBox;
+	bool isPartOf(const char* nodeName);
+	void loadBbox(FbxNode* currentNode);
 };
 

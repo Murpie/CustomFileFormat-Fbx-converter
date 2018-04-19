@@ -15,6 +15,9 @@ Converter::Converter(const char * fileName)
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
 	this->meshName = fileName;
+
+	//
+	counter.boundingBoxCount = 0;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -26,6 +29,8 @@ Converter::~Converter()
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
+
+	vBBox.clear();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -49,7 +54,12 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			exportFile(rootNode->GetChild(i));
+			if (isPartOf(rootNode->GetChild(i)->GetName()))
+			{
+				loadBbox(rootNode->GetChild(i));
+			}
+			else
+				exportFile(rootNode->GetChild(i));
 		}
 	}
 
@@ -410,6 +420,10 @@ void Converter::createCustomFile()
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	for (int i = 0; i < vBBox.size(); i++)
+	{
+		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
+	}
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	outfile.close();
@@ -420,4 +434,95 @@ void Converter::createCustomFile()
 		std::ofstream dst("NewColors.png", std::ios::binary);
 		dst << src.rdbuf();
 	}
+}
+
+bool Converter::isPartOf(const char * nodeName)
+{
+	std::string nodeString;
+	&nodeString.assign(nodeName);
+	std::string findString = "_BBox";
+	std::size_t found = nodeString.find(findString);
+	
+	if (found != std::string::npos)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void Converter::loadBbox(FbxNode* currentNode)
+{
+	BoundingBox bBox;
+	bBoxMesh = currentNode->GetMesh();
+
+	int polyCount = bBoxMesh->GetPolygonCount();
+
+	//Vertex* vert = new Vertex[counter.vertexCount];
+	std::vector<Vertex> vert;
+	std::vector<FbxVector4> position;
+	FbxVector4 temp;
+	FbxVector2 tempUv;
+
+	bool ItIsFalse = false;
+
+	int i = 0;
+	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
+	{
+		for (int vertexIndex = 0; vertexIndex < bBoxMesh->GetPolygonSize(polygonIndex); vertexIndex++)
+		{
+			Vertex temp;
+			//Positions
+			position.push_back(controlPoints[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			
+			temp.x = (float)position[i][0];
+			temp.y = (float)position[i][1];
+			temp.z = (float)position[i][2];
+
+			vert.push_back(temp);
+
+			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
+
+			i++;
+		}
+	}
+
+	bBox.minVector[0] = vert[0].x;
+	bBox.minVector[1] = vert[0].y;
+	bBox.minVector[2] = vert[0].z;
+
+	bBox.maxVector[0] = vert[0].x;
+	bBox.maxVector[1] = vert[0].y;
+	bBox.maxVector[2] = vert[0].z;
+
+	for (int i = 1; i < vert.size(); i++)
+	{
+		//Min
+		if (bBox.minVector[0] > vert[i].x)
+			bBox.minVector[0] = vert[i].x;
+		if (bBox.minVector[1] > vert[i].y)
+			bBox.minVector[1] = vert[i].y;
+		if (bBox.minVector[2] > vert[i].z)
+			bBox.minVector[2] = vert[i].z;
+
+		//Max
+		if (bBox.maxVector[0] < vert[i].x)
+			bBox.maxVector[0] = vert[i].x;
+		if (bBox.maxVector[1] < vert[i].y)
+			bBox.maxVector[1] = vert[i].y;
+		if (bBox.maxVector[2] < vert[i].z)
+			bBox.maxVector[2] = vert[i].z;
+	}
+
+	//Center
+	bBox.center[0] = (bBox.minVector[0] + bBox.maxVector[0]) * 0.5f;
+	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
+	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
+
+	vBBox.push_back(bBox);
+
+	vert.clear();
+	position.clear();
+
+	counter.boundingBoxCount++;
 }
