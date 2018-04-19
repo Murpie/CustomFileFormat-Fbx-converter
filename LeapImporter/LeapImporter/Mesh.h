@@ -17,9 +17,11 @@ public:
 	~Mesh();
 
 	int getVertexCount();
+	int getMayaAttribute();
 
 	Vertex* vertices;
 	Counter counterReader;
+	CustomMayaAttributes* customMayaAttribute;
 
 	/*vector <BoundingBox> boundingBoxes;
 	vector <Joint> joints;

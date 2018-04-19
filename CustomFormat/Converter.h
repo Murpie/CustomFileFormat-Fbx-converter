@@ -23,7 +23,7 @@ private:
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
-	void loadCustomMayaAttrbutes(FbxNode* currentNode);
+	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void createCustomFile();
 
 	FbxManager * manager;

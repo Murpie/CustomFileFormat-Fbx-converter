@@ -1,6 +1,7 @@
 #include "Converter.h"
 #include <fstream>
 #include <vector>
+#include <string>
 
 #pragma warning(disable : 4996)
 
@@ -84,7 +85,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		//Load Maya Custom Attributes
 		if (mesh)
 		{
-			loadCustomMayaAttrbutes(currentNode);
+			loadCustomMayaAttributes(currentNode);
 		}
 
 		//Load Cameras
@@ -398,7 +399,8 @@ void Converter::loadLights(FbxLight* currentLight)
 		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
 	}
 }
-void Converter::loadCustomMayaAttrbutes(FbxNode * currentNode)
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
 	customMayaAttribute = new CustomMayaAttributes[1];
 
@@ -413,7 +415,6 @@ void Converter::loadCustomMayaAttrbutes(FbxNode * currentNode)
 		
 		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
 		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
-
 		customMayaAttribute->meshType = attributeValue;
 	}
 }
@@ -436,7 +437,9 @@ void Converter::createCustomFile()
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+	outfile.write((const char*)&customMayaAttribute->meshType, sizeof(CustomMayaAttributes));
+
+	std::cout << customMayaAttribute->meshType << std::endl;
 
 	outfile.close();
 

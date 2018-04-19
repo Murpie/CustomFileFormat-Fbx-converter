@@ -1,4 +1,6 @@
 #include "Mesh.h"
+#include <iostream>
+#include <string>
 
 Mesh::Mesh()
 {
@@ -18,6 +20,11 @@ int Mesh::getVertexCount()
 	return this->counterReader.vertexCount;
 }
 
+int Mesh::getMayaAttribute()
+{
+	return this->customMayaAttribute->meshType;
+}
+
 void Mesh::loader(const char* fileName)
 {
 	
@@ -28,6 +35,10 @@ void Mesh::loader(const char* fileName)
 	vertices = new Vertex[counterReader.vertexCount];
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(Vertex));
+
+	customMayaAttribute = new CustomMayaAttributes[1];
+
+	infile.read((char*)customMayaAttribute, sizeof(CustomMayaAttributes));
 
 	if (infile.is_open())
 	{

@@ -84,5 +84,5 @@ struct Group {
 };
 
 struct CustomMayaAttributes {
-	int meshType;
+	unsigned int meshType;
 };
