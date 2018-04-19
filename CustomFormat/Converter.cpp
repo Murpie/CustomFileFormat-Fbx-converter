@@ -4,10 +4,6 @@
 
 #pragma warning(disable : 4996)
 
-void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
-void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
-void displayCurveKeys(FbxAnimCurve* curve);
-
 #define COLOR_RANGE 3
 #define UV_RANGE 2
 
@@ -432,18 +428,25 @@ void Converter::createCustomFile()
 
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
+	animationInfo = new Animation[1];
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{
 		//AnimStack: The Animation stack is a collection of animation layers.
 		//GetSrcObject: Returns the source object with which this object connects at the specified index.
 		FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>(i);
-
 		FbxString outputString = "Animation Stack Name: ";
 		outputString += animStack->GetName();
-		
 		outputString += "\n";
 		FBXSDK_printf(outputString);
+		
+		const char* tempAnimName = animStack->GetInitialName();
+		std::cout << tempAnimName << std::endl;
+		for (int n = 0; n < sizeof(tempAnimName) + 4; n++)
+		{
+			animationInfo->animationName[n] = tempAnimName[n];
+			std::cout << animationInfo->animationName[n] << std::endl;
+		}
 
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
 		//GetMemberCount: Returns the number of objects contained within the collection.
@@ -472,7 +475,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 	}
 }
 
-void getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
+void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 {
 	int modelCount;
 	FbxString outputString;
@@ -491,7 +494,7 @@ void getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 	}
 }
 
-void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
+void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 {
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
 	FbxAnimCurve* animCurve = NULL;
@@ -536,7 +539,7 @@ void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	}
 }
 
-void displayCurveKeys(FbxAnimCurve* curve)
+void Converter::displayCurveKeys(FbxAnimCurve* curve)
 {
 	//FbxTime: Class to encapsulate time units, is just used to represent a moment. Can measure time in hour, minute, second, frame, field, residual and also combination of these units.
 	FbxTime keyTime;
@@ -545,6 +548,9 @@ void displayCurveKeys(FbxAnimCurve* curve)
 	FbxString outputString;
 	//KeyGetCount: Get the number of keys.
 	int keyCount = curve->KeyGetCount();
+	
+	animationInfo->keyFrameCount = keyCount;
+
 
 	for (int i = 0; i < keyCount; i++)
 	{
@@ -561,3 +567,10 @@ void displayCurveKeys(FbxAnimCurve* curve)
 		FBXSDK_printf(outputString);
 	}
 }
+
+void Converter::printInformation()
+{
+	std::cout << "Keyframe Count: " << animationInfo->keyFrameCount << std::endl;
+}
+
+

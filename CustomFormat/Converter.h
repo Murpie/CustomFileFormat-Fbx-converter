@@ -22,6 +22,10 @@ private:
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void createCustomFile();
+	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
+	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+	void displayCurveKeys(FbxAnimCurve* curve);
+	void printInformation();
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -32,7 +36,7 @@ private:
 	MeshInfo* meshInfo;
 	Vertex* vertices;
 	MaterialInformation* matInfo;
-	Animation* animation;
+	Animation* animationInfo;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
