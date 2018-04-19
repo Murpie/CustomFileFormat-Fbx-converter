@@ -442,9 +442,6 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		FbxString outputString = "Animation Stack Name: ";
 		outputString += animStack->GetName();
 		
-		char animationName[sizeof(animStack->GetName())];
-		animationName = animStack->GetName();
-
 		outputString += "\n";
 		FBXSDK_printf(outputString);
 
