@@ -18,7 +18,7 @@ int main()
 		printf("Normals: %f %f %f\n", mesh->vertices[i].nx, mesh->vertices[i].ny, mesh->vertices[i].nz);
 		printf("UVs: %f %f\n\n", mesh->vertices[i].u, mesh->vertices[i].v);
 	}
-	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute->meshType);
+	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
 	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute[0].meshType);
 
 	getchar();

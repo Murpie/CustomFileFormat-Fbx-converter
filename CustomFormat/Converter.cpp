@@ -15,6 +15,7 @@ Converter::Converter(const char * fileName)
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -404,7 +405,7 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
 	customMayaAttribute = new CustomMayaAttributes[1];
 
-	int attributeValue = -1;
+	unsigned int attributeValue;
 	std::string attributeName = "";
 
 	FbxProperty prop = currentNode->FindProperty(CUSTOM_ATTRIBUTE, false);
@@ -415,8 +416,9 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		
 		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
 		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
-		customMayaAttribute->meshType = attributeValue;
+		customMayaAttribute->meshType = prop.Get<int>();
 	}
+	this->counter.customMayaAttributeCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
@@ -435,9 +437,9 @@ void Converter::createCustomFile()
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	outfile.write((const char*)&customMayaAttribute->meshType, sizeof(CustomMayaAttributes));
+	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
 
 	std::cout << customMayaAttribute->meshType << std::endl;
 

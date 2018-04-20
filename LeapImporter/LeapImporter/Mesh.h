@@ -17,7 +17,7 @@ public:
 	~Mesh();
 
 	int getVertexCount();
-	int getMayaAttribute();
+	//int getMayaAttribute();
 
 	Vertex* vertices;
 	Counter counterReader;

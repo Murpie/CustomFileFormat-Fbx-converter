@@ -10,7 +10,7 @@ struct Counter
 	unsigned int animationCount;
 	unsigned int blendShapeCount;
 	unsigned int groupID;
-	unsigned int meshType;
+	unsigned int customMayaAttributeCount;
 };
 
 struct Vertex {
