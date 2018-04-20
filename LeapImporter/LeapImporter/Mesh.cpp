@@ -31,7 +31,7 @@ void Mesh::loader(const char* fileName)
 
 	customMayaAttribute = new CustomMayaAttributes;
 
-	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes));
+	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes) * 2);
 
 	if (infile.is_open())
 	{

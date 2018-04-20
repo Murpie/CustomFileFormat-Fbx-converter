@@ -19,7 +19,7 @@ int main()
 		printf("UVs: %f %f\n\n", mesh->vertices[i].u, mesh->vertices[i].v);
 	}
 	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
-	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute[0].meshType);
+
 
 	getchar();
 	importer.deleteObject(mesh);
