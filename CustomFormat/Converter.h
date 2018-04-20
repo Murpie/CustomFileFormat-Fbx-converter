@@ -31,6 +31,7 @@ private:
 	FbxIOSettings* settings;
 	FbxScene* ourScene;
 	FbxImporter* importer;
+	FbxGlobalSettings* globalSettings;
 
 	Counter counter;
 	MeshInfo* meshInfo;

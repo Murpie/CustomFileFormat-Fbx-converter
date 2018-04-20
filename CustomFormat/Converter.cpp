@@ -14,8 +14,8 @@ Converter::Converter(const char * fileName)
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+	globalSettings = FbxGlobalSettings::Create(manager, "");
 	this->meshName = fileName;
-
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -442,11 +442,8 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		
 		const char* tempAnimName = animStack->GetInitialName();
 		std::cout << tempAnimName << std::endl;
-		for (int n = 0; n < sizeof(tempAnimName) + 4; n++)
-		{
+		for (int n = 0; n < sizeof(tempAnimName); n++)
 			animationInfo->animationName[n] = tempAnimName[n];
-			std::cout << animationInfo->animationName[n] << std::endl;
-		}
 
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
 		//GetMemberCount: Returns the number of objects contained within the collection.
@@ -499,6 +496,10 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
 	FbxAnimCurve* animCurve = NULL;
 
+	float keyValue;
+	//int keyCount = animCurve->KeyGetCount();
+	//animationInfo->keyFrameCount = keyCount;
+
 	//LclTranslation: This property contains the translation information of the node. 
 	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
@@ -542,27 +543,30 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 void Converter::displayCurveKeys(FbxAnimCurve* curve)
 {
 	//FbxTime: Class to encapsulate time units, is just used to represent a moment. Can measure time in hour, minute, second, frame, field, residual and also combination of these units.
-	FbxTime keyTime;
+	//FbxTime keyTime; //not needed?
 	float keyValue;
-	char timeString[256];
+	//char timeString[256]; not needed?
 	FbxString outputString;
 	//KeyGetCount: Get the number of keys.
 	int keyCount = curve->KeyGetCount();
 	
 	animationInfo->keyFrameCount = keyCount;
 
-
 	for (int i = 0; i < keyCount; i++)
 	{
 		//Get key value depending on current curve and LclRotation/Translation/Scale and FBXSDK_CURVENODE_COMPONENT_??
 		keyValue = static_cast<float>(curve->KeyGetValue(i));
-		//KeyGetTime: Returns key time (time at which this key is occurring). 
-		keyTime = curve->KeyGetTime(i);
+		//KeyGetTime: Returns key time (time at which this key is occurring).
+		//keyTime = curve->KeyGetTime(i); //not needed?
 
-		outputString = "      Key Time: ";
-		outputString += keyTime.GetTimeString(timeString, FbxUShort(256));
+		double timeTest = curve->KeyGetTime(i).GetSecondDouble();
+
+		outputString = "      Key Frame: ";
+		outputString += i;
 		outputString += ".... Key Value: ";
 		outputString += keyValue;
+		outputString += ".... Time: ";
+		outputString += timeTest;
 		outputString += "\n";
 		FBXSDK_printf(outputString);
 	}
@@ -570,6 +574,7 @@ void Converter::displayCurveKeys(FbxAnimCurve* curve)
 
 void Converter::printInformation()
 {
+	std::cout << "Animation Name: " << animationInfo->animationName << std::endl;
 	std::cout << "Keyframe Count: " << animationInfo->keyFrameCount << std::endl;
 }
 
