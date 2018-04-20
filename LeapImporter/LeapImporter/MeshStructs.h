@@ -31,7 +31,7 @@ struct MaterialInformation {
 	float ambient[3];
 	float diffuse[3];
 	float emissive[3];
-	float opacity[3];
+	float opacity;
 	char* textureFilePath[100];
 };
 

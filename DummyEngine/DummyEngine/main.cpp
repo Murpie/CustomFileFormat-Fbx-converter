@@ -4,7 +4,7 @@ int main()
 {
 	LeapImporter importer;
 
-	Mesh* mesh = importer.getMesh("Snowman.leap");
+	LeapMesh* mesh = importer.getMesh("Snowman.leap");
 
 	int vertexCount = mesh->getVertexCount();
 
