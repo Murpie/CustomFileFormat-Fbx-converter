@@ -31,7 +31,7 @@ void LeapMesh::loader(const char* fileName)
 
 	customMayaAttribute = new CustomMayaAttributes;
 
-	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes) * 2);
+	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes));
 
 	if (infile.is_open())
 	{
