@@ -11,6 +11,11 @@ LeapMesh::LeapMesh(const char* fileName)
 
 LeapMesh::~LeapMesh()
 {
+	for (BoundingBox* bbox_ptr : boundingBoxes)
+	{
+		delete bbox_ptr;
+	}
+	boundingBoxes.clear();
 }
 
 int LeapMesh::getVertexCount()
@@ -28,6 +33,13 @@ void LeapMesh::loader(const char* fileName)
 	vertices = new VertexInformation[counterReader.vertexCount];
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
+
+	for (int i = 0; i < counterReader.boundingBoxCount; i++)
+	{
+		BoundingBox* bbox = new BoundingBox();
+		boundingBoxes.push_back(bbox);
+		infile.read((char*)boundingBoxes[i], sizeof(BoundingBox));
+	}
 
 	if (infile.is_open())
 	{

@@ -419,7 +419,7 @@ void Converter::createCustomFile()
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	for (int i = 0; i < vBBox.size(); i++)
 	{
 		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
@@ -454,38 +454,45 @@ bool Converter::isPartOf(const char * nodeName)
 void Converter::loadBbox(FbxNode* currentNode)
 {
 	BoundingBox bBox;
-	bBoxMesh = currentNode->GetMesh();
-
+	FbxMesh* bBoxMesh = currentNode->GetMesh();
+	FbxVector4* holder = bBoxMesh->GetControlPoints();
+	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+	//FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+	//FbxDouble3 tempScaling = currentNode->LclScaling.Get();
+	FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
 	int polyCount = bBoxMesh->GetPolygonCount();
 
 	//Vertex* vert = new Vertex[counter.vertexCount];
 	std::vector<Vertex> vert;
 	std::vector<FbxVector4> position;
-	FbxVector4 temp;
-	FbxVector2 tempUv;
 
 	bool ItIsFalse = false;
+
+	bBoxMesh->GetPolygonVertices();
+	//bBoxMesh->b
 
 	int i = 0;
 	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 	{
 		for (int vertexIndex = 0; vertexIndex < bBoxMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
+
 			Vertex temp;
 			//Positions
-			position.push_back(controlPoints[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
-			
-			temp.x = (float)position[i][0];
-			temp.y = (float)position[i][1];
-			temp.z = (float)position[i][2];
+			position.push_back(holder[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			//Add translation to vertex position
+			temp.x = (float)position[i][0] + (float)tempTranslation[0];
+			temp.y = (float)position[i][1] + (float)tempTranslation[1];
+			temp.z = (float)position[i][2] + (float)tempTranslation[2];
 
 			vert.push_back(temp);
-
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, (float)position[i][0], (float)position[i][1], (float)position[i][2]);
 			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
 
 			i++;
 		}
 	}
+	FBXSDK_printf("\n");
 
 	bBox.minVector[0] = vert[0].x;
 	bBox.minVector[1] = vert[0].y;
@@ -512,12 +519,16 @@ void Converter::loadBbox(FbxNode* currentNode)
 			bBox.maxVector[1] = vert[i].y;
 		if (bBox.maxVector[2] < vert[i].z)
 			bBox.maxVector[2] = vert[i].z;
-	}
+	};
 
 	//Center
 	bBox.center[0] = (bBox.minVector[0] + bBox.maxVector[0]) * 0.5f;
 	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
 	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
+
+	FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
+	FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
+	FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
 
 	vBBox.push_back(bBox);
 

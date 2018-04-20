@@ -49,7 +49,6 @@ private:
 	char* ret;
 
 	//
-	FbxMesh* bBoxMesh;
 	std::vector<BoundingBox> vBBox;
 	//BoundingBox bBox;
 	bool isPartOf(const char* nodeName);
