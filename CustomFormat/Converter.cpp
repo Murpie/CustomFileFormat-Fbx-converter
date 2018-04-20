@@ -447,7 +447,7 @@ void Converter::createCustomFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
+	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	for (int i = 0; i < vBBox.size(); i++)
 	{
@@ -495,7 +495,7 @@ void Converter::loadBbox(FbxNode* currentNode)
 	int polyCount = bBoxMesh->GetPolygonCount();
 
 	//Vertex* vert = new Vertex[counter.vertexCount];
-	std::vector<Vertex> vert;
+	std::vector<VertexInformation> vert;
 	std::vector<FbxVector4> position;
 
 	bool ItIsFalse = false;
@@ -509,7 +509,7 @@ void Converter::loadBbox(FbxNode* currentNode)
 		for (int vertexIndex = 0; vertexIndex < bBoxMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
 
-			Vertex temp;
+			VertexInformation temp;
 			//Positions
 			position.push_back(holder[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 			//Add translation to vertex position
