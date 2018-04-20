@@ -3,7 +3,7 @@
 #include <fbxsdk.h>
 #include <string>
 #include <stdlib.h>
-#include <iostream>
+#include <iostream>   
 #include "MeshStructs.h"
 
 #define CUSTOM_ATTRIBUTE "MeshType"
@@ -52,5 +52,11 @@ private:
 	const char* meshName;
 	const char* textureName;
 	char* ret;
+
+	//
+	std::vector<BoundingBox> vBBox;
+	//BoundingBox bBox;
+	bool isPartOf(const char* nodeName);
+	void loadBbox(FbxNode* currentNode);
 };
 
