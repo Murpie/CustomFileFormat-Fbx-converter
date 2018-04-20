@@ -18,6 +18,11 @@ int Mesh::getVertexCount()
 	return this->counterReader.vertexCount;
 }
 
+int Mesh::getMayaAttribute()
+{
+	return this->customMayaAttribute[0].meshType;
+}
+
 void Mesh::loader(const char* fileName)
 {
 	
