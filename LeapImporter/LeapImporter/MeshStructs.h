@@ -13,7 +13,13 @@ struct Counter
 	unsigned int meshType;
 };
 
-struct Vertex {
+struct MeshInfo {
+	float globalTranslation[3];
+	float globalRotation[3];
+	float globalScaling[3];
+};
+
+struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
 	float u, v;
@@ -25,7 +31,7 @@ struct MaterialInformation {
 	float ambient[3];
 	float diffuse[3];
 	float emissive[3];
-	float opacity[3];
+	float opacity;
 	char* textureFilePath[100];
 };
 
@@ -38,7 +44,7 @@ struct BoundingBox
 	BoundingBoxVertex boundingBoxVertices[8];
 };
 
-struct Joint {
+struct JointInformation {
 	char jointName[100];
 	char parentName[100];
 	float localTransformMatrix[16];
@@ -56,7 +62,7 @@ struct KeyFrame {
 	vector <KeyFrameData> keyFrameData;
 };
 
-struct Animation {
+struct AnimationInformation {
 	char animationName[100];
 	int keyFrameCount;
 	vector <KeyFrame> keyFrames;
