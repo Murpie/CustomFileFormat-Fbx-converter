@@ -4,7 +4,7 @@ int main()
 {
 	LeapImporter importer;
 
-	LeapMesh* mesh = importer.getMesh("Snowman.leap");
+	LeapMesh* mesh = importer.getMesh("FBXcustomAttribute.leap");
 
 	int vertexCount = mesh->getVertexCount();
 
