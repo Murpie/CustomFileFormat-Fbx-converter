@@ -29,6 +29,10 @@ void LeapMesh::loader(const char* fileName)
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
 
+	customMayaAttribute = new CustomMayaAttributes;
+
+	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes) * 2);
+
 	if (infile.is_open())
 	{
 		infile.close();
