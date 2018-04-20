@@ -8,16 +8,16 @@ LeapImporter::~LeapImporter()
 {
 }
 
-Mesh * LeapImporter::getMesh(const char* meshName)
+LeapMesh * LeapImporter::getMesh(const char* meshName)
 {
 	//Check file type and get error if not correct.
 
-	Mesh* newMesh = new Mesh(meshName);
+	LeapMesh* newMesh = new LeapMesh(meshName);
 
 	return newMesh;
 }
 
-void LeapImporter::deleteObject(Mesh * mesh)
+void LeapImporter::deleteObject(LeapMesh * mesh)
 {
 	delete mesh;
 }

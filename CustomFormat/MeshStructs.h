@@ -19,7 +19,7 @@ struct MeshInfo {
 	float globalScaling[3];
 };
 
-struct Vertex {
+struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
 	float u, v;
