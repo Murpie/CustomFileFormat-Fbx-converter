@@ -6,10 +6,8 @@ int main()
 
 	Mesh* mesh = importer.getMesh("FBXcustomAttribute.leap");
 
-	//int meshType1 = mesh->getMayaAttribute();
 	int vertexCount = mesh->getVertexCount();
 
-	//printf("%d\n", meshType1);
 	printf("%d\n", vertexCount);
 
 	for (int i = 0; i < vertexCount; i++)
