@@ -19,7 +19,7 @@ struct MeshInfo {
 	float globalScaling[3];
 };
 
-struct Vertex {
+struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
 	float u, v;
@@ -44,7 +44,7 @@ struct BoundingBox
 	BoundingBoxVertex boundingBoxVertices[8];
 };
 
-struct Joint {
+struct JointInformation {
 	char jointName[100];
 	char parentName[100];
 	float localTransformMatrix[16];
@@ -62,7 +62,7 @@ struct KeyFrame {
 	vector <KeyFrameData> keyFrameData;
 };
 
-struct Animation {
+struct AnimationInformation {
 	char animationName[100];
 	int keyFrameCount;
 	vector <KeyFrame> keyFrames;

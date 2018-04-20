@@ -34,7 +34,7 @@ private:
 
 	Counter counter;
 	MeshInfo* meshInfo;
-	Vertex* vertices;
+	VertexInformation* vertices;
 	MaterialInformation* matInfo;
 	Animation* animationInfo;
 
