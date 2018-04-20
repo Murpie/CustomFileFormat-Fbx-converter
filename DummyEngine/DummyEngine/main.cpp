@@ -4,7 +4,7 @@ int main()
 {
 	LeapImporter importer;
 
-	Mesh* mesh = importer.getMesh("FBXcustomAttribute.leap");
+	LeapMesh* mesh = importer.getMesh("FBXcustomAttribute.leap");
 
 	int vertexCount = mesh->getVertexCount();
 	unsigned int customMeshType = (int)mesh->customMayaAttribute;

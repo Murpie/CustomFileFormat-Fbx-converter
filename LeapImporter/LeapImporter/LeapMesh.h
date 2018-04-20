@@ -31,6 +31,7 @@ public:
 	BlendShapeVertex* blendShapeVertices;
 	Group* group;
 	Counter counterReader;
+	CustomMayaAttributes* customMayaAttribute;
 
 	/*vector <BoundingBox> boundingBoxes;
 	vector <Joint> joints;

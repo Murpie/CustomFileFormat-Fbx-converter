@@ -24,6 +24,7 @@ Converter::~Converter()
 	delete vertices;
 	delete matInfo;
 	delete ret;
+	delete customMayaAttribute;
 
 	ourScene->Destroy();
 	settings->Destroy();
@@ -436,7 +437,7 @@ void Converter::createCustomFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
+	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
