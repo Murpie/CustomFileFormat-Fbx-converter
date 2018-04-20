@@ -428,7 +428,7 @@ void Converter::createCustomFile()
 
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
-	animationInfo = new Animation[1];
+	animationInfo = new AnimationInformation[1];
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{

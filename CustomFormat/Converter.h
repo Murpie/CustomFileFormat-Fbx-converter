@@ -36,7 +36,7 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
-	Animation* animationInfo;
+	AnimationInformation* animationInfo;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
