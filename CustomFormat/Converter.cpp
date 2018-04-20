@@ -81,6 +81,11 @@ void Converter::exportFile(FbxNode* currentNode)
 			loadMaterial(currentNode);
 		}
 
+		if (mesh)
+		{
+			loadBlendShape(mesh, ourScene);
+		}
+
 		//Load Cameras
 		if (camera)
 		{
@@ -310,6 +315,79 @@ void Converter::loadMaterial(FbxNode* currentNode)
 
 	//Opacity
 	matInfo->opacity = (float)transparency;
+}
+void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
+{
+	FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>();
+
+	int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
+
+	FbxString lOutputString;
+
+	lOutputString = "	Contains: ";
+	if (animLayers == 0)
+		lOutputString += "no layers";
+
+	if (animLayers)
+	{
+		lOutputString += animLayers;
+		lOutputString += " Animation Layer\n";
+	}
+	FBXSDK_printf(lOutputString);
+
+	for (int animLayerIndex = 0; animLayerIndex < animLayers; animLayerIndex++)
+	{
+		FbxAnimLayer* animLayer = animStack->GetMember<FbxAnimLayer>(animLayerIndex);
+
+		int blendShapeDeformerCount = mesh->GetDeformerCount(FbxDeformer::eBlendShape);
+		for (int blendShapeIndex = 0; blendShapeIndex < blendShapeDeformerCount; ++blendShapeIndex)
+		{
+			FbxBlendShape* blendShape = (FbxBlendShape*)mesh->GetDeformer(blendShapeIndex, FbxDeformer::eBlendShape);
+
+			int blendShapeChannelCount = blendShape->GetBlendShapeChannelCount();
+			for (int channelIndex = 0; channelIndex < blendShapeChannelCount; ++channelIndex)
+			{
+				FbxBlendShapeChannel* channel = blendShape->GetBlendShapeChannel(channelIndex);
+				const char* channelName = channel->GetName();
+				FbxAnimCurve* animCurve = mesh->GetShapeChannel(blendShapeIndex, channelIndex, animLayer, true);
+				if (animCurve)
+				{
+					FBXSDK_printf("	Shape Name: %s\n", channelName);
+					
+					FbxTime keyTime;
+					float keyValue;
+					char timeString[256];
+					int count;
+
+					int keyCount = animCurve->KeyGetCount();
+
+					cout << "	KeyCount: " << keyCount << endl;
+
+					for (count = 0; count < keyCount; count++)
+					{
+						keyValue = static_cast<float>(animCurve->KeyGetValue(count));
+						keyTime = animCurve->KeyGetTime(count);
+
+						lOutputString = "	Key Frame: ";
+						lOutputString += count;
+						lOutputString += "	Key Time: ";
+						lOutputString += animCurve->KeyGetTime(count).GetSecondDouble();
+						lOutputString += "	Blendshape Value: ";
+						lOutputString += keyValue;
+						lOutputString += "\n";
+						FBXSDK_printf(lOutputString);
+					}
+				}
+
+			}
+		}
+	}
+	
+
+	////Vertices
+	//controlPoints = currentMesh->GetControlPoints();
+
+	//counter.vertexCount = polygonCount * 3;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCamera(FbxCamera* currentNode)

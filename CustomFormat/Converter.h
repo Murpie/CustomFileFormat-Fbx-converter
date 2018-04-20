@@ -18,6 +18,7 @@ private:
 	void loadGlobaltransform(FbxNode* currentNode);
 	void loadVertex(FbxMesh* currentMesh);
 	void loadMaterial(FbxNode* currentNode);
+	void loadBlendShape(FbxMesh* currentMesh, FbxScene* scene);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void createCustomFile();
@@ -31,11 +32,13 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
+	BlendShape* blendShapes;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
 	FbxNode* child;
 	FbxMesh* mesh;
+	FbxBlendShape* blendShape;
 	FbxLight* light;
 	FbxCamera* camera;
 	FbxString lString;;
