@@ -7,6 +7,7 @@ int main()
 	LeapMesh* mesh = importer.getMesh("FBXcustomAttribute.leap");
 
 	int vertexCount = mesh->getVertexCount();
+	unsigned int customMeshType = (int)mesh->customMayaAttribute;
 
 	printf("%d\n", vertexCount);
 
@@ -16,6 +17,7 @@ int main()
 		printf("Normals: %f %f %f\n", mesh->vertices[i].nx, mesh->vertices[i].ny, mesh->vertices[i].nz);
 		printf("UVs: %f %f\n\n", mesh->vertices[i].u, mesh->vertices[i].v);
 	}
+	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
 
 	getchar();
 	importer.deleteObject(mesh);
