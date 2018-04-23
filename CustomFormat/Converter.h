@@ -37,7 +37,11 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
+
 	AnimationInformation* animationInfo;
+	KeyFrame* keyFrame;
+	KeyFrameData* keyFrameData;
+	JointInformation* jointInformation;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
@@ -45,7 +49,7 @@ private:
 	FbxMesh* mesh;
 	FbxLight* light;
 	FbxCamera* camera;
-	FbxString lString;;
+	FbxString lString;
 
 	int polygonCount;
 	int polygonSize;
