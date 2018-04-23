@@ -497,7 +497,6 @@ void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 
 void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 {
-	jointInformation = new JointInformation[1];
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
 	FbxAnimCurve* animCurve = NULL;
 	FbxString outputString;
@@ -514,6 +513,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
 	{
+		jointInformation = new JointInformation[1];
 		//STORE: JointInformation char jointName[]
 		const char* tempJointName = node->GetName();
 		for (int n = 0; n < sizeof(tempJointName); n++)
@@ -537,8 +537,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
 			tempPosition.push_back(keyValue);
 		}
-		//FBXSDK_printf("   TX\n");
-		//displayCurveKeys(animCurve);
 		animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
 		for (int i = 0; i < keyCount; i++)
 		{
@@ -571,66 +569,59 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			tempRotation.push_back(keyValue);
 		}
 
-		keyFrameData = new KeyFrameData[1];
+		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 		for (int i = 0; i < keyCount; i++)
 		{
-			keyFrameData->position[0] = tempPosition[i];
-			keyFrameData->position[1] = tempPosition[i + keyCount];
-			keyFrameData->position[2] = tempPosition[i + (keyCount * 2)];
-
-			keyFrameData->rotation[0] = tempRotation[i];
-			keyFrameData->rotation[1] = tempRotation[i + keyCount];
-			keyFrameData->rotation[2] = tempRotation[i + (keyCount * 2)];
-
-			std::cout << "Keyframe: " << i << std::endl;
-			std::cout << "Rotation X: " << keyFrameData->rotation[0] << std::endl;
-			std::cout << "Rotation Y: " << keyFrameData->rotation[1] << std::endl;
-			std::cout << "Rotation Z: " << keyFrameData->rotation[2] << std::endl << std::endl;
+			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+			tempScaling.push_back(keyValue);
+		}
+		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+		for (int i = 0; i < keyCount; i++)
+		{
+			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+			tempScaling.push_back(keyValue);
+		}
+		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+		for (int i = 0; i < keyCount; i++)
+		{
+			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+			tempScaling.push_back(keyValue);
 		}
 
+		for (int i = 0; i < keyCount; i++)
+		{
+			KeyFrameData keyFrameData;
+			keyFrameData.position[0] = tempPosition[i];
+			keyFrameData.position[1] = tempPosition[i + keyCount];
+			keyFrameData.position[2] = tempPosition[i + (keyCount * 2)];
+
+			keyFrameData.rotation[0] = tempRotation[i];
+			keyFrameData.rotation[1] = tempRotation[i + keyCount];
+			keyFrameData.rotation[2] = tempRotation[i + (keyCount * 2)];
+
+			keyFrameData.scaling[0] = tempScaling[i];
+			keyFrameData.scaling[1] = tempScaling[i + keyCount];
+			keyFrameData.scaling[2] = tempScaling[i + (keyCount * 2)];
+
+			keyFrame->keyFrameData.push_back(keyFrameData);
+
+			//jointInformation->keyFrames.push_back(keyFrame);
+			/*
+			std::cout << "Keyframe: " << i << std::endl;
+			std::cout << "TX: " << keyFrameData->position[0] << std::endl;
+			std::cout << "TY: " << keyFrameData->position[1] << std::endl;
+			std::cout << "TZ: " << keyFrameData->position[2] << std::endl;
+
+			std::cout << "RX: " << keyFrameData->rotation[0] << std::endl;
+			std::cout << "RY: " << keyFrameData->rotation[1] << std::endl;
+			std::cout << "RZ: " << keyFrameData->rotation[2] << std::endl;
+
+			std::cout << "SX: " << keyFrameData->scaling[0] << std::endl;
+			std::cout << "SY: " << keyFrameData->scaling[1] << std::endl;
+			std::cout << "SZ: " << keyFrameData->scaling[2] << std::endl << std::endl;*/
+		}
 	}
-	/*animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-	if (animCurve)
-	{
-		FBXSDK_printf("   TY\n");
-		displayCurveKeys(animCurve);
-	}*/
-	/*animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-	if (animCurve)
-	{
-		FBXSDK_printf("   TZ\n");
-		displayCurveKeys(animCurve);
-	}*/
-	//----------------------------------------------------------------------------------
-	//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-	//if (animCurve)
-	//{
-	//	FBXSDK_printf("   RX\n");
-	//	displayCurveKeys(animCurve);
-	//}
-	//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-	//if (animCurve)
-	//{
-	//	FBXSDK_printf("   RY\n");
-	//	displayCurveKeys(animCurve);
-	//}
-	//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-	//if (animCurve)
-	//{
-	//	FBXSDK_printf("   RZ\n");
-	//	displayCurveKeys(animCurve);
-	//}
-	/*
-	int j;
-	int k;
-	for (int i = 0; i < keyframecount; i++)
-	{
-		keyframe[i].keyframeData[i].position.x = tempPosition[i];
-		keyframe[i].keyframeData[i].position.y = tempPosition[i + keyframeCount];
-		keyframe[i].keyframeData[i].position.z = tempPosition[i + keyframeCount * 2];
-	}*/
-	//free(jointInformation);
-	//free(keyFrameData);
+	//animationInfo->joints.push_back(*jointInformation);
 }
 
 void Converter::displayCurveKeys(FbxAnimCurve* curve)
