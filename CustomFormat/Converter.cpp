@@ -14,7 +14,6 @@ Converter::Converter(const char * fileName)
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
-	globalSettings = FbxGlobalSettings::Create(manager, "");
 	this->meshName = fileName;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -23,6 +22,10 @@ Converter::~Converter()
 	delete vertices;
 	delete matInfo;
 	delete ret;
+
+	delete[] animationInfo;
+
+	//delete[] keyFrameData;
 
 	ourScene->Destroy();
 	settings->Destroy();
@@ -429,6 +432,7 @@ void Converter::createCustomFile()
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
 	animationInfo = new AnimationInformation[1];
+
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{
@@ -438,11 +442,10 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		FbxString outputString = "Animation Stack Name: ";
 		outputString += animStack->GetName();
 		outputString += "\n";
-		FBXSDK_printf(outputString);
+		//FBXSDK_printf(outputString);
 		
 		//STORE: AnimationInformation char animationName[]
 		const char* tempAnimName = animStack->GetInitialName();
-		std::cout << tempAnimName << std::endl;
 		for (int n = 0; n < sizeof(tempAnimName); n++)
 			animationInfo->animationName[n] = tempAnimName[n];
 
@@ -457,7 +460,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 			outputString += animLayers;
 			outputString += " Animation layer(s)\n\n";
 		}
-		FBXSDK_printf(outputString);
+		//FBXSDK_printf(outputString);
 
 		for (int j = 0; j < animLayers; j++)
 		{
@@ -466,14 +469,12 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 			outputString = "Current Animation Layer: ";
 			outputString += j;
 			outputString += "\n";
-			FBXSDK_printf(outputString);
+			//FBXSDK_printf(outputString);
 
 			getAnimation(currentAnimLayer, node);
 		}
 	}
-	//delete[] animationInfo;
-	//delete[] jointInformation;
-	//delete[] keyFrameData;
+	printInformation();
 }
 
 void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
@@ -484,10 +485,10 @@ void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 	outputString = "   Node/Joint Name: ";
 	outputString += node->GetName();
 	outputString += "\n";
-	FBXSDK_printf(outputString);
+	//FBXSDK_printf(outputString);
 
 	getAnimationChannels(node, animLayer);
-	FBXSDK_printf("\n");
+	//FBXSDK_printf("\n");
 
 	for (modelCount = 0; modelCount < node->GetChildCount(); modelCount++)
 	{
@@ -524,6 +525,9 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 		for (int n = 0; n < sizeof(tempJointParentName); n++)
 			jointInformation->parentName[n] = tempJointParentName[n];
 
+		std::cout << "Joint name: " << jointInformation->jointName << std::endl;
+		std::cout << "Parent name: " << jointInformation->parentName << std::endl;
+
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount
 		//READ ONLY ONE TIME PLS WTF
@@ -533,7 +537,9 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 		for (int i = 0; i < keyCount; i++)
 		{
 			keyTime = animCurve->KeyGetTime(i).GetSecondDouble();
+			//STORE: KeyFrame float time
 			keyFrame[i].time = keyTime;
+
 			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
 			tempPosition.push_back(keyValue);
 		}
@@ -604,8 +610,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			keyFrameData.scaling[2] = tempScaling[i + (keyCount * 2)];
 
 			keyFrame->keyFrameData.push_back(keyFrameData);
-
-			//jointInformation->keyFrames.push_back(keyFrame);
 			/*
 			std::cout << "Keyframe: " << i << std::endl;
 			std::cout << "TX: " << keyFrameData->position[0] << std::endl;
@@ -619,9 +623,14 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			std::cout << "SX: " << keyFrameData->scaling[0] << std::endl;
 			std::cout << "SY: " << keyFrameData->scaling[1] << std::endl;
 			std::cout << "SZ: " << keyFrameData->scaling[2] << std::endl << std::endl;*/
-		}
-	}
-	//animationInfo->joints.push_back(*jointInformation);
+
+		}//for keyCount
+
+		//jointInformation[0].keyFrames[0] = keyFrame[0];
+		//animationInfo[0].joints[0] = jointInformation[0];
+		delete[] jointInformation;
+		delete[] keyFrame;
+	}//if (animCurve)
 }
 
 void Converter::displayCurveKeys(FbxAnimCurve* curve)

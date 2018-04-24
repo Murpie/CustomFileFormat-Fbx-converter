@@ -45,28 +45,28 @@ struct BoundingBox
 };
 
 struct KeyFrameData {
-	float position[3]; //d
-	float rotation[3]; //d
-	float scaling[3]; //d
+	float position[3]; //d								6
+	float rotation[3]; //d								7
+	float scaling[3]; //d								8
 };
 
 struct KeyFrame {
-	float time; //d
-	vector <KeyFrameData> keyFrameData; //d
+	float time; //d										5
+	vector <KeyFrameData> keyFrameData; //d				9
 };
 
 struct JointInformation {
-	char jointName[100]; //d
-	char parentName[100]; //d
+	char jointName[100]; //d							2
+	char parentName[100]; //d							3
 	float localTransformMatrix[16];
 	float bindPoseMatrix[16];
-	vector<KeyFrame> keyFrames; //d
+	vector<KeyFrame> keyFrames; //d						?
 };
 
 struct AnimationInformation {
-	char animationName[100]; //d
-	int keyFrameCount; //d
-	vector<JointInformation> joints;
+	char animationName[100]; //d						1
+	int keyFrameCount; //d								4
+	vector<JointInformation> joints;					
 	//vector <KeyFrame> keyFrames;
 };
 

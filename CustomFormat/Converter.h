@@ -31,17 +31,16 @@ private:
 	FbxIOSettings* settings;
 	FbxScene* ourScene;
 	FbxImporter* importer;
-	FbxGlobalSettings* globalSettings;
 
 	Counter counter;
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
 
-	AnimationInformation* animationInfo;
-	KeyFrame* keyFrame;
 	KeyFrameData* keyFrameData;
+	KeyFrame* keyFrame;
 	JointInformation* jointInformation;
+	AnimationInformation* animationInfo;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
