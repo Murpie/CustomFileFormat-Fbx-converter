@@ -20,6 +20,7 @@ Converter::Converter(const char * fileName)
 Converter::~Converter()
 {
 	delete vertices;
+	delete []objectBlendShapes;
 	delete matInfo;
 	delete ret;
 
@@ -178,9 +179,9 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			/*FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
 			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);*/
 
 			i++;
 		}
@@ -324,6 +325,10 @@ void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
 
 	FbxString lOutputString;
 
+	int blendShapeDeformerCount = mesh->GetDeformerCount(FbxDeformer::eBlendShape);
+
+	objectBlendShapes = new BlendShapes[blendShapeDeformerCount];
+
 	lOutputString = "	Contains: ";
 	if (animLayers == 0)
 		lOutputString += "no layers";
@@ -339,46 +344,109 @@ void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
 	{
 		FbxAnimLayer* animLayer = animStack->GetMember<FbxAnimLayer>(animLayerIndex);
 
-		int blendShapeDeformerCount = mesh->GetDeformerCount(FbxDeformer::eBlendShape);
+		counter.blendShapeCount = blendShapeDeformerCount;
+		cout << "	Number of blendshapes Animations: " << counter.blendShapeCount << endl;
+
+		//Create Blendshapes
+		
+
 		for (int blendShapeIndex = 0; blendShapeIndex < blendShapeDeformerCount; ++blendShapeIndex)
 		{
 			FbxBlendShape* blendShape = (FbxBlendShape*)mesh->GetDeformer(blendShapeIndex, FbxDeformer::eBlendShape);
-
 			int blendShapeChannelCount = blendShape->GetBlendShapeChannelCount();
+
+			//Setting blendshapeCount for animation
+			objectBlendShapes[0].blendShapeCount = blendShapeChannelCount;
+
+			cout << "	Number of blendshapes for this Animation: " << objectBlendShapes[0].blendShapeCount << endl;
+
+			BlendShape tempBlendShape;
+
+			
 			for (int channelIndex = 0; channelIndex < blendShapeChannelCount; ++channelIndex)
 			{
 				FbxBlendShapeChannel* channel = blendShape->GetBlendShapeChannel(channelIndex);
 				const char* channelName = channel->GetName();
+
+				FbxShape* shape = channel->GetTargetShape(0);
+
+				int blendShapeControlPointsCount = shape->GetControlPointsCount();
+
+				tempBlendShape.blendShapeVertexCount = blendShapeControlPointsCount;
+
+				blendShapeControlPoints = shape->GetControlPoints();
+
+				FbxVector4 bPos;
+				FbxVector4 bNormal;
+
+				FbxGeometry* geom = blendShape->GetGeometry();
+
+				FbxLayerElementNormal* pLayerNormals = geom->GetLayer(channelIndex)->GetNormals();
+
+				BlendShapeVertex tempVertex;
+				BlendShapeKeyframe tempKeyframe;
+
+				for (int blendshapeControlIndex = 0; blendshapeControlIndex < blendShapeControlPointsCount; blendshapeControlIndex++)
+				{
+					bPos = blendShapeControlPoints[blendshapeControlIndex];
+					bNormal = pLayerNormals->GetDirectArray().GetAt(blendshapeControlIndex);
+					
+					tempVertex.x = bPos[0];
+					tempVertex.y = bPos[1];
+					tempVertex.z = bPos[2];
+					tempVertex.nx = bNormal[0];
+					tempVertex.ny = bNormal[1];
+					tempVertex.nz = bNormal[2];
+
+					tempBlendShape.blendShapeVertices.push_back(tempVertex);
+
+					FBXSDK_printf("	BlendShape Vertex: %d\n", blendshapeControlIndex);
+					FBXSDK_printf("		x = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].x);
+					FBXSDK_printf(" y = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].y);
+					FBXSDK_printf(" z = %f\n", tempBlendShape.blendShapeVertices[blendshapeControlIndex].z);
+
+					FBXSDK_printf("		nx = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].nx);
+					FBXSDK_printf(" ny = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].ny);
+					FBXSDK_printf(" nz = %f\n", tempBlendShape.blendShapeVertices[blendshapeControlIndex].nz);
+				}
+
+				objectBlendShapes[0].blendShape.push_back(tempBlendShape);
+
 				FbxAnimCurve* animCurve = mesh->GetShapeChannel(blendShapeIndex, channelIndex, animLayer, true);
 				if (animCurve)
 				{
 					FBXSDK_printf("	Shape Name: %s\n", channelName);
 					
-					FbxTime keyTime;
 					float keyValue;
 					char timeString[256];
 					int count;
 
 					int keyCount = animCurve->KeyGetCount();
 
-					cout << "	KeyCount: " << keyCount << endl;
+					objectBlendShapes[0].keyFrameCount = keyCount;
+
+
+					cout << "	KeyCount: " << objectBlendShapes[0].keyFrameCount << endl;
 
 					for (count = 0; count < keyCount; count++)
 					{
 						keyValue = static_cast<float>(animCurve->KeyGetValue(count));
-						keyTime = animCurve->KeyGetTime(count);
+
+						tempKeyframe.blendShapeInfluense = keyValue;
+						tempKeyframe.time = animCurve->KeyGetTime(count).GetSecondDouble();
+
+						objectBlendShapes[0].keyframes.push_back(tempKeyframe);
 
 						lOutputString = "	Key Frame: ";
 						lOutputString += count;
 						lOutputString += "	Key Time: ";
-						lOutputString += animCurve->KeyGetTime(count).GetSecondDouble();
+						lOutputString += objectBlendShapes[0].keyframes[count].time;
 						lOutputString += "	Blendshape Value: ";
-						lOutputString += keyValue;
+						lOutputString += objectBlendShapes[0].keyframes[count].blendShapeInfluense;
 						lOutputString += "\n";
 						FBXSDK_printf(lOutputString);
 					}
 				}
-
 			}
 		}
 	}
@@ -482,12 +550,12 @@ void Converter::createCustomFile()
 	ret[len] = 'p';
 	ret[len + 1] = '\0';
 	meshName = ret;
-
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	outfile.write((const char*)objectBlendShapes, sizeof(BlendShapes)*counter.blendShapeCount);
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	outfile.close();

@@ -29,6 +29,11 @@ void LeapMesh::loader(const char* fileName)
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
 
+	blendShapes = new BlendShapes[counterReader.blendShapeCount];
+
+	infile.read((char*)blendShapes, counterReader.blendShapeCount * sizeof(BlendShapes));
+
+
 	if (infile.is_open())
 	{
 		infile.close();

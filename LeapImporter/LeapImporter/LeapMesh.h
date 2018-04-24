@@ -27,8 +27,7 @@ public:
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
 	KeyFrameData* keyFrameData;
-	BlendShape* blendShape;
-	BlendShapeVertex* blendShapeVertices;
+	BlendShapes* blendShapes;
 	Group* group;
 	Counter counterReader;
 

@@ -32,9 +32,10 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
-	BlendShape* blendShapes;
+	BlendShapes* objectBlendShapes;
 
 	FbxVector4* controlPoints;
+	FbxVector4* blendShapeControlPoints;
 	FbxNode* rootNode;
 	FbxNode* child;
 	FbxMesh* mesh;
