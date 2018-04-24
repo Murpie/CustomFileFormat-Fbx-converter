@@ -10,7 +10,7 @@ struct Counter
 	unsigned int animationCount;
 	unsigned int blendShapeCount;
 	unsigned int groupID;
-	unsigned int meshType;
+	unsigned int customMayaAtrributeCount;
 };
 
 struct MeshInfo {
@@ -81,4 +81,8 @@ struct BlendShape {
 struct Group {
 	char groupName[100];
 	char parentName[100];
+};
+
+struct CustomMayaAttributes {
+	unsigned int meshType;
 };

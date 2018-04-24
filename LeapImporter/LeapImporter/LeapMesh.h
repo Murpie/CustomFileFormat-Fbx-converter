@@ -30,11 +30,6 @@ public:
 	BlendShape* blendShape;
 	BlendShapeVertex* blendShapeVertices;
 	Group* group;
+	CustomMayaAttributes* customMayaAttribute;
 	Counter counterReader;
-
-	/*vector <BoundingBox> boundingBoxes;
-	vector <Joint> joints;
-	vector <Animation> animations;
-	vector <BlendShape> blendShapes;
-	vector <Group> group;*/
 };
