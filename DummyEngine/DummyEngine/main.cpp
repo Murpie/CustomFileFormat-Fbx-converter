@@ -4,9 +4,10 @@ int main()
 {
 	LeapImporter importer;
 
-	LeapMesh* mesh = importer.getMesh("Snowman.leap");
+	LeapMesh* mesh = importer.getMesh("testBox.leap");
 
 	int vertexCount = mesh->getVertexCount();
+	unsigned int customMeshType = (int)mesh->customMayaAttribute;
 
 	printf("%d\n", vertexCount);
 
@@ -16,6 +17,13 @@ int main()
 		printf("Normals: %f %f %f\n", mesh->vertices[i].nx, mesh->vertices[i].ny, mesh->vertices[i].nz);
 		printf("UVs: %f %f\n\n", mesh->vertices[i].u, mesh->vertices[i].v);
 	}
+	for (int i = 0; i < mesh->boundingBoxes.size(); i++)
+	{
+		printf("BBox minVector: %f %f %f\n", mesh->boundingBoxes[i]->minVector[0], mesh->boundingBoxes[i]->minVector[1], mesh->boundingBoxes[i]->minVector[2]);
+		printf("BBox maxVector: %f %f %f\n", mesh->boundingBoxes[i]->maxVector[0], mesh->boundingBoxes[i]->maxVector[1], mesh->boundingBoxes[i]->maxVector[2]);
+		printf("BBox center: %f %f %f\n\n", mesh->boundingBoxes[i]->center[0], mesh->boundingBoxes[i]->center[1], mesh->boundingBoxes[i]->center[2]);
+	}
+	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
 
 	getchar();
 	importer.deleteObject(mesh);

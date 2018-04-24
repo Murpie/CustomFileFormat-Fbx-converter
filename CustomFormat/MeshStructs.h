@@ -10,7 +10,7 @@ struct Counter
 	unsigned int animationCount;
 	unsigned int blendShapeCount;
 	unsigned int groupID;
-	unsigned int meshType;
+	unsigned int customMayaAttributeCount;
 };
 
 struct MeshInfo {
@@ -35,13 +35,16 @@ struct MaterialInformation {
 	char* textureFilePath[100];
 };
 
-struct BoundingBoxVertex {
-	float bx, by, bz;
-};
+//struct BoundingBoxVertex {
+//	float bx, by, bz;
+//};
 
 struct BoundingBox
 {
-	BoundingBoxVertex boundingBoxVertices[8];
+	//BoundingBoxVertex boundingBoxVertices[8];
+	float minVector[3];
+	float maxVector[3];
+	float center[3];
 };
 
 struct JointInformation {
@@ -81,4 +84,8 @@ struct BlendShape {
 struct Group {
 	char groupName[100];
 	char parentName[100];
+};
+
+struct CustomMayaAttributes {
+	unsigned int meshType;
 };

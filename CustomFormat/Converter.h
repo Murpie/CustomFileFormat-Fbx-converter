@@ -1,9 +1,12 @@
 #pragma once
 
 #include <fbxsdk.h>
+#include <string>
 #include <stdlib.h>
-#include <iostream>
+#include <iostream>   
 #include "MeshStructs.h"
+
+#define CUSTOM_ATTRIBUTE "MeshType"
 
 class Converter
 {
@@ -20,6 +23,7 @@ private:
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
+	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void createCustomFile();
 
 	FbxManager * manager;
@@ -31,6 +35,7 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
+	CustomMayaAttributes* customMayaAttribute;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
@@ -47,5 +52,11 @@ private:
 	const char* meshName;
 	const char* textureName;
 	char* ret;
+
+	//
+	std::vector<BoundingBox> vBBox;
+	//BoundingBox bBox;
+	bool isPartOf(const char* nodeName);
+	void loadBbox(FbxNode* currentNode);
 };
 
