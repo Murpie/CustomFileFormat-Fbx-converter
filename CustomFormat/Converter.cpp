@@ -517,16 +517,16 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 		jointInformation = new JointInformation[1];
 		//STORE: JointInformation char jointName[]
 		const char* tempJointName = node->GetName();
-		for (int n = 0; n < sizeof(tempJointName); n++)
+		for (unsigned int n = 0; n < sizeof(tempJointName); n++)
 			jointInformation->jointName[n] = tempJointName[n];
 
 		//STORE: JointInformation char parentName[]
 		const char* tempJointParentName = node->GetParent()->GetName();
-		for (int n = 0; n < sizeof(tempJointParentName); n++)
+		for (unsigned int n = 0; n < sizeof(tempJointParentName); n++)
 			jointInformation->parentName[n] = tempJointParentName[n];
 
-		std::cout << "Joint name: " << jointInformation->jointName << std::endl;
-		std::cout << "Parent name: " << jointInformation->parentName << std::endl;
+		//std::cout << "Joint name: " << jointInformation->jointName << std::endl;
+		//std::cout << "Parent name: " << jointInformation->parentName << std::endl;
 
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount
