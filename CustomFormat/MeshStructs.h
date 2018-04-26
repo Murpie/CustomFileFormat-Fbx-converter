@@ -52,20 +52,21 @@ struct KeyFrameData {
 
 struct KeyFrame {
 	float time; //d										5
-	vector <KeyFrameData> keyFrameData; //d				9
+	KeyFrameData keyFrameData; //d						9
 };
 
 struct JointInformation {
 	char jointName[100]; //d							2
 	char parentName[100]; //d							3
-	float localTransformMatrix[16];
-	float bindPoseMatrix[16];
+	float localTransformMatrix[16];						
+	float bindPoseMatrix[16];							
 	vector<KeyFrame> keyFrames; //d						?
 };
 
 struct AnimationInformation {
 	char animationName[100]; //d						1
 	int keyFrameCount; //d								4
+	int nrOfJoints;
 	vector<JointInformation> joints;					
 	//vector <KeyFrame> keyFrames;
 };

@@ -37,9 +37,9 @@ private:
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
 
-	KeyFrameData* keyFrameData;
-	KeyFrame* keyFrame;
-	JointInformation* jointInformation;
+	//KeyFrameData* keyFrameData;
+	//KeyFrame* keyFrame;
+	//JointInformation* jointInformation;
 	AnimationInformation* animationInfo;
 
 	FbxVector4* controlPoints;

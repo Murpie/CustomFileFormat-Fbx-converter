@@ -47,7 +47,7 @@ void Converter::importMesh()
 
 	rootNode = ourScene->GetRootNode();
 
-	/*
+	
 	exportFile(rootNode);
 
 	if (rootNode->GetChildCount() > 0)
@@ -57,11 +57,11 @@ void Converter::importMesh()
 			exportFile(rootNode->GetChild(i));
 		}
 	}
-	*/
+	
 	exportAnimation(ourScene, rootNode);
 
 	//Create the Custom File
-	//createCustomFile();
+	createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -418,6 +418,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	
 
 	outfile.close();
 
@@ -432,7 +433,7 @@ void Converter::createCustomFile()
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
 	animationInfo = new AnimationInformation[1];
-
+	animationInfo->nrOfJoints = 0;
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{
@@ -446,7 +447,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		
 		//STORE: AnimationInformation char animationName[]
 		const char* tempAnimName = animStack->GetInitialName();
-		for (int n = 0; n < sizeof(tempAnimName); n++)
+		for (int n = 0; n < strlen(tempAnimName) + 1; n++)
 			animationInfo->animationName[n] = tempAnimName[n];
 
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
@@ -474,7 +475,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 			getAnimation(currentAnimLayer, node);
 		}
 	}
-	printInformation();
+	//printInformation();
 }
 
 void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
@@ -499,7 +500,6 @@ void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 {
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
-	FbxAnimCurve* animCurve = NULL;
 	FbxString outputString;
 
 	float keyValue;
@@ -510,106 +510,92 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	std::vector<float> tempRotation;
 	std::vector<float> tempScaling;
 	
+	FbxAnimCurve* animCurve = NULL;
 	//LclTranslation: This property contains the translation information of the node.
 	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
 	{
-		jointInformation = new JointInformation[1];
+		//jointInformation = new JointInformation[1];
+		JointInformation jointInformation;
 		//STORE: JointInformation char jointName[]
 		const char* tempJointName = node->GetName();
-		for (unsigned int n = 0; n < sizeof(tempJointName); n++)
-			jointInformation->jointName[n] = tempJointName[n];
+		for (unsigned int n = 0; n < strlen(tempJointName) + 1; n++)
+			jointInformation.jointName[n] = tempJointName[n];
 
 		//STORE: JointInformation char parentName[]
 		const char* tempJointParentName = node->GetParent()->GetName();
-		for (unsigned int n = 0; n < sizeof(tempJointParentName); n++)
-			jointInformation->parentName[n] = tempJointParentName[n];
-
-		//std::cout << "Joint name: " << jointInformation->jointName << std::endl;
-		//std::cout << "Parent name: " << jointInformation->parentName << std::endl;
+		for (unsigned int n = 0; n < strlen(tempJointParentName) + 1; n++)
+			jointInformation.parentName[n] = tempJointParentName[n];
 
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount
 		//READ ONLY ONE TIME PLS WTF
 		animationInfo->keyFrameCount = keyCount;
 
-		keyFrame = new KeyFrame[keyCount];
-		for (int i = 0; i < keyCount; i++)
+		//keyFrame = new KeyFrame[keyCount];
+		KeyFrame keyFrame;
+		for (int j = 0; j < keyCount; j++)
 		{
-			keyTime = animCurve->KeyGetTime(i).GetSecondDouble();
+			keyTime = animCurve->KeyGetTime(j).GetSecondDouble();
 			//STORE: KeyFrame float time
-			keyFrame[i].time = keyTime;
+			keyFrame.time = keyTime;
 
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+			tempPosition.clear();
+			tempRotation.clear();
+			tempScaling.clear();
+
+			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempPosition.push_back(keyValue);
-		}
-		animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempPosition.push_back(keyValue);
-		}
-		animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempPosition.push_back(keyValue);
-		}
 
-		animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempRotation.push_back(keyValue);
-		}
-		animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempRotation.push_back(keyValue);
-		}
-		animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempRotation.push_back(keyValue);
-		}
 
-		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempScaling.push_back(keyValue);
-		}
-		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempScaling.push_back(keyValue);
-		}
-		animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-		for (int i = 0; i < keyCount; i++)
-		{
-			keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+
+			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempScaling.push_back(keyValue);
-		}
 
-		for (int i = 0; i < keyCount; i++)
-		{
-			KeyFrameData keyFrameData;
-			keyFrameData.position[0] = tempPosition[i];
-			keyFrameData.position[1] = tempPosition[i + keyCount];
-			keyFrameData.position[2] = tempPosition[i + (keyCount * 2)];
 
-			keyFrameData.rotation[0] = tempRotation[i];
-			keyFrameData.rotation[1] = tempRotation[i + keyCount];
-			keyFrameData.rotation[2] = tempRotation[i + (keyCount * 2)];
+			KeyFrameData tempKeyFrameData;
+			tempKeyFrameData.position[0] = tempPosition[0];
+			tempKeyFrameData.position[1] = tempPosition[1];
+			tempKeyFrameData.position[2] = tempPosition[2];
 
-			keyFrameData.scaling[0] = tempScaling[i];
-			keyFrameData.scaling[1] = tempScaling[i + keyCount];
-			keyFrameData.scaling[2] = tempScaling[i + (keyCount * 2)];
+			tempKeyFrameData.rotation[0] = tempRotation[0];
+			tempKeyFrameData.rotation[1] = tempRotation[1];
+			tempKeyFrameData.rotation[2] = tempRotation[2];
 
-			keyFrame->keyFrameData.push_back(keyFrameData);
+			tempKeyFrameData.scaling[0] = tempScaling[0];
+			tempKeyFrameData.scaling[1] = tempScaling[1];
+			tempKeyFrameData.scaling[2] = tempScaling[2];
+
+			keyFrame.keyFrameData = tempKeyFrameData;
 			/*
 			std::cout << "Keyframe: " << i << std::endl;
 			std::cout << "TX: " << keyFrameData->position[0] << std::endl;
@@ -623,14 +609,109 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			std::cout << "SX: " << keyFrameData->scaling[0] << std::endl;
 			std::cout << "SY: " << keyFrameData->scaling[1] << std::endl;
 			std::cout << "SZ: " << keyFrameData->scaling[2] << std::endl << std::endl;*/
-
-		}//for keyCount
-
-		//jointInformation[0].keyFrames[0] = keyFrame[0];
-		//animationInfo[0].joints[0] = jointInformation[0];
-		delete[] jointInformation;
-		delete[] keyFrame;
-	}//if (animCurve)
+			jointInformation.keyFrames.push_back(keyFrame);
+		}
+		animationInfo->joints.push_back(jointInformation);
+		animationInfo->nrOfJoints++;
+	}
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyTime = animCurve->KeyGetTime(i).GetSecondDouble();
+	//		//STORE: KeyFrame float time
+	//		keyFrame.time = keyTime;
+	//
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempPosition.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempPosition.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempPosition.push_back(keyValue);
+	//	}
+	//
+	//	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempRotation.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempRotation.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempRotation.push_back(keyValue);
+	//	}
+	//
+	//	animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempScaling.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempScaling.push_back(keyValue);
+	//	}
+	//	animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+	//		tempScaling.push_back(keyValue);
+	//	}
+	//
+	//	for (int i = 0; i < keyCount; i++)
+	//	{
+	//		KeyFrameData keyFrameData;
+	//		keyFrameData.position[0] = tempPosition[i];
+	//		keyFrameData.position[1] = tempPosition[i + keyCount];
+	//		keyFrameData.position[2] = tempPosition[i + (keyCount * 2)];
+	//
+	//		keyFrameData.rotation[0] = tempRotation[i];
+	//		keyFrameData.rotation[1] = tempRotation[i + keyCount];
+	//		keyFrameData.rotation[2] = tempRotation[i + (keyCount * 2)];
+	//
+	//		keyFrameData.scaling[0] = tempScaling[i];
+	//		keyFrameData.scaling[1] = tempScaling[i + keyCount];
+	//		keyFrameData.scaling[2] = tempScaling[i + (keyCount * 2)];
+	//
+	//		keyFrame.keyFrameData.push_back(keyFrameData);
+	//		/*
+	//		std::cout << "Keyframe: " << i << std::endl;
+	//		std::cout << "TX: " << keyFrameData->position[0] << std::endl;
+	//		std::cout << "TY: " << keyFrameData->position[1] << std::endl;
+	//		std::cout << "TZ: " << keyFrameData->position[2] << std::endl;
+	//
+	//		std::cout << "RX: " << keyFrameData->rotation[0] << std::endl;
+	//		std::cout << "RY: " << keyFrameData->rotation[1] << std::endl;
+	//		std::cout << "RZ: " << keyFrameData->rotation[2] << std::endl;
+	//
+	//		std::cout << "SX: " << keyFrameData->scaling[0] << std::endl;
+	//		std::cout << "SY: " << keyFrameData->scaling[1] << std::endl;
+	//		std::cout << "SZ: " << keyFrameData->scaling[2] << std::endl << std::endl;*/
+	//
+	//	}//for keyCount
+	//
+	//	jointInformation.keyFrames.push_back(keyFrame);
+	//	animationInfo->joints.push_back(jointInformation);
+	//	animationInfo->nrOfJoints++;
+	//	//delete[] jointInformation;
+	//	//delete[] keyFrame;
+	//}//if (animCurve)
 }
 
 void Converter::displayCurveKeys(FbxAnimCurve* curve)
@@ -667,6 +748,28 @@ void Converter::printInformation()
 {
 	std::cout << "Animation Name: " << animationInfo->animationName << std::endl;
 	std::cout << "Keyframe Count: " << animationInfo->keyFrameCount << std::endl;
+	std::cout << "Nr of joints: " << animationInfo->nrOfJoints << std::endl << std::endl;
+	for (int i = 0; i < animationInfo->nrOfJoints; i++)
+	{
+		std::cout << "Joint name: " << animationInfo->joints[i].jointName << std::endl;
+		std::cout << "Parent name: " << animationInfo->joints[i].parentName << std::endl;
+		for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
+		{
+			std::cout << "Keyframe[" << j << "]" << std::endl;
+			std::cout << "Time: " << animationInfo->joints[i].keyFrames[j].time << std::endl;
+			std::cout << "TX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[0] << std::endl;
+			std::cout << "TY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[1] << std::endl;
+			std::cout << "TZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[2] << std::endl;
+
+			std::cout << "RX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[0] << std::endl;
+			std::cout << "RY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[1] << std::endl;
+			std::cout << "RZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[2] << std::endl;
+
+			std::cout << "SX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[0] << std::endl;
+			std::cout << "SY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[1] << std::endl;
+			std::cout << "SZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[2] << std::endl << std::endl;
+		}
+	}
 }
 
 
