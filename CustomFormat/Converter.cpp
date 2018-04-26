@@ -419,6 +419,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	
+	//outfile.write((const char*)animationInfo, sizeof(char) * 100); the fuck?
 
 	outfile.close();
 
