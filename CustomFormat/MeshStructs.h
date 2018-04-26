@@ -71,7 +71,6 @@ struct AnimationInformation {
 struct BlendShapeVertex {
 	float x, y, z;
 	float nx, ny, nz;
-	float u, v;
 };
 
 struct BlendShape
