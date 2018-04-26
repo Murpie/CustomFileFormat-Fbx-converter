@@ -93,6 +93,7 @@ struct BlendShapes {
 	vector <BlendShapeKeyframe> keyframes;
 };
 
+
 struct Group {
 	char groupName[100];
 	char parentName[100];

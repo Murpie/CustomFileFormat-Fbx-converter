@@ -555,7 +555,24 @@ void Converter::createCustomFile()
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
-	outfile.write((const char*)objectBlendShapes, sizeof(BlendShapes)*counter.blendShapeCount);
+
+	// write the fixed part (blendShapeCount, keyFramecount)
+	outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
+	for (int i = 0; i < counter.blendShapeCount; i++)
+	{
+		outfile.write((const char*)&objectBlendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
+		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex)*objectBlendShapes->blendShape[i].blendShapeVertexCount);
+	}
+	outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
+
+	// for each blendshape in "blendshape"
+	//   write blendshapevertexcount
+	//   write pointer to blendshapevertex (source address), count, size is sizeof(blendshapevertex)
+	// for each keyframe in keyframes
+	//   write all keyframes (pointer to the first one, and the count, and the size of each)
+
+
+	//outfile.write((const char*)objectBlendShapes, (sizeof(BlendShapes)*counter.blendShapeCount) + (sizeof(objectBlendShapes->blendShape)*objectBlendShapes->blendShapeCount) + (sizeof(objectBlendShapes->blendShape[0].blendShapeVertices)*objectBlendShapes->blendShape[0].blendShapeVertexCount) + (sizeof(objectBlendShapes->keyframes)*objectBlendShapes->keyFrameCount));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	outfile.close();

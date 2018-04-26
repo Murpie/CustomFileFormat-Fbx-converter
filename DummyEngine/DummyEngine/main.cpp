@@ -1,7 +1,12 @@
 #include "LeapImporter.h"
-
+//int main(int argc, char** argv)
 int main()
 {
+
+	/*fprintf(stderr, "arguments: %d\n", argc);
+	fprintf(stderr, "arguments: %s\n", argv[1]);
+	fflush(NULL);
+	getchar();*/
 	LeapImporter importer;
 
 	LeapMesh* mesh = importer.getMesh("BlendShapeMesh.leap");

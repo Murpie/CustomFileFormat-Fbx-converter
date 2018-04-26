@@ -31,8 +31,19 @@ void LeapMesh::loader(const char* fileName)
 
 	blendShapes = new BlendShapes[counterReader.blendShapeCount];
 
-	infile.read((char*)blendShapes, counterReader.blendShapeCount * sizeof(BlendShapes));
+	infile.read((char*)blendShapes, 2* sizeof(float));
+	
+	for (int i = 0; i < counterReader.blendShapeCount; i++)
+	{
+		infile.read((char*)blendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
+		infile.read((char*)blendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex)*blendShapes->blendShape[i].blendShapeVertexCount);
+	}
 
+	infile.read((char*)blendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*blendShapes->keyFrameCount);
+
+	/*infile.read((char*)blendShapes, counterReader.blendShapeCount * sizeof(float));*/
+
+	
 
 	if (infile.is_open())
 	{
