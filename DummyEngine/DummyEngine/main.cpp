@@ -14,7 +14,10 @@ int main()
 	int vertexCount = mesh->getVertexCount();
 
 	printf("%d\n", vertexCount);
-	printf("Blendshape x: %f\n\n", mesh->blendShapes->blendShapeCount);
+	for (int i = 0; i < mesh->blendShapes->blendShape[0].blendShapeVertexCount; i++)
+	{
+		printf("Blendshapes vertex[%d]: %f %f %f\n\n", i, mesh->blendShapes->blendShape[0].blendShapeVertices[i].x, mesh->blendShapes->blendShape[0].blendShapeVertices[i].y, mesh->blendShapes->blendShape[0].blendShapeVertices[i].z);
+	}
 	
 	for (int i = 0; i < vertexCount; i++)
 	{
