@@ -4,6 +4,7 @@ int main()
 {
 	LeapImporter importer;
 
+	/*
 	LeapMesh* mesh = importer.getMesh("testBox.leap");
 
 	int vertexCount = mesh->getVertexCount();
@@ -27,5 +28,21 @@ int main()
 
 	getchar();
 	importer.deleteObject(mesh);
+	*/
+
+	LeapLevel* level = importer.getLevel("level_Test.leap");
+
+	for (int i = 0; i < level->levelObjects.size(); i++)
+	{
+		printf("|| Translation: \n");
+		printf("|| %d\n", level->levelObjects[i]->x);
+		printf("|| %d\n", level->levelObjects[i]->y);
+		printf("|| %d\n", level->levelObjects[i]->z);
+		printf("|| ID: \n");
+		printf("|| %d\n\n", level->levelObjects[i]->id);
+	}
+
+	std::getchar();
+	importer.deleteObject(level);
 	return 0;
 }
