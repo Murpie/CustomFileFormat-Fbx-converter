@@ -376,8 +376,14 @@ void Converter::loadGroups(FbxNode* currentNode)
 		FbxString groupName = currentNode->GetName();
 		std::cout << "GroupName:" << groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
 
+		int childrenSize = 0;
+	//	std::string * childrenName;
+
 		for (int i = 0; i < currentNode->GetChildCount(); i++)
 		{
+			childrenSize++;
+			//childrenName[i] = std::string(currentNode->GetChild(i)->GetName());
+
 			mesh = currentNode->GetChild(i)->GetMesh();
 			light = currentNode->GetChild(i)->GetLight();
 			camera = currentNode->GetChild(i)->GetCamera();
@@ -409,11 +415,6 @@ void Converter::loadGroups(FbxNode* currentNode)
 				{
 					loadLights(light);
 				}
-				////Groups?
-				//if (group)
-				//{
-				//	loadGroups(group);
-				//}
 			}
 			else
 			{
@@ -423,6 +424,10 @@ void Converter::loadGroups(FbxNode* currentNode)
 
 
 		}
+
+
+
+
 	}
 
 
