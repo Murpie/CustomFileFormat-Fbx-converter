@@ -423,7 +423,12 @@ void Converter::createCustomFile()
 	outfile.write((const char*)animationInfo, sizeof(int) * 2);
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
-		
+		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
+		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
+		outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
+		outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
+
+		outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame)*animationInfo->keyFrameCount);
 	}
 
 	outfile.close();
@@ -590,7 +595,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			tempScaling.push_back(keyValue);
 
 
-			KeyFrameData tempKeyFrameData;
+			KeyFrame tempKeyFrameData;
 			tempKeyFrameData.position[0] = tempPosition[0];
 			tempKeyFrameData.position[1] = tempPosition[1];
 			tempKeyFrameData.position[2] = tempPosition[2];
@@ -603,8 +608,8 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			tempKeyFrameData.scaling[1] = tempScaling[1];
 			tempKeyFrameData.scaling[2] = tempScaling[2];
 
-			keyFrame.keyFrameData = tempKeyFrameData;
-			jointInformation.keyFrames.push_back(keyFrame);
+			//keyFrame.keyFrameData = tempKeyFrameData;
+			jointInformation.keyFrames.push_back(tempKeyFrameData);
 		}
 		animationInfo->joints.push_back(jointInformation);
 		animationInfo->nrOfJoints++;
@@ -722,17 +727,17 @@ void Converter::printInformation()
 		{
 			std::cout << "Keyframe[" << j << "]" << std::endl;
 			std::cout << "Time: " << animationInfo->joints[i].keyFrames[j].time << std::endl;
-			std::cout << "TX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[0] << std::endl;
-			std::cout << "TY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[1] << std::endl;
-			std::cout << "TZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.position[2] << std::endl;
+			std::cout << "TX: " << animationInfo->joints[i].keyFrames[j].position[0] << std::endl;
+			std::cout << "TY: " << animationInfo->joints[i].keyFrames[j].position[1] << std::endl;
+			std::cout << "TZ: " << animationInfo->joints[i].keyFrames[j].position[2] << std::endl;
 
-			std::cout << "RX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[0] << std::endl;
-			std::cout << "RY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[1] << std::endl;
-			std::cout << "RZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.rotation[2] << std::endl;
+			std::cout << "RX: " << animationInfo->joints[i].keyFrames[j].rotation[0] << std::endl;
+			std::cout << "RY: " << animationInfo->joints[i].keyFrames[j].rotation[1] << std::endl;
+			std::cout << "RZ: " << animationInfo->joints[i].keyFrames[j].rotation[2] << std::endl;
 
-			std::cout << "SX: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[0] << std::endl;
-			std::cout << "SY: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[1] << std::endl;
-			std::cout << "SZ: " << animationInfo->joints[i].keyFrames[j].keyFrameData.scaling[2] << std::endl << std::endl;
+			std::cout << "SX: " << animationInfo->joints[i].keyFrames[j].scaling[0] << std::endl;
+			std::cout << "SY: " << animationInfo->joints[i].keyFrames[j].scaling[1] << std::endl;
+			std::cout << "SZ: " << animationInfo->joints[i].keyFrames[j].scaling[2] << std::endl << std::endl;
 		}
 	}
 }

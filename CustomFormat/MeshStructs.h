@@ -44,15 +44,18 @@ struct BoundingBox
 	BoundingBoxVertex boundingBoxVertices[8];
 };
 
+/*
 struct KeyFrameData {
 	float position[3]; //d								6
 	float rotation[3]; //d								7
 	float scaling[3]; //d								8
-};
+};*/
 
 struct KeyFrame {
 	float time; //d										5
-	KeyFrameData keyFrameData; //d						9
+	float position[3];
+	float rotation[3];
+	float scaling[3];
 };
 
 struct JointInformation {
