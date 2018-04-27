@@ -32,6 +32,7 @@ private:
 	MeshInfo* meshInfo;
 	Vertex* vertices;
 	MaterialInformation* matInfo;
+	Group* groups;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;

@@ -79,7 +79,7 @@ struct BlendShape {
 };
 
 struct Group {
-	char groupName[100];
+	std::string groupName;
 	int childCount;
-	char childName[100];
+	std::string * childName;
 };

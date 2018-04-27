@@ -373,60 +373,63 @@ void Converter::loadGroups(FbxNode* currentNode)
 {
 	if ((std::string)currentNode->GetName() != "RootNode")
 	{
-		FbxString groupName = currentNode->GetName();
-		std::cout << "GroupName:" << groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
+		groups = new Group;
+
+
+		groups->groupName = currentNode->GetName();
+		
+
+		std::cout << "GroupName:" << groups->groupName.c_str() << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
 
 		int childrenSize = 0;
-	//	std::string * childrenName;
-
+		groups->childName = new std::string[currentNode->GetChildCount()];
 		for (int i = 0; i < currentNode->GetChildCount(); i++)
 		{
 			childrenSize++;
-			//childrenName[i] = std::string(currentNode->GetChild(i)->GetName());
+			groups->childName[i] = currentNode->GetChild(i)->GetName();
 
-			mesh = currentNode->GetChild(i)->GetMesh();
-			light = currentNode->GetChild(i)->GetLight();
-			camera = currentNode->GetChild(i)->GetCamera();
 
-			std::cout << currentNode->GetChild(i)->GetName() << endl;
-			
-			if (currentNode->GetChild(i))
-			{
-				//Load in Vertex data
-				if (mesh)
-				{
-					loadVertex(mesh);
-				}
 
-				//Load Material & Texture File information
-				if (mesh)
-				{
-					loadMaterial(currentNode);
-				}
-
-				//Load Cameras
-				if (camera)
-				{
-					loadCamera(camera);
-				}
-
-				//Load Lights
-				if (light)
-				{
-					loadLights(light);
-				}
-			}
-			else
-			{
-				printf("Access violation: Node not found\n\n");
-				exit(-2);
-			}
+			//if (currentNode->GetChild(i))
+			//{
+			//	//Load in Vertex data
+			//	if (mesh)
+			//	{
+			//		loadVertex(mesh);
+			//	}
+			//
+			//	//Load Material & Texture File information
+			//	if (mesh)
+			//	{
+			//		loadMaterial(currentNode);
+			//	}
+			//
+			//	//Load Cameras
+			//	if (camera)
+			//	{
+			//		loadCamera(camera);
+			//	}
+			//
+			//	//Load Lights
+			//	if (light)
+			//	{
+			//		loadLights(light);
+			//	}
+			//}
+			//else
+			//{
+			//	printf("Access violation: Node not found\n\n");
+			//	exit(-2);
+			//}
 
 
 		}
+		groups->childCount = childrenSize;
+		
 
 
-
+		for (int i = 0; i < groups->childCount; i++)
+			std::cout << groups->childName[i].c_str() << std::endl;
 
 	}
 
@@ -482,6 +485,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	outfile.write((const char*)groups, sizeof(Group));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	outfile.close();
