@@ -419,7 +419,12 @@ void Converter::createCustomFile()
 	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	
-	//outfile.write((const char*)animationInfo, sizeof(char) * 100); the fuck?
+	outfile.write((const char*)animationInfo, sizeof(char) * 100);
+	outfile.write((const char*)animationInfo, sizeof(int) * 2);
+	for (int i = 0; i < animationInfo->nrOfJoints; i++)
+	{
+		
+	}
 
 	outfile.close();
 
@@ -454,6 +459,9 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
 		//GetMemberCount: Returns the number of objects contained within the collection.
 		int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
+
+		counter.animationCount = animLayers;
+
 		outputString = "   contains ";
 		if (animLayers == 0)
 			outputString += "no layers";
@@ -501,6 +509,7 @@ void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
 void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 {
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
+	FbxAnimCurve* animCurve = NULL;
 	FbxString outputString;
 
 	float keyValue;
@@ -511,7 +520,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	std::vector<float> tempRotation;
 	std::vector<float> tempScaling;
 	
-	FbxAnimCurve* animCurve = NULL;
 	//LclTranslation: This property contains the translation information of the node.
 	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	if (animCurve)
@@ -530,7 +538,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount
-		//READ ONLY ONE TIME PLS WTF
 		animationInfo->keyFrameCount = keyCount;
 
 		//keyFrame = new KeyFrame[keyCount];
@@ -597,19 +604,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			tempKeyFrameData.scaling[2] = tempScaling[2];
 
 			keyFrame.keyFrameData = tempKeyFrameData;
-			/*
-			std::cout << "Keyframe: " << i << std::endl;
-			std::cout << "TX: " << keyFrameData->position[0] << std::endl;
-			std::cout << "TY: " << keyFrameData->position[1] << std::endl;
-			std::cout << "TZ: " << keyFrameData->position[2] << std::endl;
-
-			std::cout << "RX: " << keyFrameData->rotation[0] << std::endl;
-			std::cout << "RY: " << keyFrameData->rotation[1] << std::endl;
-			std::cout << "RZ: " << keyFrameData->rotation[2] << std::endl;
-
-			std::cout << "SX: " << keyFrameData->scaling[0] << std::endl;
-			std::cout << "SY: " << keyFrameData->scaling[1] << std::endl;
-			std::cout << "SZ: " << keyFrameData->scaling[2] << std::endl << std::endl;*/
 			jointInformation.keyFrames.push_back(keyFrame);
 		}
 		animationInfo->joints.push_back(jointInformation);
@@ -713,36 +707,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	//	//delete[] jointInformation;
 	//	//delete[] keyFrame;
 	//}//if (animCurve)
-}
-
-void Converter::displayCurveKeys(FbxAnimCurve* curve)
-{
-	//FbxTime: Class to encapsulate time units, is just used to represent a moment. Can measure time in hour, minute, second, frame, field, residual and also combination of these units.
-	//FbxTime keyTime; //not needed?
-	float keyValue;
-	//char timeString[256]; not needed?
-	FbxString outputString;
-	//KeyGetCount: Get the number of keys.
-	int keyCount = curve->KeyGetCount();
-
-	for (int i = 0; i < keyCount; i++)
-	{
-		//Get key value depending on current curve and LclRotation/Translation/Scale and FBXSDK_CURVENODE_COMPONENT_??
-		keyValue = static_cast<float>(curve->KeyGetValue(i));
-		//KeyGetTime: Returns key time (time at which this key is occurring).
-		//keyTime = curve->KeyGetTime(i); //not needed?
-
-		double timeTest = curve->KeyGetTime(i).GetSecondDouble();
-
-		outputString = "      Key Frame: ";
-		outputString += i;
-		outputString += ".... Key Value: ";
-		outputString += keyValue;
-		outputString += ".... Time: ";
-		outputString += timeTest;
-		outputString += "\n";
-		FBXSDK_printf(outputString);
-	}
 }
 
 void Converter::printInformation()

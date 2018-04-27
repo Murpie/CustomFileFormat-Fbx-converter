@@ -24,7 +24,6 @@ private:
 	void createCustomFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
 	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
-	void displayCurveKeys(FbxAnimCurve* curve);
 	void printInformation();
 
 	FbxManager * manager;
