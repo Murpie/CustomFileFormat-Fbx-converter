@@ -80,5 +80,6 @@ struct BlendShape {
 
 struct Group {
 	char groupName[100];
-	char parentName[100];
+	int childCount;
+	char childName[100];
 };

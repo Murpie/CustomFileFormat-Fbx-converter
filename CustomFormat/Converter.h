@@ -19,6 +19,7 @@ private:
 	void loadVertex(FbxMesh* currentMesh);
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
+	void loadGroups(FbxLODGroup* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void createCustomFile();
 
@@ -38,7 +39,8 @@ private:
 	FbxMesh* mesh;
 	FbxLight* light;
 	FbxCamera* camera;
-	FbxString lString;;
+	FbxString lString;
+	FbxLODGroup* group;
 
 	int polygonCount;
 	int polygonSize;

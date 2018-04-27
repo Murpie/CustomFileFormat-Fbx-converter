@@ -66,7 +66,9 @@ void Converter::exportFile(FbxNode* currentNode)
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
 	camera = currentNode->GetCamera();
-	
+	//group = currentNode->GetParent();
+	currentNode->
+
 	if (currentNode)
 	{
 		//Load in Vertex data
@@ -91,6 +93,11 @@ void Converter::exportFile(FbxNode* currentNode)
 		if (light)
 		{
 			loadLights(light);
+		}
+		//Groups?
+		if (group)
+		{
+			loadGroups(group);
 		}
 	}
 	else
@@ -360,6 +367,13 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		FBXSDK_printf("\tField of View: %.f\n", fov);
 		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
 	}
+}
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadGroups(FbxLODGroup* currentNode)
+{
+	FbxString groupName = currentNode->GetName();
+
+
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
