@@ -130,11 +130,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="LeapImporter.h" />
+    <ClInclude Include="LeapLevel.h" />
     <ClInclude Include="LeapMesh.h" />
     <ClInclude Include="MeshStructs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LeapImporter.cpp" />
+    <ClCompile Include="LeapLevel.cpp" />
     <ClCompile Include="LeapMesh.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
