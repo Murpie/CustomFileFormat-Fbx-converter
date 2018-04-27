@@ -4,8 +4,7 @@ int main()
 {
 	LeapImporter importer;
 
-	/*
-	LeapMesh* mesh = importer.getMesh("testBox.leap");
+	LeapMesh* mesh = importer.getMesh("Bucket.leap");
 
 	int vertexCount = mesh->getVertexCount();
 	unsigned int customMeshType = (int)mesh->customMayaAttribute;
@@ -26,11 +25,13 @@ int main()
 	}
 	printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
 
-	getchar();
 	importer.deleteObject(mesh);
-	*/
+	
+	//..... Level Test
 
 	LeapLevel* level = importer.getLevel("level_Test.leap");
+
+	printf("|| Size: %d\n", level->levelObjects.size());
 
 	for (int i = 0; i < level->levelObjects.size(); i++)
 	{

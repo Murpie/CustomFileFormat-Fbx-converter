@@ -21,9 +21,7 @@ public:
 	VertexInformation* vertices;
 	MeshInfo* transform;
 	MaterialInformation* material;
-	//BoundingBox* BBox;
 	vector <BoundingBox*> boundingBoxes;
-	//BoundingBoxVertex* BBoxVertices;
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;

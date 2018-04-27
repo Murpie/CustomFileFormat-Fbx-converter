@@ -550,10 +550,14 @@ void Converter::createCustomLevelFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
+
 	for (int i = 0; i < levelObjects.size(); i++)
 	{
 		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
 	}
+
+	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
+
 	outfile.close();
 }
 
