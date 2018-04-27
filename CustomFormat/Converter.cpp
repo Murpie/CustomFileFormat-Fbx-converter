@@ -492,13 +492,19 @@ void Converter::loadLevel(FbxNode * currentNode)
 		{
 			LevelObject lvlObj = LevelObject();
 			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
-			// Save world position
+			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+			// Save position
 			lvlObj.x = (float)tempTranslation[0];
 			lvlObj.y = (float)tempTranslation[1];
 			lvlObj.z = (float)tempTranslation[2];
+			// Save rotation
+			lvlObj.rotationX = (float)tempTranslation[0];
+			lvlObj.rotationY = (float)tempTranslation[1];
+			lvlObj.rotationZ = (float)tempTranslation[2];
 
 			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-			
+			FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+
 			// Save ID
 			unsigned int attributeValue;
 			//std::string attributeName = "";

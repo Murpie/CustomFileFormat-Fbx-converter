@@ -93,5 +93,6 @@ struct CustomMayaAttributes {
 
 struct LevelObject {
 	float x, y, z;
+	float rotationX, rotationY, rotationZ;
 	int id;
 };
