@@ -419,12 +419,12 @@ void Converter::createCustomFile()
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	
-	outfile.write((const char*)animationInfo, sizeof(char) * 100);
+	outfile.write((const char*)animationInfo, sizeof(char) * strlen(animationInfo->animationName));
 	outfile.write((const char*)animationInfo, sizeof(int) * 2);
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
-		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
-		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
+		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * strlen(animationInfo->joints[i].jointName));
+		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * strlen(animationInfo->joints[i].parentName));
 		//outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
 		//outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
 
