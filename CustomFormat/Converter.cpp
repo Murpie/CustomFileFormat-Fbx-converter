@@ -66,8 +66,8 @@ void Converter::exportFile(FbxNode* currentNode)
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
 	camera = currentNode->GetCamera();
-	//group = currentNode->GetParent();
-	currentNode->
+	group = currentNode;
+	
 
 	if (currentNode)
 	{
@@ -369,9 +369,62 @@ void Converter::loadCamera(FbxCamera* currentNode)
 	}
 }
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadGroups(FbxLODGroup* currentNode)
+void Converter::loadGroups(FbxNode* currentNode)
 {
-	FbxString groupName = currentNode->GetName();
+	if ((std::string)currentNode->GetName() != "RootNode")
+	{
+		FbxString groupName = currentNode->GetName();
+		std::cout << "GroupName:" << groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
+
+		for (int i = 0; i < currentNode->GetChildCount(); i++)
+		{
+			mesh = currentNode->GetChild(i)->GetMesh();
+			light = currentNode->GetChild(i)->GetLight();
+			camera = currentNode->GetChild(i)->GetCamera();
+
+			std::cout << currentNode->GetChild(i)->GetName() << endl;
+			
+			if (currentNode->GetChild(i))
+			{
+				//Load in Vertex data
+				if (mesh)
+				{
+					loadVertex(mesh);
+				}
+
+				//Load Material & Texture File information
+				if (mesh)
+				{
+					loadMaterial(currentNode);
+				}
+
+				//Load Cameras
+				if (camera)
+				{
+					loadCamera(camera);
+				}
+
+				//Load Lights
+				if (light)
+				{
+					loadLights(light);
+				}
+				////Groups?
+				//if (group)
+				//{
+				//	loadGroups(group);
+				//}
+			}
+			else
+			{
+				printf("Access violation: Node not found\n\n");
+				exit(-2);
+			}
+
+
+		}
+	}
+
 
 
 }
