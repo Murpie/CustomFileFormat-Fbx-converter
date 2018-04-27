@@ -44,28 +44,26 @@ struct BoundingBox
 	BoundingBoxVertex boundingBoxVertices[8];
 };
 
+struct KeyFrame {
+	float time;
+	float position[3];
+	float rotation[3];
+	float scaling[3];
+};
+
 struct JointInformation {
 	char jointName[100];
 	char parentName[100];
 	float localTransformMatrix[16];
 	float bindPoseMatrix[16];
-};
-
-struct KeyFrameData {
-	float position[3];
-	float rotation[4];
-	float scaling[3];
-};
-
-struct KeyFrame {
-	float time;
-	vector <KeyFrameData> keyFrameData;
+	vector<KeyFrame> keyFrames;
 };
 
 struct AnimationInformation {
 	char animationName[100];
 	int keyFrameCount;
-	vector <KeyFrame> keyFrames;
+	int nrOfJoints;
+	vector<JointInformation> joints;
 };
 
 struct BlendShapeVertex {

@@ -29,6 +29,8 @@ void LeapMesh::loader(const char* fileName)
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
 
+
+
 	if (infile.is_open())
 	{
 		infile.close();

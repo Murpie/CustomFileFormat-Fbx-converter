@@ -26,7 +26,6 @@ public:
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
-	KeyFrameData* keyFrameData;
 	BlendShape* blendShape;
 	BlendShapeVertex* blendShapeVertices;
 	Group* group;

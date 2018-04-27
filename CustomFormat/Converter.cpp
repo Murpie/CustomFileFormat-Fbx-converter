@@ -416,7 +416,7 @@ void Converter::createCustomFile()
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
-	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	
 	outfile.write((const char*)animationInfo, sizeof(char) * 100);
