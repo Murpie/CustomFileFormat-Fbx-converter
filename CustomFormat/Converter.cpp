@@ -425,8 +425,8 @@ void Converter::createCustomFile()
 	{
 		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
 		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
-		outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
-		outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
+		//outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
+		//outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
 
 		outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame)*animationInfo->keyFrameCount);
 	}
@@ -465,7 +465,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		//GetMemberCount: Returns the number of objects contained within the collection.
 		int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
 
-		counter.animationCount = animLayers;
+		//counter.animationCount = animLayers;
 
 		outputString = "   contains ";
 		if (animLayers == 0)
