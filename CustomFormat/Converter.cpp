@@ -20,6 +20,7 @@ Converter::Converter(const char * fileName)
 
 	//
 	counter.boundingBoxCount = 0;
+	counter.levelObjectCount = 0;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -34,6 +35,7 @@ Converter::~Converter()
 	manager->Destroy();
 
 	vBBox.clear();
+	levelObjects.clear();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -57,7 +59,11 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			if (isPartOf(rootNode->GetChild(i)->GetName()))
+			if (isLevel)
+			{
+				loadLevel(rootNode->GetChild(i));
+			}
+			else if (isPartOf(rootNode->GetChild(i)->GetName()))
 			{
 				loadBbox(rootNode->GetChild(i));
 			}
@@ -67,14 +73,18 @@ void Converter::importMesh()
 	}
 
 	//Create the Custom File
-	createCustomFile();
+	if (isLevel)
+		createCustomLevelFile();
+	else
+		createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
 	printf("\nNode: %s\n", currentNode->GetName());
 
-	loadGlobaltransform(currentNode);
+	if (!isLevel)
+		loadGlobaltransform(currentNode);
 	
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
@@ -466,6 +476,85 @@ void Converter::createCustomFile()
 		std::ofstream dst("NewColors.png", std::ios::binary);
 		dst << src.rdbuf();
 	}
+}
+
+void Converter::loadLevel(FbxNode * currentNode)
+{
+	printf("\n\t|| Node: %s\n", currentNode->GetName());
+
+	mesh = currentNode->GetMesh();
+	light = currentNode->GetLight();
+	camera = currentNode->GetCamera();
+
+	if (currentNode)
+	{
+		if (mesh && !isPartOf(currentNode->GetName()))
+		{
+			LevelObject lvlObj = LevelObject();
+			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+			// Save world position
+			lvlObj.x = (float)tempTranslation[0];
+			lvlObj.y = (float)tempTranslation[1];
+			lvlObj.z = (float)tempTranslation[2];
+
+			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			
+			// Save ID
+			unsigned int attributeValue;
+			//std::string attributeName = "";
+
+			FbxProperty prop = currentNode->FindProperty(TYPE_ID, false);
+			if (prop.IsValid())
+			{
+				//attributeName = prop.GetName();
+				attributeValue = prop.Get<int>();
+
+				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
+				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
+				lvlObj.id = prop.Get<int>();
+			}
+			levelObjects.push_back(lvlObj);
+			counter.levelObjectCount++;
+		}
+		//Load Cameras
+		if (camera)
+		{
+
+		}
+
+		//Load Lights
+		if (light)
+		{
+
+		}
+	}
+	else
+	{
+		printf("Access violation: Node not found\n\n");
+		exit(-2);
+	}
+}
+
+void Converter::createCustomLevelFile()
+{
+	size_t len = strlen(meshName);
+	ret = new char[len + 2];
+	strcpy(ret, meshName);
+	ret[len - 3] = 'l';
+	ret[len - 2] = 'e';
+	ret[len - 1] = 'a';
+	ret[len] = 'p';
+	ret[len + 1] = '\0';
+	meshName = ret;
+
+	std::ofstream outfile(meshName, std::ofstream::binary);
+
+	outfile.write((const char*)&counter, sizeof(Counter));
+	for (int i = 0; i < levelObjects.size(); i++)
+	{
+		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
+	}
+	outfile.close();
 }
 
 bool Converter::isPartOf(const char * nodeName)

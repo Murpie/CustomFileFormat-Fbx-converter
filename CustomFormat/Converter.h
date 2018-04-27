@@ -7,12 +7,14 @@
 #include "MeshStructs.h"
 
 #define CUSTOM_ATTRIBUTE "MeshType"
-
+#define TYPE_ID  "TypeID"
 class Converter
 {
 public:
 	Converter(const char* fileName);
 	~Converter();
+
+	bool isLevel;
 
 	void importMesh();
 	void exportFile(FbxNode* currentNode);
@@ -55,8 +57,12 @@ private:
 
 	//
 	std::vector<BoundingBox> vBBox;
-	//BoundingBox bBox;
 	bool isPartOf(const char* nodeName);
 	void loadBbox(FbxNode* currentNode);
+
+	//
+	std::vector<LevelObject> levelObjects;
+	void loadLevel(FbxNode* currentNode);
+	void createCustomLevelFile();
 };
 

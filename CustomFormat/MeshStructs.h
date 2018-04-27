@@ -11,6 +11,7 @@ struct Counter
 	unsigned int blendShapeCount;
 	unsigned int groupID;
 	unsigned int customMayaAttributeCount;
+	unsigned int levelObjectCount;
 };
 
 struct MeshInfo {
@@ -88,4 +89,9 @@ struct Group {
 
 struct CustomMayaAttributes {
 	unsigned int meshType;
+};
+
+struct LevelObject {
+	float x, y, z;
+	int id;
 };
