@@ -60,7 +60,7 @@ struct JointInformation {
 };
 
 struct AnimationInformation {
-	char animationName[100];
+	char animationName[8];
 	int keyFrameCount;
 	int nrOfJoints;
 	vector<JointInformation> joints;

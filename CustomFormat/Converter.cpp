@@ -180,9 +180,9 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			//FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+			//FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
 
 			i++;
 		}
@@ -359,13 +359,13 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		nearPlane = currentNode->NearPlane.Get();
 		farPlane = currentNode->FarPlane.Get();
 
-		FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+		/*FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
 		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
 		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
 		FBXSDK_printf("\tRoll: %.2f\n", roll);
 		FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
 		FBXSDK_printf("\tField of View: %.f\n", fov);
-		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
+		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);*/
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -379,24 +379,24 @@ void Converter::loadLights(FbxLight* currentLight)
 
 	if (lightType == "0")
 	{
-		FBXSDK_printf("\tLight Type: Point Light\n");
+		//FBXSDK_printf("\tLight Type: Point Light\n");
 	}
 	else if(lightType == "1")
 	{
-		FBXSDK_printf("\tLight Type: Directional Light\n");
+		//FBXSDK_printf("\tLight Type: Directional Light\n");
 	}
 	else if(lightType == "2")
 	{
-		FBXSDK_printf("\tLight Type: Spotlight\n");
+		//FBXSDK_printf("\tLight Type: Spotlight\n");
 	}
 
-	FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
-	FBXSDK_printf("\tIntensity: %.2f\n", intensity);
+	//FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
+	//FBXSDK_printf("\tIntensity: %.2f\n", intensity);
 
 	if (lightType == "2")
 	{
-		FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
-		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+		//FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
+		//FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -418,13 +418,17 @@ void Converter::createCustomFile()
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	
-	outfile.write((const char*)animationInfo, sizeof(char) * strlen(animationInfo->animationName));
-	outfile.write((const char*)animationInfo, sizeof(int) * 2);
+
+	size_t aLen = strlen(animationInfo->animationName);
+	//animationInfo->animationName[len + 1] += '\0';
+	outfile.write((const char*)animationInfo, sizeof(char) * 8);
+	outfile.write((const char*)animationInfo, 2 * sizeof(int));
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
-		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * strlen(animationInfo->joints[i].jointName));
-		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * strlen(animationInfo->joints[i].parentName));
+		size_t jLen = strlen(animationInfo->joints[i].jointName);
+		size_t pLen = strlen(animationInfo->joints[i].parentName);
+		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(jLen));
+		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(pLen));
 		//outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
 		//outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
 
@@ -464,8 +468,6 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
 		//GetMemberCount: Returns the number of objects contained within the collection.
 		int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
-
-		//counter.animationCount = animLayers;
 
 		outputString = "   contains ";
 		if (animLayers == 0)

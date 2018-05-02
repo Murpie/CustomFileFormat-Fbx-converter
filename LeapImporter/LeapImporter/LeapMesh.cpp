@@ -29,14 +29,16 @@ void LeapMesh::loader(const char* fileName)
 
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
 
-	animation = new AnimationInformation[1];
-	infile.read((char*)animation, sizeof(char) * strlen(animation->animationName));
-	infile.read((char*)animation, sizeof(int) * 2);
+	animation = new AnimationInformation[counterReader.animationCount];
+
+	infile.read((char*)animation, sizeof(char) * 8);
+	infile.read((char*)animation, sizeof(float) * 2);
 	animation->joints.resize(animation->nrOfJoints);
 	for (int i = 0; i < animation->nrOfJoints; i++)
-	{
-		infile.read((char*)animation->joints[i].jointName, sizeof(char) * strlen(animation->joints[i].jointName));
-		infile.read((char*)animation->joints[i].parentName, sizeof(char) * strlen(animation->joints[i].parentName));
+	{	
+		infile.read((char*)&animation->joints[i].jointName, sizeof(char*));
+		infile.read((char*)&animation->joints[i].parentName, sizeof(char*));
+		animation->joints[i].keyFrames.resize(animation->keyFrameCount);
 		//infile.read((char*)animation->joints[i].localTransformMatrix, sizeof(float) * 16);
 		//infile.read((char*)animation->joints[i].bindPoseMatrix, sizeof(float) * 16);
 		infile.read((char*)animation->joints[i].keyFrames.data(), sizeof(KeyFrame) * animation->keyFrameCount);
