@@ -1,15 +1,20 @@
 #pragma once
 
 #include <fbxsdk.h>
+#include <string>
 #include <stdlib.h>
-#include <iostream>
+#include <iostream>   
 #include "MeshStructs.h"
 
+#define CUSTOM_ATTRIBUTE "MeshType"
+#define TYPE_ID  "TypeID"
 class Converter
 {
 public:
 	Converter(const char* fileName);
 	~Converter();
+
+	bool isLevel;
 
 	void importMesh();
 	void exportFile(FbxNode* currentNode);
@@ -21,6 +26,7 @@ private:
 	void loadCamera(FbxCamera* currentNode);
 	void loadGroups(FbxNode* currentNode);
 	void loadLights(FbxLight* currentLight);
+	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void createCustomFile();
 
 	FbxManager * manager;
@@ -30,9 +36,10 @@ private:
 
 	Counter counter;
 	MeshInfo* meshInfo;
-	Vertex* vertices;
+	VertexInformation* vertices;
 	MaterialInformation* matInfo;
 	Group* groups;
+	CustomMayaAttributes* customMayaAttribute;
 
 	FbxVector4* controlPoints;
 	FbxNode* rootNode;
@@ -50,5 +57,15 @@ private:
 	const char* meshName;
 	const char* textureName;
 	char* ret;
+
+	//
+	std::vector<BoundingBox> vBBox;
+	bool isPartOf(const char* nodeName);
+	void loadBbox(FbxNode* currentNode);
+
+	//
+	std::vector<LevelObject> levelObjects;
+	void loadLevel(FbxNode* currentNode);
+	void createCustomLevelFile();
 };
 

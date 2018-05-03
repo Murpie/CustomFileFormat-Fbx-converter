@@ -1,6 +1,7 @@
 #include "Converter.h"
 #include <fstream>
 #include <vector>
+#include <string>
 
 #pragma warning(disable : 4996)
 
@@ -14,7 +15,12 @@ Converter::Converter(const char * fileName)
 	manager->SetIOSettings(settings);
 	ourScene = FbxScene::Create(manager, "");
 	importer = FbxImporter::Create(manager, "");
+	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
+
+	//
+	counter.boundingBoxCount = 0;
+	counter.levelObjectCount = 0;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -22,10 +28,14 @@ Converter::~Converter()
 	delete vertices;
 	delete matInfo;
 	delete ret;
+	delete customMayaAttribute;
 
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
+
+	vBBox.clear();
+	levelObjects.clear();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -49,19 +59,32 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			exportFile(rootNode->GetChild(i));
+			if (isLevel)
+			{
+				loadLevel(rootNode->GetChild(i));
+			}
+			else if (isPartOf(rootNode->GetChild(i)->GetName()))
+			{
+				loadBbox(rootNode->GetChild(i));
+			}
+			else
+				exportFile(rootNode->GetChild(i));
 		}
 	}
 
 	//Create the Custom File
-	createCustomFile();
+	if (isLevel)
+		createCustomLevelFile();
+	else
+		createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
 	printf("\nNode: %s\n", currentNode->GetName());
 
-	loadGlobaltransform(currentNode);
+	if (!isLevel)
+		loadGlobaltransform(currentNode);
 	
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
@@ -81,6 +104,12 @@ void Converter::exportFile(FbxNode* currentNode)
 		if (mesh)
 		{
 			loadMaterial(currentNode);
+		}
+
+		//Load Maya Custom Attributes
+		if (mesh)
+		{
+			loadCustomMayaAttributes(currentNode);
 		}
 
 		//Load Cameras
@@ -140,7 +169,7 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 
 	counter.vertexCount = polygonCount * 3;
 
-	vertices = new Vertex[counter.vertexCount];
+	vertices = new VertexInformation[counter.vertexCount];
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
@@ -468,6 +497,26 @@ void Converter::loadLights(FbxLight* currentLight)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
+{
+	customMayaAttribute = new CustomMayaAttributes[1];
+
+	unsigned int attributeValue;
+	std::string attributeName = "";
+
+	FbxProperty prop = currentNode->FindProperty(CUSTOM_ATTRIBUTE, false);
+	if (prop.IsValid())
+	{
+		attributeName = prop.GetName();
+		attributeValue = prop.Get<int>();
+		
+		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
+		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
+		customMayaAttribute->meshType = prop.Get<int>();
+	}
+	this->counter.customMayaAttributeCount++;
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
 	size_t len = strlen(meshName);
@@ -483,10 +532,17 @@ void Converter::createCustomFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)vertices, sizeof(Vertex)*counter.vertexCount);
-	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	for (int i = 0; i < vBBox.size(); i++)
+	{
+		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
+	}
 	outfile.write((const char*)groups, sizeof(Group));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+
+	std::cout << customMayaAttribute->meshType << std::endl;
 
 	outfile.close();
 
@@ -496,4 +552,195 @@ void Converter::createCustomFile()
 		std::ofstream dst("NewColors.png", std::ios::binary);
 		dst << src.rdbuf();
 	}
+}
+
+void Converter::loadLevel(FbxNode * currentNode)
+{
+	printf("\n\t|| Node: %s\n", currentNode->GetName());
+
+	mesh = currentNode->GetMesh();
+	light = currentNode->GetLight();
+	camera = currentNode->GetCamera();
+
+	if (currentNode)
+	{
+		if (mesh && !isPartOf(currentNode->GetName()))
+		{
+			LevelObject lvlObj = LevelObject();
+			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+			// Save position
+			lvlObj.x = (float)tempTranslation[0];
+			lvlObj.y = (float)tempTranslation[1];
+			lvlObj.z = (float)tempTranslation[2];
+			// Save rotation
+			lvlObj.rotationX = (float)tempTranslation[0];
+			lvlObj.rotationY = (float)tempTranslation[1];
+			lvlObj.rotationZ = (float)tempTranslation[2];
+
+			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+
+			// Save ID
+			unsigned int attributeValue;
+			//std::string attributeName = "";
+
+			FbxProperty prop = currentNode->FindProperty(TYPE_ID, false);
+			if (prop.IsValid())
+			{
+				//attributeName = prop.GetName();
+				attributeValue = prop.Get<int>();
+
+				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
+				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
+				lvlObj.id = prop.Get<int>();
+			}
+			levelObjects.push_back(lvlObj);
+			counter.levelObjectCount++;
+		}
+		//Load Cameras
+		if (camera)
+		{
+
+		}
+
+		//Load Lights
+		if (light)
+		{
+
+		}
+	}
+	else
+	{
+		printf("Access violation: Node not found\n\n");
+		exit(-2);
+	}
+}
+
+void Converter::createCustomLevelFile()
+{
+	size_t len = strlen(meshName);
+	ret = new char[len + 2];
+	strcpy(ret, meshName);
+	ret[len - 3] = 'l';
+	ret[len - 2] = 'e';
+	ret[len - 1] = 'a';
+	ret[len] = 'p';
+	ret[len + 1] = '\0';
+	meshName = ret;
+
+	std::ofstream outfile(meshName, std::ofstream::binary);
+
+	outfile.write((const char*)&counter, sizeof(Counter));
+
+	for (int i = 0; i < levelObjects.size(); i++)
+	{
+		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
+	}
+
+	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
+
+	outfile.close();
+}
+
+bool Converter::isPartOf(const char * nodeName)
+{
+	std::string nodeString;
+	&nodeString.assign(nodeName);
+	std::string findString = "_BBox";
+	std::size_t found = nodeString.find(findString);
+	
+	if (found != std::string::npos)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void Converter::loadBbox(FbxNode* currentNode)
+{
+	BoundingBox bBox;
+	FbxMesh* bBoxMesh = currentNode->GetMesh();
+	FbxVector4* holder = bBoxMesh->GetControlPoints();
+	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+	//FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+	//FbxDouble3 tempScaling = currentNode->LclScaling.Get();
+	FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+	int polyCount = bBoxMesh->GetPolygonCount();
+
+	//Vertex* vert = new Vertex[counter.vertexCount];
+	std::vector<VertexInformation> vert;
+	std::vector<FbxVector4> position;
+
+	bool ItIsFalse = false;
+
+	bBoxMesh->GetPolygonVertices();
+	//bBoxMesh->b
+
+	int i = 0;
+	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
+	{
+		for (int vertexIndex = 0; vertexIndex < bBoxMesh->GetPolygonSize(polygonIndex); vertexIndex++)
+		{
+
+			VertexInformation temp;
+			//Positions
+			position.push_back(holder[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			//Add translation to vertex position
+			temp.x = (float)position[i][0] + (float)tempTranslation[0];
+			temp.y = (float)position[i][1] + (float)tempTranslation[1];
+			temp.z = (float)position[i][2] + (float)tempTranslation[2];
+
+			vert.push_back(temp);
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, (float)position[i][0], (float)position[i][1], (float)position[i][2]);
+			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
+
+			i++;
+		}
+	}
+	FBXSDK_printf("\n");
+
+	bBox.minVector[0] = vert[0].x;
+	bBox.minVector[1] = vert[0].y;
+	bBox.minVector[2] = vert[0].z;
+
+	bBox.maxVector[0] = vert[0].x;
+	bBox.maxVector[1] = vert[0].y;
+	bBox.maxVector[2] = vert[0].z;
+
+	for (int i = 1; i < vert.size(); i++)
+	{
+		//Min
+		if (bBox.minVector[0] > vert[i].x)
+			bBox.minVector[0] = vert[i].x;
+		if (bBox.minVector[1] > vert[i].y)
+			bBox.minVector[1] = vert[i].y;
+		if (bBox.minVector[2] > vert[i].z)
+			bBox.minVector[2] = vert[i].z;
+
+		//Max
+		if (bBox.maxVector[0] < vert[i].x)
+			bBox.maxVector[0] = vert[i].x;
+		if (bBox.maxVector[1] < vert[i].y)
+			bBox.maxVector[1] = vert[i].y;
+		if (bBox.maxVector[2] < vert[i].z)
+			bBox.maxVector[2] = vert[i].z;
+	};
+
+	//Center
+	bBox.center[0] = (bBox.minVector[0] + bBox.maxVector[0]) * 0.5f;
+	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
+	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
+
+	FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
+	FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
+	FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
+
+	vBBox.push_back(bBox);
+
+	vert.clear();
+	position.clear();
+
+	counter.boundingBoxCount++;
 }

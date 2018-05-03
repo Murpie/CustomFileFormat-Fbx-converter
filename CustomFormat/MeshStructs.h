@@ -10,7 +10,8 @@ struct Counter
 	unsigned int animationCount;
 	unsigned int blendShapeCount;
 	unsigned int groupID;
-	unsigned int meshType;
+	unsigned int customMayaAttributeCount;
+	unsigned int levelObjectCount;
 };
 
 struct MeshInfo {
@@ -19,7 +20,7 @@ struct MeshInfo {
 	float globalScaling[3];
 };
 
-struct Vertex {
+struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
 	float u, v;
@@ -35,16 +36,19 @@ struct MaterialInformation {
 	char* textureFilePath[100];
 };
 
-struct BoundingBoxVertex {
-	float bx, by, bz;
-};
+//struct BoundingBoxVertex {
+//	float bx, by, bz;
+//};
 
 struct BoundingBox
 {
-	BoundingBoxVertex boundingBoxVertices[8];
+	//BoundingBoxVertex boundingBoxVertices[8];
+	float minVector[3];
+	float maxVector[3];
+	float center[3];
 };
 
-struct Joint {
+struct JointInformation {
 	char jointName[100];
 	char parentName[100];
 	float localTransformMatrix[16];
@@ -62,7 +66,7 @@ struct KeyFrame {
 	vector <KeyFrameData> keyFrameData;
 };
 
-struct Animation {
+struct AnimationInformation {
 	char animationName[100];
 	int keyFrameCount;
 	vector <KeyFrame> keyFrames;
@@ -79,6 +83,19 @@ struct BlendShape {
 };
 
 struct Group {
+	char groupName[100];
+	char parentName[100];
+};
+
+struct CustomMayaAttributes {
+	unsigned int meshType;
+};
+
+struct LevelObject {
+	float x, y, z;
+	float rotationX, rotationY, rotationZ;
+	int id;
+};
 	std::string groupName;
 	int childCount;
 	std::string * childName;
