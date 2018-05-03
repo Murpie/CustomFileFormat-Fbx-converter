@@ -61,8 +61,8 @@ struct JointInformation {
 
 struct AnimationInformation {
 	char animationName[8];
-	int keyFrameCount;
-	int nrOfJoints;
+	unsigned int keyFrameCount;
+	unsigned int nrOfJoints;
 	vector<JointInformation> joints;
 };
 

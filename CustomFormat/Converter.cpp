@@ -422,7 +422,7 @@ void Converter::createCustomFile()
 	size_t aLen = strlen(animationInfo->animationName);
 	//animationInfo->animationName[len + 1] += '\0';
 	outfile.write((const char*)animationInfo, sizeof(char) * 8);
-	outfile.write((const char*)animationInfo, 2 * sizeof(int));
+	outfile.write((const char*)animationInfo, sizeof(unsigned int) * 2);
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
 		size_t jLen = strlen(animationInfo->joints[i].jointName);
