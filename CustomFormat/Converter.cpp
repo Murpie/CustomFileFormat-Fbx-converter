@@ -427,8 +427,8 @@ void Converter::createCustomFile()
 	{
 		size_t jLen = strlen(animationInfo->joints[i].jointName);
 		size_t pLen = strlen(animationInfo->joints[i].parentName);
-		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(jLen));
-		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(pLen));
+		outfile.write((const char*)&animationInfo->joints[i].jointName, jLen);
+		outfile.write((const char*)&animationInfo->joints[i].parentName, pLen);
 		//outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
 		//outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
 
@@ -448,6 +448,7 @@ void Converter::createCustomFile()
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
 	animationInfo = new AnimationInformation[1];
+	//animationInfo->joints.resize(100);
 	animationInfo->nrOfJoints = 0;
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
