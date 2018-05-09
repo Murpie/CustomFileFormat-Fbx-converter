@@ -81,7 +81,7 @@ void Converter::importMesh()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
-	printf("\nNode: %s\n", currentNode->GetName());
+	//printf("\nNode: %s\n", currentNode->GetName());
 
 	if (!isLevel)
 		loadGlobaltransform(currentNode);
@@ -146,9 +146,9 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 			meshInfo->globalScaling[i] = tempScaling[i];
 		}
 
-		FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
-		FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-		FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+		//FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+		//FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+		//FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
 	}
 	delete meshInfo;
 }
@@ -202,9 +202,9 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			//FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+			//FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
 
 			i++;
 		}
@@ -254,7 +254,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			lString += " (blue), ";
 			lString += "";
 			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//FBXSDK_printf(lString);
 
 			lString = nullptr;
 			lString = "            Diffuse: ";
@@ -266,7 +266,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			lString += " (blue), ";
 			lString += "";
 			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//FBXSDK_printf(lString);
 
 
 			lString = nullptr;
@@ -279,7 +279,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			lString += " (blue), ";
 			lString += "";
 			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//FBXSDK_printf(lString);
 
 			lString = nullptr;
 			FbxString lFloatValue = (float)transparency;
@@ -289,7 +289,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			lString += lFloatValue;
 			lString += "";
 			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//FBXSDK_printf(lString);
 
 			//File Texture path from Material
 			FbxProperty fileTextureProp = lMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
@@ -381,13 +381,13 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		nearPlane = currentNode->NearPlane.Get();
 		farPlane = currentNode->FarPlane.Get();
 
-		FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
-		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
-		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
-		FBXSDK_printf("\tRoll: %.2f\n", roll);
-		FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
-		FBXSDK_printf("\tField of View: %.f\n", fov);
-		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
+		//FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+		//FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
+		//FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
+		//FBXSDK_printf("\tRoll: %.2f\n", roll);
+		//FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
+		//FBXSDK_printf("\tField of View: %.f\n", fov);
+		//FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -401,24 +401,24 @@ void Converter::loadLights(FbxLight* currentLight)
 
 	if (lightType == "0")
 	{
-		FBXSDK_printf("\tLight Type: Point Light\n");
+		//FBXSDK_printf("\tLight Type: Point Light\n");
 	}
 	else if(lightType == "1")
 	{
-		FBXSDK_printf("\tLight Type: Directional Light\n");
+		//FBXSDK_printf("\tLight Type: Directional Light\n");
 	}
 	else if(lightType == "2")
 	{
-		FBXSDK_printf("\tLight Type: Spotlight\n");
+		//FBXSDK_printf("\tLight Type: Spotlight\n");
 	}
 
-	FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
-	FBXSDK_printf("\tIntensity: %.2f\n", intensity);
+	//FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
+	//FBXSDK_printf("\tIntensity: %.2f\n", intensity);
 
 	if (lightType == "2")
 	{
-		FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
-		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+		//FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
+		//FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -435,8 +435,8 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		attributeName = prop.GetName();
 		attributeValue = prop.Get<int>();
 		
-		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
-		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
+		//FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
+		//FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
 		customMayaAttribute->meshType = prop.Get<int>();
 	}
 	this->counter.customMayaAttributeCount++;
@@ -502,7 +502,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			lvlObj.rotationY = (float)tempTranslation[1];
 			lvlObj.rotationZ = (float)tempTranslation[2];
 
-			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
 			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
 
 			// Save ID
@@ -590,7 +590,7 @@ void Converter::loadBbox(FbxNode* currentNode)
 	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
 	//FbxDouble3 tempRotation = currentNode->LclRotation.Get();
 	//FbxDouble3 tempScaling = currentNode->LclScaling.Get();
-	FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+	//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
 	int polyCount = bBoxMesh->GetPolygonCount();
 
 	//Vertex* vert = new Vertex[counter.vertexCount];
@@ -618,12 +618,12 @@ void Converter::loadBbox(FbxNode* currentNode)
 
 			vert.push_back(temp);
 			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, (float)position[i][0], (float)position[i][1], (float)position[i][2]);
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
 
 			i++;
 		}
 	}
-	FBXSDK_printf("\n");
+	//FBXSDK_printf("\n");
 
 	bBox.minVector[0] = vert[0].x;
 	bBox.minVector[1] = vert[0].y;
@@ -657,9 +657,9 @@ void Converter::loadBbox(FbxNode* currentNode)
 	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
 	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
 
-	FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
-	FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
-	FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
+	//FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
+	//FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
+	//FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
 
 	vBBox.push_back(bBox);
 
