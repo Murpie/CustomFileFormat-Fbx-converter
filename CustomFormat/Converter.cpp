@@ -421,14 +421,15 @@ void Converter::createCustomFile()
 
 	//size_t aLen = strlen(animationInfo->animationName);
 	//animationInfo->animationName[len + 1] += '\0';
-	outfile.write((const char*)animationInfo, sizeof(char) * 9);
-	outfile.write((const char*)animationInfo, sizeof(int) * 2);
+	outfile.write((const char*)animationInfo->animationName, sizeof(char) * 9);
+	outfile.write((const char*)&animationInfo->keyFrameCount, sizeof(int));
+	outfile.write((const char*)&animationInfo->nrOfJoints, sizeof(int));
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
 		size_t jLen = strlen(animationInfo->joints[i].jointName);
 		size_t pLen = strlen(animationInfo->joints[i].parentName);
-		outfile.write((const char*)&animationInfo->joints[i].jointName, jLen);
-		outfile.write((const char*)&animationInfo->joints[i].parentName, pLen);
+		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
+		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
 		//outfile.write((const char*)&animationInfo->joints[i].localTransformMatrix, sizeof(float) * 16);
 		//outfile.write((const char*)&animationInfo->joints[i].bindPoseMatrix, sizeof(float) * 16);
 
