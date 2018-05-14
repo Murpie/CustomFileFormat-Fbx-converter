@@ -81,7 +81,7 @@ void Converter::importMesh()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
-	printf("\nNode: %s\n", currentNode->GetName());
+	//printf("\nNode: %s\n", currentNode->GetName());
 
 	if (!isLevel)
 		loadGlobaltransform(currentNode);
@@ -146,9 +146,9 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 			meshInfo->globalScaling[i] = tempScaling[i];
 		}
 
-		FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
-		FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-		FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+		//FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+		//FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+		//FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
 	}
 	delete meshInfo;
 }
@@ -652,7 +652,7 @@ void Converter::loadBbox(FbxNode* currentNode)
 	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
 	//FbxDouble3 tempRotation = currentNode->LclRotation.Get();
 	//FbxDouble3 tempScaling = currentNode->LclScaling.Get();
-	FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+	//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
 	int polyCount = bBoxMesh->GetPolygonCount();
 
 	//Vertex* vert = new Vertex[counter.vertexCount];
@@ -680,12 +680,12 @@ void Converter::loadBbox(FbxNode* currentNode)
 
 			vert.push_back(temp);
 			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, (float)position[i][0], (float)position[i][1], (float)position[i][2]);
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
+			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
 
 			i++;
 		}
 	}
-	FBXSDK_printf("\n");
+	//FBXSDK_printf("\n");
 
 	bBox.minVector[0] = vert[0].x;
 	bBox.minVector[1] = vert[0].y;
@@ -719,9 +719,9 @@ void Converter::loadBbox(FbxNode* currentNode)
 	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
 	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
 
-	FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
-	FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
-	FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
+	//FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
+	//FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
+	//FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
 
 	vBBox.push_back(bBox);
 

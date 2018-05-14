@@ -8,7 +8,7 @@ int main()
 	
 	Converter converter("Campfire_bitang.fbx");
 
-	converter.isLevel = false; // change this when loading levels
+	Cliffside_4.isLevel = false; // change this when loading levels
 
 	converter.importMesh();
 
