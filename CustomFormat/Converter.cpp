@@ -419,10 +419,10 @@ void Converter::createCustomFile()
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
-	size_t aLen = strlen(animationInfo->animationName);
+	//size_t aLen = strlen(animationInfo->animationName);
 	//animationInfo->animationName[len + 1] += '\0';
-	outfile.write((const char*)animationInfo, sizeof(char) * 8);
-	outfile.write((const char*)animationInfo, sizeof(unsigned int) * 2);
+	outfile.write((const char*)animationInfo, sizeof(char) * 9);
+	outfile.write((const char*)animationInfo, sizeof(int) * 2);
 	for (int i = 0; i < animationInfo->nrOfJoints; i++)
 	{
 		size_t jLen = strlen(animationInfo->joints[i].jointName);
@@ -549,12 +549,12 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 		animationInfo->keyFrameCount = keyCount;
 
 		//keyFrame = new KeyFrame[keyCount];
-		KeyFrame keyFrame;
+		//KeyFrame keyFrame;
 		for (int j = 0; j < keyCount; j++)
 		{
 			keyTime = animCurve->KeyGetTime(j).GetSecondDouble();
 			//STORE: KeyFrame float time
-			keyFrame.time = keyTime;
+			//keyFrame.time = keyTime;
 
 			tempPosition.clear();
 			tempRotation.clear();
@@ -585,6 +585,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempRotation.push_back(keyValue);
 
+
 			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempScaling.push_back(keyValue);
@@ -599,6 +600,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 
 
 			KeyFrame tempKeyFrameData;
+			tempKeyFrameData.time = keyTime;
 			tempKeyFrameData.position[0] = tempPosition[0];
 			tempKeyFrameData.position[1] = tempPosition[1];
 			tempKeyFrameData.position[2] = tempPosition[2];
@@ -615,7 +617,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			jointInformation.keyFrames.push_back(tempKeyFrameData);
 		}
 		animationInfo->joints.push_back(jointInformation);
-		animationInfo->nrOfJoints++;
+		animationInfo->nrOfJoints += 1;
 	}
 	//	for (int i = 0; i < keyCount; i++)
 	//	{

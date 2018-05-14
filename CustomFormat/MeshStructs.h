@@ -54,15 +54,15 @@ struct KeyFrame {
 struct JointInformation {
 	char jointName[100];
 	char parentName[100];
-	float localTransformMatrix[16];						
-	float bindPoseMatrix[16];							
+	//float localTransformMatrix[16];
+	//float bindPoseMatrix[16];					
 	vector<KeyFrame> keyFrames;
 };
 
 struct AnimationInformation {
-	char animationName[8];
-	unsigned int keyFrameCount;
-	unsigned int nrOfJoints;
+	char animationName[9];
+	int keyFrameCount;
+	int nrOfJoints;
 	vector<JointInformation> joints;					
 };
 
