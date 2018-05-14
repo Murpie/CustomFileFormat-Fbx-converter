@@ -166,9 +166,13 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
+	std::vector<FbxVector4> biNorm;
+	std::vector<FbxVector4> tangent;
 	std::vector<FbxVector2> uv;
 	FbxVector4 temp;
 	FbxVector2 tempUv;
+	FbxGeometryElementBinormal* vertexBinormal;
+	FbxGeometryElementTangent * vertexTangent;
 
 	bool ItIsFalse = false;
 
@@ -183,6 +187,58 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			//Normals
 			currentMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
 			norm.push_back(temp);
+
+			vertexBinormal = currentMesh->GetElementBinormal();
+			if (vertexBinormal)
+			{
+				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
+				{
+					int lNormalIndex = 0;
+					//reference mode is direct, the normal index is same as vertex index.
+					//get normals by the index of control vertex
+					if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+						lNormalIndex = lVertexIndex;
+					//reference mode is index-to-direct, get normals by the index-to-direct
+					if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+						lNormalIndex = vertexBinormal->GetIndexArray().GetAt(lVertexIndex);
+					//Got normals of each vertex.
+					FbxVector4 lNormal = vertexBinormal->GetDirectArray().GetAt(lNormalIndex);
+					//FBXSDK_printf("Binormals for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
+					//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
+					//. . .
+					biNorm.push_back(lNormal);
+				}
+
+				vertices[i].bnx = (float)biNorm[i][0];
+				vertices[i].bny = (float)biNorm[i][1];
+				vertices[i].bnz = (float)biNorm[i][2];
+			}
+
+			vertexTangent = currentMesh->GetElementTangent();
+			if (vertexTangent)
+			{
+				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
+				{
+					int lNormalIndex = 0;
+					//reference mode is direct, the normal index is same as vertex index.
+					//get normals by the index of control vertex
+					if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eDirect)
+						lNormalIndex = lVertexIndex;
+					//reference mode is index-to-direct, get normals by the index-to-direct
+					if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+						lNormalIndex = vertexTangent->GetIndexArray().GetAt(lVertexIndex);
+					//Got normals of each vertex.
+					FbxVector4 lNormal = vertexTangent->GetDirectArray().GetAt(lNormalIndex);
+					//FBXSDK_printf("Tangents for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
+					//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
+					//. . .
+					tangent.push_back(lNormal);
+				}
+
+				vertices[i].tx = (float)tangent[i][0];
+				vertices[i].ty = (float)tangent[i][1];
+				vertices[i].tz = (float)tangent[i][2];
+			}
 
 			//UVs
 			FbxStringList uvSetNamesList;
@@ -204,6 +260,12 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 
 			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
 			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+			
+			if (vertexBinormal) 
+				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
+			if (vertexTangent)
+				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
+
 			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
 
 			i++;
@@ -503,7 +565,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			lvlObj.rotationZ = (float)tempTranslation[2];
 
 			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-			FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", tempRotation[0], tempRotation[1], tempRotation[2]);
 
 			// Save ID
 			unsigned int attributeValue;

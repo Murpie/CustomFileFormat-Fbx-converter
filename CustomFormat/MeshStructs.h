@@ -23,6 +23,8 @@ struct MeshInfo {
 struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
+	float bnx, bny, bnz;
+	float tx, ty, tz;
 	float u, v;
 	float weight[4];
 	float weightID[4];
