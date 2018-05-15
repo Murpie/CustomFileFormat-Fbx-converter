@@ -84,7 +84,8 @@ struct BlendShape {
 
 struct Group {
 	char groupName[100];
-	char parentName[100];
+	int childCount;
+	char childName[100][100];
 };
 
 struct CustomMayaAttributes {
@@ -95,8 +96,4 @@ struct LevelObject {
 	float x, y, z;
 	float rotationX, rotationY, rotationZ;
 	int id;
-};
-	std::string groupName;
-	int childCount;
-	std::string * childName;
 };

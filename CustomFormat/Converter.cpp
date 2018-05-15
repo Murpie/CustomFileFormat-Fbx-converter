@@ -29,6 +29,7 @@ Converter::~Converter()
 	delete matInfo;
 	delete ret;
 	delete customMayaAttribute;
+	delete groups;
 
 	ourScene->Destroy();
 	settings->Destroy();
@@ -404,61 +405,39 @@ void Converter::loadGroups(FbxNode* currentNode)
 	{
 		groups = new Group;
 
+		const char* tempGroupName = currentNode->GetName();
+		for (int i = 0; i < strlen(tempGroupName) + 1; i++)
+		{
+			groups->groupName[i] = tempGroupName[i];
+		}
 
-		groups->groupName = currentNode->GetName();
 		
 
-		std::cout << "GroupName:" << groups->groupName.c_str() << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
+		std::cout << "GroupName:" << groups->groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
 
 		int childrenSize = 0;
-		groups->childName = new std::string[currentNode->GetChildCount()];
+
 		for (int i = 0; i < currentNode->GetChildCount(); i++)
 		{
+
+			const char* tempChildrenName = currentNode->GetChild(i)->GetName();
+			for (int j = 0; j < strlen(tempChildrenName) + 1; j++)
+			{
+				groups->childName[i][j] = tempChildrenName[j];
+			}
+
+
 			childrenSize++;
-			groups->childName[i] = currentNode->GetChild(i)->GetName();
-
-
-
-			//if (currentNode->GetChild(i))
-			//{
-			//	//Load in Vertex data
-			//	if (mesh)
-			//	{
-			//		loadVertex(mesh);
-			//	}
-			//
-			//	//Load Material & Texture File information
-			//	if (mesh)
-			//	{
-			//		loadMaterial(currentNode);
-			//	}
-			//
-			//	//Load Cameras
-			//	if (camera)
-			//	{
-			//		loadCamera(camera);
-			//	}
-			//
-			//	//Load Lights
-			//	if (light)
-			//	{
-			//		loadLights(light);
-			//	}
-			//}
-			//else
-			//{
-			//	printf("Access violation: Node not found\n\n");
-			//	exit(-2);
-			//}
-
 
 		}
+
+
 		groups->childCount = childrenSize;
 		
 
 
 		for (int i = 0; i < groups->childCount; i++)
-			std::cout << groups->childName[i].c_str() << std::endl;
+			std::cout << groups->childName[i] << std::endl;
 
 	}
 
@@ -539,10 +518,11 @@ void Converter::createCustomFile()
 		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
 	}
 	outfile.write((const char*)groups, sizeof(Group));
-	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
 
-	std::cout << customMayaAttribute->meshType << std::endl;
+	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	//outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+
+	//std::cout << customMayaAttribute->meshType << std::endl;
 
 	outfile.close();
 
