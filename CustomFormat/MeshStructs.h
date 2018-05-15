@@ -98,3 +98,23 @@ struct LevelObject {
 	float rotationX, rotationY, rotationZ;
 	int id;
 };
+
+struct Light {
+	char type;
+	float color[3];
+	float intensity;
+	float innerCone;
+	float outerCone;
+};
+
+struct Camera {
+	float position[3];
+	float up[3];
+	float forward[3];
+	float roll;
+	float aspectWidth;
+	float aspectHeight;
+	float fov;
+	float nearPlane;
+	float farPlane;
+};
