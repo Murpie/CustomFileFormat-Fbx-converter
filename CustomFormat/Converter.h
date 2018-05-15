@@ -19,6 +19,7 @@ public:
 
 	void importMesh();
 	void exportFile(FbxNode* currentNode);
+	void exportAnimation(FbxScene* scene, FbxNode* node);
 
 private:
 	void loadGlobaltransform(FbxNode* currentNode);
@@ -32,6 +33,9 @@ private:
 	void loadWeights(FbxNode* currentNode, int vertexIndex);
 	void printInfo();
 	void createCustomFile();
+	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
+	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+	void printInformation();
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -45,6 +49,11 @@ private:
 	BlendShapes* objectBlendShapes;
 	Group* groups;
 	CustomMayaAttributes* customMayaAttribute;
+
+	//KeyFrameData* keyFrameData;
+	//KeyFrame* keyFrame;
+	//JointInformation* jointInformation;
+	AnimationInformation* animationInfo;
 
 	FbxVector4* controlPoints;
 	FbxVector4* blendShapeControlPoints;
