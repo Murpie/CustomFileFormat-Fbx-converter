@@ -73,6 +73,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		if (mesh)
 		{
 			loadVertex(mesh);
+			loadWeights(currentNode);
 		}
 
 		//Load Material & Texture File information
@@ -173,9 +174,9 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			/*FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
 			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);*/
 
 			i++;
 		}
@@ -390,6 +391,61 @@ void Converter::loadLights(FbxLight* currentLight)
 	{
 		FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
 		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+	}
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadWeights(FbxNode* currentNode)
+{
+	//Skin with weights for vertices
+	FbxPatch* patch = (FbxPatch*)currentNode->GetNodeAttribute();
+	int controlPointsCount = patch->GetControlPointsCount();
+	FbxVector4* controlPoints = patch->GetControlPoints();
+
+	int clusterCount;
+	FbxCluster* cluster;
+
+	int skinCount = patch->GetDeformerCount(FbxDeformer::eSkin);
+
+	for (int controlPointIndex = 0; controlPointIndex < controlPointsCount; controlPointIndex++)
+	{
+
+	}
+
+	for (int i = 0; i < skinCount; i++)
+	{
+		clusterCount = ((FbxSkin*)patch->GetDeformer(i, FbxDeformer::eSkin))->GetClusterCount();
+		for (int j = 0; j < clusterCount; j++)
+		{
+			cluster = ((FbxSkin*)patch->GetDeformer(i, FbxDeformer::eSkin))->GetCluster(j);
+			FBXSDK_printf("Joint Name: %s\n", cluster->GetLink()->GetName());
+
+			int* indices = cluster->GetControlPointIndices();
+			int indexCount = cluster->GetControlPointIndicesCount();
+			double* weights = cluster->GetControlPointWeights();
+
+			for (int index = 0; index < indexCount; index++)
+			{
+				double tempDouble = weights[index];
+
+				for (int sortIndex = 0; sortIndex < indexCount; sortIndex++)
+				{
+					if (weights[sortIndex] > weights[index])
+					{
+						weights[index] = weights[sortIndex];
+						weights[sortIndex] = tempDouble;
+						break;
+					}
+				}
+			}
+
+
+
+			for (int k = 0; k < indexCount; k++)
+			{
+				FBXSDK_printf("Vtx: %d\n", indices[k]);
+				FBXSDK_printf("Weights: %f\n", weights[k]);
+			}
+		}
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------

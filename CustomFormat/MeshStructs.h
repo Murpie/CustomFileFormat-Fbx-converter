@@ -24,7 +24,7 @@ struct VertexInformation {
 	float nx, ny, nz;
 	float u, v;
 	float weight[4];
-	float weightID[4];
+	int weightID[4];
 };
 
 struct MaterialInformation {

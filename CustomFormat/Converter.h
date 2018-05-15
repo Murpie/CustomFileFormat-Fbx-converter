@@ -20,6 +20,7 @@ private:
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
+	void loadWeights(FbxNode* currentNode);
 	void createCustomFile();
 
 	FbxManager * manager;
