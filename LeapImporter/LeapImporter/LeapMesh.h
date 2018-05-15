@@ -16,8 +16,6 @@ public:
 	LeapMesh(const char* fileName);
 	~LeapMesh();
 
-	int getVertexCount();
-
 	VertexInformation* vertices;
 	MeshInfo* transform;
 	MaterialInformation* material;
