@@ -4,8 +4,12 @@ int main()
 {
 	LeapImporter importer;
 
-	//LeapMesh* mesh = importer.getMesh("Bucket.leap");
-
+	LeapMesh* mesh = importer.getMesh("GroupTest.leap");
+	cout << mesh->group->groupName << endl << mesh->group->childCount << endl;
+	for (int i = 0; i < mesh->group->childCount; i++)
+	{
+		cout << "Children Names: " << i << " " << mesh->group->childName[i] << endl;
+	}
 	//int vertexCount = mesh->getVertexCount();
 	//unsigned int customMeshType = (int)mesh->customMayaAttribute;
 
@@ -25,25 +29,26 @@ int main()
 	//}
 	//printf("CustomMayaAttribute: %d", mesh->customMayaAttribute);
 
-	//importer.deleteObject(mesh);
+	importer.deleteObject(mesh);
+
 	//
 	//..... Level Test
 
-	LeapLevel* level = importer.getLevel("tLVL.leap");
+	//LeapLevel* level = importer.getLevel("tLVL.leap");
 
-	printf("|| Size: %d\n", level->levelObjects.size());
+//	printf("|| Size: %d\n", level->levelObjects.size());
 
-	for (int i = 0; i < level->levelObjects.size(); i++)
-	{
-		printf("|| Translation: \n");
-		printf("|| %f\n", level->levelObjects[i]->x);
-		printf("|| %f\n", level->levelObjects[i]->y);
-		printf("|| %f\n", level->levelObjects[i]->z);
-		printf("|| ID: \n");
-		printf("|| %d\n\n", level->levelObjects[i]->id);
-	}
-
+	//for (int i = 0; i < level->levelObjects.size(); i++)
+	//{
+	//	printf("|| Translation: \n");
+	//	printf("|| %f\n", level->levelObjects[i]->x);
+	//	printf("|| %f\n", level->levelObjects[i]->y);
+	//	printf("|| %f\n", level->levelObjects[i]->z);
+	//	printf("|| ID: \n");
+	//	printf("|| %d\n\n", level->levelObjects[i]->id);
+	//}
+	//
 	std::getchar();
-	importer.deleteObject(level);
+	//importer.deleteObject(level);
 	return 0;
 }

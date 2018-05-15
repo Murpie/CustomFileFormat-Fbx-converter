@@ -36,8 +36,13 @@ struct MaterialInformation {
 	char* textureFilePath[100];
 };
 
+//struct BoundingBoxVertex {
+//	float bx, by, bz;
+//};
+
 struct BoundingBox
 {
+	//BoundingBoxVertex boundingBoxVertices[8];
 	float minVector[3];
 	float maxVector[3];
 	float center[3];
@@ -79,7 +84,8 @@ struct BlendShape {
 
 struct Group {
 	char groupName[100];
-	char parentName[100];
+	int childCount;
+	char childName[100][100];
 };
 
 struct CustomMayaAttributes {

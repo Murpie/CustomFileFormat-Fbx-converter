@@ -29,6 +29,7 @@ Converter::~Converter()
 	delete matInfo;
 	delete ret;
 	delete customMayaAttribute;
+	delete groups;
 
 	ourScene->Destroy();
 	settings->Destroy();
@@ -89,7 +90,9 @@ void Converter::exportFile(FbxNode* currentNode)
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
 	camera = currentNode->GetCamera();
+	group = currentNode;
 	
+
 	if (currentNode)
 	{
 		//Load in Vertex data
@@ -120,6 +123,11 @@ void Converter::exportFile(FbxNode* currentNode)
 		if (light)
 		{
 			loadLights(light);
+		}
+		//Groups?
+		if (group)
+		{
+			loadGroups(group);
 		}
 	}
 	else
@@ -450,6 +458,52 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
 	}
 }
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadGroups(FbxNode* currentNode)
+{
+	if ((std::string)currentNode->GetName() != "RootNode")
+	{
+		groups = new Group;
+
+		const char* tempGroupName = currentNode->GetName();
+		for (int i = 0; i < strlen(tempGroupName) + 1; i++)
+		{
+			groups->groupName[i] = tempGroupName[i];
+		}
+
+		
+
+		std::cout << "GroupName:" << groups->groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
+
+		int childrenSize = 0;
+
+		for (int i = 0; i < currentNode->GetChildCount(); i++)
+		{
+
+			const char* tempChildrenName = currentNode->GetChild(i)->GetName();
+			for (int j = 0; j < strlen(tempChildrenName) + 1; j++)
+			{
+				groups->childName[i][j] = tempChildrenName[j];
+			}
+
+
+			childrenSize++;
+
+		}
+
+
+		groups->childCount = childrenSize;
+		
+
+
+		for (int i = 0; i < groups->childCount; i++)
+			std::cout << groups->childName[i] << std::endl;
+
+	}
+
+
+
+}
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
 {
@@ -668,10 +722,12 @@ void Converter::createCustomFile()
 	{
 		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
 	}
-	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+	outfile.write((const char*)groups, sizeof(Group));
 
-	std::cout << customMayaAttribute->meshType << std::endl;
+	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	//outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+
+	//std::cout << customMayaAttribute->meshType << std::endl;
 
 	outfile.close();
 

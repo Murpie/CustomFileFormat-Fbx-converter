@@ -41,9 +41,12 @@ void LeapMesh::loader(const char* fileName)
 		infile.read((char*)boundingBoxes[i], sizeof(BoundingBox));
 	}
 
-	customMayaAttribute = new CustomMayaAttributes;
+	//customMayaAttribute = new CustomMayaAttributes;
 
-	infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes));
+	//infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes));
+	group = new Group;
+	infile.read((char*)group, sizeof(Group));
+
 
 	if (infile.is_open())
 	{

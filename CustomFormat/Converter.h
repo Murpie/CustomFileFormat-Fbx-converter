@@ -25,6 +25,7 @@ private:
 	void loadVertex(FbxMesh* currentMesh, FbxNode* currentNode);
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
+	void loadGroups(FbxNode* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void loadWeights(FbxNode* currentNode, int vertexIndex);
@@ -40,6 +41,7 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
+	Group* groups;
 	CustomMayaAttributes* customMayaAttribute;
 
 	FbxVector4* controlPoints;
@@ -48,7 +50,8 @@ private:
 	FbxMesh* mesh;
 	FbxLight* light;
 	FbxCamera* camera;
-	FbxString lString;;
+	FbxString lString;
+	FbxNode* group;
 
 	int polygonCount;
 	int polygonSize;
