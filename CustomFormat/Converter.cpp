@@ -26,6 +26,7 @@ Converter::Converter(const char * fileName)
 Converter::~Converter()
 {
 	delete vertices;
+	delete []objectBlendShapes;
 	delete matInfo;
 	delete ret;
 	delete customMayaAttribute;
@@ -75,8 +76,8 @@ void Converter::importMesh()
 	//Create the Custom File
 	if (isLevel)
 		createCustomLevelFile();
-	else
-		createCustomFile();
+	//else
+		//createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -90,7 +91,6 @@ void Converter::exportFile(FbxNode* currentNode)
 	light = currentNode->GetLight();
 	camera = currentNode->GetCamera();
 	group = currentNode;
-	
 
 	if (currentNode)
 	{
@@ -109,6 +109,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		//Load Maya Custom Attributes
 		if (mesh)
 		{
+			loadBlendShape(mesh, ourScene);
 			loadCustomMayaAttributes(currentNode);
 		}
 
@@ -292,7 +293,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 		for (int mat = 0; mat < materialCount; mat++)
 		{
 			FbxSurfaceMaterial *lMaterial = currentNode->GetMaterial(mat);
-			std::cout << "\nMaterial name: " << lMaterial->GetName() << std::endl << std::endl;
+			//std::cout << "\nMaterial name: " << lMaterial->GetName() << std::endl << std::endl;
 
 			if (lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId))
 			{
@@ -308,52 +309,52 @@ void Converter::loadMaterial(FbxNode* currentNode)
 				transparency = ((FbxSurfaceLambert*)lMaterial)->TransparencyFactor;
 			}
 
-			lString = nullptr;
-			lString = "            Ambient: ";
-			lString += (float)ambient.mRed;
-			lString += " (red), ";
-			lString += (float)ambient.mGreen;
-			lString += " (green), ";
-			lString += (float)ambient.mBlue;
-			lString += " (blue), ";
-			lString += "";
-			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//lString = nullptr;
+			//lString = "            Ambient: ";
+			//lString += (float)ambient.mRed;
+			//lString += " (red), ";
+			//lString += (float)ambient.mGreen;
+			//lString += " (green), ";
+			//lString += (float)ambient.mBlue;
+			//lString += " (blue), ";
+			//lString += "";
+			//lString += "\n\n";
+			//FBXSDK_printf(lString);
 
-			lString = nullptr;
-			lString = "            Diffuse: ";
-			lString += (float)diffuse.mRed;
-			lString += " (red), ";
-			lString += (float)diffuse.mGreen;
-			lString += " (green), ";
-			lString += (float)diffuse.mBlue;
-			lString += " (blue), ";
-			lString += "";
-			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//lString = nullptr;
+			//lString = "            Diffuse: ";
+			//lString += (float)diffuse.mRed;
+			//lString += " (red), ";
+			//lString += (float)diffuse.mGreen;
+			//lString += " (green), ";
+			//lString += (float)diffuse.mBlue;
+			//lString += " (blue), ";
+			//lString += "";
+			//lString += "\n\n";
+			//FBXSDK_printf(lString);
 
 
-			lString = nullptr;
-			lString = "            Emissive: ";
-			lString += (float)emissive.mRed;
-			lString += " (red), ";
-			lString += (float)emissive.mGreen;
-			lString += " (green), ";
-			lString += (float)emissive.mBlue;
-			lString += " (blue), ";
-			lString += "";
-			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//lString = nullptr;
+			//lString = "            Emissive: ";
+			//lString += (float)emissive.mRed;
+			//lString += " (red), ";
+			//lString += (float)emissive.mGreen;
+			//lString += " (green), ";
+			//lString += (float)emissive.mBlue;
+			//lString += " (blue), ";
+			//lString += "";
+			//lString += "\n\n";
+			//FBXSDK_printf(lString);
 
-			lString = nullptr;
-			FbxString lFloatValue = (float)transparency;
-			lFloatValue = transparency <= -HUGE_VAL ? "-INFINITY" : lFloatValue.Buffer();
-			lFloatValue = transparency >= HUGE_VAL ? "INFINITY" : lFloatValue.Buffer();
-			lString = "            Opacity: ";
-			lString += lFloatValue;
-			lString += "";
-			lString += "\n\n";
-			FBXSDK_printf(lString);
+			//lString = nullptr;
+			//FbxString lFloatValue = (float)transparency;
+			//lFloatValue = transparency <= -HUGE_VAL ? "-INFINITY" : lFloatValue.Buffer();
+			//lFloatValue = transparency >= HUGE_VAL ? "INFINITY" : lFloatValue.Buffer();
+			//lString = "            Opacity: ";
+			//lString += lFloatValue;
+			//lString += "";
+			//lString += "\n\n";
+			//FBXSDK_printf(lString);
 
 			//File Texture path from Material
 			FbxProperty fileTextureProp = lMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
@@ -367,7 +368,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 
 					textureName = texture->GetFileName();
 
-					FBXSDK_printf("Texture file found!\nPath: %s\n", textureName);
+					//FBXSDK_printf("Texture file found!\nPath: %s\n", textureName);
 				}
 			}
 		}
@@ -403,6 +404,140 @@ void Converter::loadMaterial(FbxNode* currentNode)
 
 	//Opacity
 	matInfo->opacity = (float)transparency;
+}
+void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
+{
+	FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>();
+
+	int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
+
+	FbxString lOutputString;
+
+	int blendShapeDeformerCount = mesh->GetDeformerCount(FbxDeformer::eBlendShape);
+
+	objectBlendShapes = new BlendShapes[blendShapeDeformerCount];
+
+	lOutputString = "	Contains: ";
+	if (animLayers == 0)
+		lOutputString += "no layers";
+
+	if (animLayers)
+	{
+		lOutputString += animLayers;
+		lOutputString += " Animation Layer\n";
+	}
+	//FBXSDK_printf(lOutputString);
+
+	for (int animLayerIndex = 0; animLayerIndex < animLayers; animLayerIndex++)
+	{
+		FbxAnimLayer* animLayer = animStack->GetMember<FbxAnimLayer>(animLayerIndex);
+
+		counter.blendShapeCount = blendShapeDeformerCount;
+		//cout << "	Number of blendshapes Animations: " << counter.blendShapeCount << endl;
+
+		//Create Blendshapes
+		
+
+		for (int blendShapeIndex = 0; blendShapeIndex < blendShapeDeformerCount; ++blendShapeIndex)
+		{
+			FbxBlendShape* blendShape = (FbxBlendShape*)mesh->GetDeformer(blendShapeIndex, FbxDeformer::eBlendShape);
+			int blendShapeChannelCount = blendShape->GetBlendShapeChannelCount();
+
+			//Setting blendshapeCount for animation
+			objectBlendShapes[0].blendShapeCount = blendShapeChannelCount;
+
+			//cout << "	Number of blendshapes for this Animation: " << objectBlendShapes[0].blendShapeCount << endl;
+
+			BlendShape tempBlendShape;
+
+			
+			for (int channelIndex = 0; channelIndex < blendShapeChannelCount; ++channelIndex)
+			{
+				FbxBlendShapeChannel* channel = blendShape->GetBlendShapeChannel(channelIndex);
+				const char* channelName = channel->GetName();
+
+				FbxShape* shape = channel->GetTargetShape(0);
+
+				int blendShapeControlPointsCount = shape->GetControlPointsCount();
+
+				tempBlendShape.blendShapeVertexCount = blendShapeControlPointsCount;
+
+				blendShapeControlPoints = shape->GetControlPoints();
+
+				FbxVector4 bPos;
+				FbxVector4 bNormal;
+
+				FbxGeometry* geom = blendShape->GetGeometry();
+
+				FbxLayerElementNormal* pLayerNormals = geom->GetLayer(channelIndex)->GetNormals();
+
+				BlendShapeVertex tempVertex;
+				BlendShapeKeyframe tempKeyframe;
+
+				for (int blendshapeControlIndex = 0; blendshapeControlIndex < blendShapeControlPointsCount; blendshapeControlIndex++)
+				{
+					bPos = blendShapeControlPoints[blendshapeControlIndex];
+					bNormal = pLayerNormals->GetDirectArray().GetAt(blendshapeControlIndex);
+					
+					tempVertex.x = bPos[0];
+					tempVertex.y = bPos[1];
+					tempVertex.z = bPos[2];
+					tempVertex.nx = bNormal[0];
+					tempVertex.ny = bNormal[1];
+					tempVertex.nz = bNormal[2];
+
+					tempBlendShape.blendShapeVertices.push_back(tempVertex);
+
+					/*FBXSDK_printf("	BlendShape Vertex: %d\n", blendshapeControlIndex);
+					FBXSDK_printf("		x = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].x);
+					FBXSDK_printf(" y = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].y);
+					FBXSDK_printf(" z = %f\n", tempBlendShape.blendShapeVertices[blendshapeControlIndex].z);
+
+					FBXSDK_printf("		nx = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].nx);
+					FBXSDK_printf(" ny = %f", tempBlendShape.blendShapeVertices[blendshapeControlIndex].ny);
+					FBXSDK_printf(" nz = %f\n", tempBlendShape.blendShapeVertices[blendshapeControlIndex].nz);*/
+				}
+
+				objectBlendShapes[0].blendShape.push_back(tempBlendShape);
+
+				FbxAnimCurve* animCurve = mesh->GetShapeChannel(blendShapeIndex, channelIndex, animLayer, true);
+				if (animCurve)
+				{
+					//FBXSDK_printf("	Shape Name: %s\n", channelName);
+					
+					float keyValue;
+					char timeString[256];
+					int count;
+
+					int keyCount = animCurve->KeyGetCount();
+
+					objectBlendShapes[0].keyFrameCount = keyCount;
+
+
+					//cout << "	KeyCount: " << objectBlendShapes[0].keyFrameCount << endl;
+
+					for (count = 0; count < keyCount; count++)
+					{
+						keyValue = static_cast<float>(animCurve->KeyGetValue(count));
+
+						tempKeyframe.blendShapeInfluense = keyValue;
+						tempKeyframe.time = animCurve->KeyGetTime(count).GetSecondDouble();
+
+						objectBlendShapes[0].keyframes.push_back(tempKeyframe);
+
+						lOutputString = "	Key Frame: ";
+						lOutputString += count;
+						lOutputString += "	Key Time: ";
+						lOutputString += objectBlendShapes[0].keyframes[count].time;
+						lOutputString += "	Blendshape Value: ";
+						lOutputString += objectBlendShapes[0].keyframes[count].blendShapeInfluense;
+						lOutputString += "\n";
+						//FBXSDK_printf(lOutputString);
+					}
+				}
+			}
+		}
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCamera(FbxCamera* currentNode)
@@ -445,13 +580,13 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		nearPlane = currentNode->NearPlane.Get();
 		farPlane = currentNode->FarPlane.Get();
 
-		FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+	/*	FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
 		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
 		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
 		FBXSDK_printf("\tRoll: %.2f\n", roll);
 		FBXSDK_printf("\tAspect Ratio: %.fx%.f\n", aspectWidth, aspectHeight);
 		FBXSDK_printf("\tField of View: %.f\n", fov);
-		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);
+		FBXSDK_printf("\tNear Plane: %.2f\n\tFar Plane: %.2f\n\n", nearPlane, farPlane);*/
 	}
 }
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -467,38 +602,25 @@ void Converter::loadGroups(FbxNode* currentNode)
 			groups->groupName[i] = tempGroupName[i];
 		}
 
-		
-
-		std::cout << "GroupName:" << groups->groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
+		//std::cout << "GroupName:" << groups->groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
 
 		int childrenSize = 0;
-
 		for (int i = 0; i < currentNode->GetChildCount(); i++)
 		{
-
 			const char* tempChildrenName = currentNode->GetChild(i)->GetName();
 			for (int j = 0; j < strlen(tempChildrenName) + 1; j++)
 			{
 				groups->childName[i][j] = tempChildrenName[j];
 			}
-
-
 			childrenSize++;
-
 		}
-
-
 		groups->childCount = childrenSize;
-		
 
-
-		for (int i = 0; i < groups->childCount; i++)
-			std::cout << groups->childName[i] << std::endl;
+		/*for (int i = 0; i < groups->childCount; i++)
+			std::cout << groups->childName[i] << std::endl;*/
 
 		delete groups;
 	}
-
-
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
@@ -511,24 +633,24 @@ void Converter::loadLights(FbxLight* currentLight)
 
 	if (lightType == "0")
 	{
-		FBXSDK_printf("\tLight Type: Point Light\n");
+		//FBXSDK_printf("\tLight Type: Point Light\n");
 	}
 	else if(lightType == "1")
 	{
-		FBXSDK_printf("\tLight Type: Directional Light\n");
+		//FBXSDK_printf("\tLight Type: Directional Light\n");
 	}
 	else if(lightType == "2")
 	{
-		FBXSDK_printf("\tLight Type: Spotlight\n");
+		//FBXSDK_printf("\tLight Type: Spotlight\n");
 	}
 
-	FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
-	FBXSDK_printf("\tIntensity: %.2f\n", intensity);
+	//FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
+	//FBXSDK_printf("\tIntensity: %.2f\n", intensity);
 
 	if (lightType == "2")
 	{
-		FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
-		FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+		//FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
+		//FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -688,8 +810,8 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		attributeName = prop.GetName();
 		attributeValue = prop.Get<int>();
 		
-		FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
-		FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
+		//FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
+		//FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
 		customMayaAttribute->meshType = prop.Get<int>();
 	}
 	this->counter.customMayaAttributeCount++;
@@ -706,11 +828,29 @@ void Converter::createCustomFile()
 	ret[len] = 'p';
 	ret[len + 1] = '\0';
 	meshName = ret;
-
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+
+	// write the fixed part (blendShapeCount, keyFramecount)
+	outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
+	for (int i = 0; i < counter.blendShapeCount; i++)
+	{
+		outfile.write((const char*)&objectBlendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
+		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex)*objectBlendShapes->blendShape[i].blendShapeVertexCount);
+	}
+	outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
+
+	// for each blendshape in "blendshape"
+	//   write blendshapevertexcount
+	//   write pointer to blendshapevertex (source address), count, size is sizeof(blendshapevertex)
+	// for each keyframe in keyframes
+	//   write all keyframes (pointer to the first one, and the count, and the size of each)
+
+
+	//outfile.write((const char*)objectBlendShapes, (sizeof(BlendShapes)*counter.blendShapeCount) + (sizeof(objectBlendShapes->blendShape)*objectBlendShapes->blendShapeCount) + (sizeof(objectBlendShapes->blendShape[0].blendShapeVertices)*objectBlendShapes->blendShape[0].blendShapeVertexCount) + (sizeof(objectBlendShapes->keyframes)*objectBlendShapes->keyFrameCount));
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	for (int i = 0; i < vBBox.size(); i++)
 	{
@@ -757,7 +897,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			lvlObj.rotationY = (float)tempTranslation[1];
 			lvlObj.rotationZ = (float)tempTranslation[2];
 
-			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
 			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", tempRotation[0], tempRotation[1], tempRotation[2]);
 
 			// Save ID
@@ -771,7 +911,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 				attributeValue = prop.Get<int>();
 
 				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
-				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
+				//FBXSDK_printf("\t|| ID: %d\n", attributeValue);
 				lvlObj.id = prop.Get<int>();
 			}
 			levelObjects.push_back(lvlObj);

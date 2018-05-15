@@ -75,14 +75,29 @@ struct AnimationInformation {
 };
 
 struct BlendShapeVertex {
-	float position[3];
+	float x, y, z;
+	float nx, ny, nz;
 };
 
-struct BlendShape {
-	float time;
+struct BlendShape
+{
 	int blendShapeVertexCount;
 	vector <BlendShapeVertex> blendShapeVertices;
 };
+
+struct BlendShapeKeyframe
+{
+	float time;
+	float blendShapeInfluense;
+};
+
+struct BlendShapes {
+	float blendShapeCount;
+	float keyFrameCount;
+	vector <BlendShape> blendShape;
+	vector <BlendShapeKeyframe> keyframes;
+};
+
 
 struct Group {
 	char groupName[100];

@@ -24,6 +24,7 @@ private:
 	void loadGlobaltransform(FbxNode* currentNode);
 	void loadVertex(FbxMesh* currentMesh, FbxNode* currentNode);
 	void loadMaterial(FbxNode* currentNode);
+	void loadBlendShape(FbxMesh* currentMesh, FbxScene* scene);
 	void loadCamera(FbxCamera* currentNode);
 	void loadGroups(FbxNode* currentNode);
 	void loadLights(FbxLight* currentLight);
@@ -41,13 +42,16 @@ private:
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
+	BlendShapes* objectBlendShapes;
 	Group* groups;
 	CustomMayaAttributes* customMayaAttribute;
 
 	FbxVector4* controlPoints;
+	FbxVector4* blendShapeControlPoints;
 	FbxNode* rootNode;
 	FbxNode* child;
 	FbxMesh* mesh;
+	FbxBlendShape* blendShape;
 	FbxLight* light;
 	FbxCamera* camera;
 	FbxString lString;
