@@ -21,8 +21,7 @@ public:
 	VertexInformation* vertices;
 	MeshInfo* transform;
 	MaterialInformation* material;
-	BoundingBox* BBox;
-	BoundingBoxVertex* BBoxVertices;
+	vector <BoundingBox*> boundingBoxes;
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
@@ -30,11 +29,6 @@ public:
 	BlendShape* blendShape;
 	BlendShapeVertex* blendShapeVertices;
 	Group* group;
+	CustomMayaAttributes* customMayaAttribute;
 	Counter counterReader;
-
-	/*vector <BoundingBox> boundingBoxes;
-	vector <Joint> joints;
-	vector <Animation> animations;
-	vector <BlendShape> blendShapes;
-	vector <Group> group;*/
 };

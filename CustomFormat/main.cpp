@@ -8,6 +8,8 @@ int main()
 	
 	Converter converter("HandAnimation2.fbx");
 
+	converter.isLevel = false; // change this when loading levels
+
 	converter.importMesh();
 
 	getchar();

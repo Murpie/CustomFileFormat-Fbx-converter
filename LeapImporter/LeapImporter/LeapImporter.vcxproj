@@ -79,6 +79,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>LeapImporter\LeapImporter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -92,6 +93,12 @@
     <Link>
       <AdditionalLibraryDirectories>LeapImporter\LeapImporter\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -123,11 +130,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="LeapImporter.h" />
+    <ClInclude Include="LeapLevel.h" />
     <ClInclude Include="LeapMesh.h" />
     <ClInclude Include="MeshStructs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LeapImporter.cpp" />
+    <ClCompile Include="LeapLevel.cpp" />
     <ClCompile Include="LeapMesh.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
