@@ -95,8 +95,7 @@ void Converter::exportFile(FbxNode* currentNode)
 		//Load in Vertex data
 		if (mesh)
 		{
-			loadVertex(mesh);
-			loadWeights(currentNode);
+			loadVertex(mesh, currentNode);
 		}
 
 		//Load Material & Texture File information
@@ -154,7 +153,7 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 	delete meshInfo;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadVertex(FbxMesh* currentMesh)
+void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 {
 	polygonCount = currentMesh->GetPolygonCount();
 
@@ -192,6 +191,7 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertexBinormal = currentMesh->GetElementBinormal();
 			if (vertexBinormal)
 			{
+				foundBinormal = true;
 				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
 				{
 					int lNormalIndex = 0;
@@ -218,6 +218,7 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertexTangent = currentMesh->GetElementTangent();
 			if (vertexTangent)
 			{
+				foundTangent = true;
 				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
 				{
 					int lNormalIndex = 0;
@@ -259,19 +260,15 @@ void Converter::loadVertex(FbxMesh* currentMesh)
 			vertices[i].u = (float)uv[i][0];
 			vertices[i].v = (float)uv[i][1];
 
-			FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-			
-			if (vertexBinormal) 
-				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
-			if (vertexTangent)
-				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
-
-			FBXSDK_printf("\t|%d|UVs: %f %f\n\n", i, vertices[i].u, vertices[i].v);
+			//Weights
+			loadWeights(currentNode, i);
 
 			i++;
 		}
 	}
+
+	printInfo();
+	getchar();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadMaterial(FbxNode* currentNode)
@@ -485,22 +482,23 @@ void Converter::loadLights(FbxLight* currentLight)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadWeights(FbxNode* currentNode)
+void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
 {
+	foundVertexWeight = false;
+	nrOfWeights = 0;
 	//Skin with weights for vertices
 	FbxPatch* patch = (FbxPatch*)currentNode->GetNodeAttribute();
 	int controlPointsCount = patch->GetControlPointsCount();
 	FbxVector4* controlPoints = patch->GetControlPoints();
 
+	printf("vertexIndex: %d\n", vertexIndex);
+
 	int clusterCount;
+	int nrOfJoints = 0;
 	FbxCluster* cluster;
-
 	int skinCount = patch->GetDeformerCount(FbxDeformer::eSkin);
-
-	for (int controlPointIndex = 0; controlPointIndex < controlPointsCount; controlPointIndex++)
-	{
-
-	}
+	
+	vector<tempWeight> store;
 
 	for (int i = 0; i < skinCount; i++)
 	{
@@ -508,35 +506,124 @@ void Converter::loadWeights(FbxNode* currentNode)
 		for (int j = 0; j < clusterCount; j++)
 		{
 			cluster = ((FbxSkin*)patch->GetDeformer(i, FbxDeformer::eSkin))->GetCluster(j);
-			FBXSDK_printf("Joint Name: %s\n", cluster->GetLink()->GetName());
+			//FBXSDK_printf("Joint Name: %s\n", cluster->GetLink()->GetName());
 
 			int* indices = cluster->GetControlPointIndices();
 			int indexCount = cluster->GetControlPointIndicesCount();
 			double* weights = cluster->GetControlPointWeights();
 
+			tempWeight tempStore;
+
 			for (int index = 0; index < indexCount; index++)
 			{
-				double tempDouble = weights[index];
-
-				for (int sortIndex = 0; sortIndex < indexCount; sortIndex++)
+				if (vertexIndex == indices[index])
 				{
-					if (weights[sortIndex] > weights[index])
-					{
-						weights[index] = weights[sortIndex];
-						weights[sortIndex] = tempDouble;
-						break;
-					}
+					tempStore.ID = j;
+					tempStore.weight = weights[index];
+
+					store.push_back(tempStore);
+					foundVertexWeight = true;
+					nrOfWeights++;
 				}
 			}
+		}
+	}
 
+	if (foundVertexWeight)
+	{
+		for (int i = 0; i < store.size(); i++)
+		{
+			int id = store[i].ID;
+			float newTempWeight = store[i].weight;
 
-
-			for (int k = 0; k < indexCount; k++)
+			for (int j = 0; j < store.size(); j++)
 			{
-				FBXSDK_printf("Vtx: %d\n", indices[k]);
-				FBXSDK_printf("Weights: %f\n", weights[k]);
+				if (store[j].weight < store[i].weight)
+				{
+					store[i].weight = store[j].weight;
+					store[j].weight = newTempWeight;
+					newTempWeight = store[i].weight;
+
+					store[i].ID = store[j].ID;
+					store[j].ID = id;
+					id = store[i].ID;
+				}
 			}
 		}
+
+		
+		for (int j = 0; j < nrOfWeights; j++)
+		{
+			if (j == 4)
+			{
+				break;
+			}
+			if (store[j].weight > 0)
+			{
+				vertices[vertexIndex].weight[j] = store[j].weight;
+				vertices[vertexIndex].weightID[j] = store[j].ID;
+			}
+		}
+
+		if (nrOfWeights < 4)
+		{
+			if (nrOfWeights == 3)
+			{
+				vertices[vertexIndex].weight[3] = -1;
+				vertices[vertexIndex].weightID[3] = -1;
+			}
+			else if (nrOfWeights == 2)
+			{
+				vertices[vertexIndex].weight[2] = -1;
+				vertices[vertexIndex].weightID[2] = -1;
+				vertices[vertexIndex].weight[3] = -1;
+				vertices[vertexIndex].weightID[3] = -1;
+			}
+			else if (nrOfWeights == 1)
+			{
+				vertices[vertexIndex].weight[1] = -1;
+				vertices[vertexIndex].weightID[1] = -1;
+				vertices[vertexIndex].weight[2] = -1;
+				vertices[vertexIndex].weightID[2] = -1;
+				vertices[vertexIndex].weight[3] = -1;
+				vertices[vertexIndex].weightID[3] = -1;
+			}
+			else
+			{
+				vertices[vertexIndex].weight[0] = -1;
+				vertices[vertexIndex].weightID[0] = -1;
+				vertices[vertexIndex].weight[1] = -1;
+				vertices[vertexIndex].weightID[1] = -1;
+				vertices[vertexIndex].weight[2] = -1;
+				vertices[vertexIndex].weightID[2] = -1;
+				vertices[vertexIndex].weight[3] = -1;
+				vertices[vertexIndex].weightID[3] = -1;
+			}
+		}
+
+		store.clear();
+	}
+}
+void Converter::printInfo()
+{
+	//Prints
+	for (int i = 0; i < counter.vertexCount; i++)
+	{
+		FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+		FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+
+		if (foundBinormal)
+			FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
+		if (foundTangent)
+			FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
+
+		FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
+
+		for (int j = 0; j < 4; j++)
+		{
+			FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
+		}
+		printf("\n");
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------

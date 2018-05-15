@@ -21,12 +21,13 @@ public:
 
 private:
 	void loadGlobaltransform(FbxNode* currentNode);
-	void loadVertex(FbxMesh* currentMesh);
+	void loadVertex(FbxMesh* currentMesh, FbxNode* currentNode);
 	void loadMaterial(FbxNode* currentNode);
 	void loadCamera(FbxCamera* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void loadCustomMayaAttributes(FbxNode* currentNode);
-	void loadWeights(FbxNode* currentNode);
+	void loadWeights(FbxNode* currentNode, int vertexIndex);
+	void printInfo();
 	void createCustomFile();
 
 	FbxManager * manager;
@@ -51,6 +52,11 @@ private:
 	int polygonCount;
 	int polygonSize;
 	int textureCount;
+	int nrOfWeights;
+
+	bool foundBinormal = false;
+	bool foundTangent = false;
+	bool foundVertexWeight = false;
 
 	const char* meshName;
 	const char* textureName;
@@ -65,5 +71,10 @@ private:
 	std::vector<LevelObject> levelObjects;
 	void loadLevel(FbxNode* currentNode);
 	void createCustomLevelFile();
+
+	struct tempWeight {
+		int ID;
+		float weight;
+	};
 };
 
