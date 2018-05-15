@@ -99,7 +99,7 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>

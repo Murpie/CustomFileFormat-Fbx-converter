@@ -29,7 +29,6 @@ Converter::~Converter()
 	delete matInfo;
 	delete ret;
 	delete customMayaAttribute;
-	delete groups;
 
 	ourScene->Destroy();
 	settings->Destroy();
@@ -274,9 +273,6 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			i++;
 		}
 	}
-
-	printInfo();
-	getchar();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadMaterial(FbxNode* currentNode)
@@ -463,7 +459,7 @@ void Converter::loadGroups(FbxNode* currentNode)
 {
 	if ((std::string)currentNode->GetName() != "RootNode")
 	{
-		groups = new Group;
+		groups = new Group[1];
 
 		const char* tempGroupName = currentNode->GetName();
 		for (int i = 0; i < strlen(tempGroupName) + 1; i++)
@@ -499,8 +495,8 @@ void Converter::loadGroups(FbxNode* currentNode)
 		for (int i = 0; i < groups->childCount; i++)
 			std::cout << groups->childName[i] << std::endl;
 
+		delete groups;
 	}
-
 
 
 }
@@ -544,8 +540,6 @@ void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
 	FbxPatch* patch = (FbxPatch*)currentNode->GetNodeAttribute();
 	int controlPointsCount = patch->GetControlPointsCount();
 	FbxVector4* controlPoints = patch->GetControlPoints();
-
-	printf("vertexIndex: %d\n", vertexIndex);
 
 	int clusterCount;
 	int nrOfJoints = 0;
@@ -722,7 +716,7 @@ void Converter::createCustomFile()
 	{
 		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
 	}
-	outfile.write((const char*)groups, sizeof(Group));
+	//outfile.write((const char*)groups, sizeof(Group));
 
 	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 	//outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
