@@ -85,10 +85,10 @@ void Converter::importMesh()
 	createCustomFile();
 
 	//Create the Custom File
-	/*if (isLevel)
-		createCustomLevelFile();*/
+	if (isLevel)
+		createCustomLevelFile();
 	//else
-
+		//createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -883,6 +883,7 @@ void Converter::createCustomFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
+	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
 	outfile.write((const char*)matInfo, sizeof(MaterialInformation));

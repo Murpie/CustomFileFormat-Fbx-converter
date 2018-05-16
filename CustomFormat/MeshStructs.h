@@ -38,13 +38,8 @@ struct MaterialInformation {
 	char textureFilePath[100];
 };
 
-//struct BoundingBoxVertex {
-//	float bx, by, bz;
-//};
-
 struct BoundingBox
 {
-	//BoundingBoxVertex boundingBoxVertices[8];
 	float minVector[3];
 	float maxVector[3];
 	float center[3];

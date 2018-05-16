@@ -36,6 +36,10 @@ private:
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
 	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
 	void printInformation();
+	void createCustomLevelFile();
+	void loadBbox(FbxNode* currentNode);
+	void loadLevel(FbxNode* currentNode);
+	bool isPartOf(const char* nodeName);
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -45,17 +49,19 @@ private:
 	Counter counter;
 	MeshInfo* meshInfo;
 	VertexInformation* vertices;
+	struct tempWeight {
+		int ID;
+		float weight;
+	};
 	MaterialInformation* matInfo;
+	std::vector<BoundingBox> vBBox;
+	std::vector<LevelObject> levelObjects;
+	AnimationInformation* animationInfo;
 	BlendShapes* objectBlendShapes;
 	Camera* exportCamera;
 	Light* exportLight;
 	Group* groups;
 	CustomMayaAttributes* customMayaAttribute;
-
-	//KeyFrameData* keyFrameData;
-	//KeyFrame* keyFrame;
-	//JointInformation* jointInformation;
-	AnimationInformation* animationInfo;
 
 	FbxVector4* controlPoints;
 	FbxVector4* blendShapeControlPoints;
@@ -80,20 +86,5 @@ private:
 	const char* meshName;
 	const char* textureName = nullptr;
 	char* ret;
-
-	//
-	std::vector<BoundingBox> vBBox;
-	bool isPartOf(const char* nodeName);
-	void loadBbox(FbxNode* currentNode);
-
-	//
-	std::vector<LevelObject> levelObjects;
-	void loadLevel(FbxNode* currentNode);
-	void createCustomLevelFile();
-
-	struct tempWeight {
-		int ID;
-		float weight;
-	};
 };
 
