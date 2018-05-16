@@ -502,8 +502,8 @@ void Converter::loadLevel(FbxNode * currentNode)
 			lvlObj.rotationY = (float)tempTranslation[1];
 			lvlObj.rotationZ = (float)tempTranslation[2];
 
-			FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-			FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
 
 			// Save ID
 			unsigned int attributeValue;
