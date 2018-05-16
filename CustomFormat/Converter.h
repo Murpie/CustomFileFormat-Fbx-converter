@@ -47,6 +47,8 @@ private:
 	VertexInformation* vertices;
 	MaterialInformation* matInfo;
 	BlendShapes* objectBlendShapes;
+	Camera* exportCamera;
+	Light* exportLight;
 	Group* groups;
 	CustomMayaAttributes* customMayaAttribute;
 
@@ -76,7 +78,7 @@ private:
 	bool foundVertexWeight = false;
 
 	const char* meshName;
-	const char* textureName;
+	const char* textureName = nullptr;
 	char* ret;
 
 	//

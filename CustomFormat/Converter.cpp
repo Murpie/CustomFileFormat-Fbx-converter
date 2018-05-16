@@ -30,6 +30,8 @@ Converter::~Converter()
 	delete matInfo;
 	delete ret;
 	delete customMayaAttribute;
+	delete exportCamera;
+	delete exportLight;
 
 	delete[] animationInfo;
 
@@ -65,7 +67,7 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			if (isLevel)
+			/*if (isLevel)
 			{
 				loadLevel(rootNode->GetChild(i));
 			}
@@ -73,18 +75,20 @@ void Converter::importMesh()
 			{
 				loadBbox(rootNode->GetChild(i));
 			}
-			else
-				exportFile(rootNode->GetChild(i));
+			else*/
+
+			exportFile(rootNode->GetChild(i));
 		}
 	}
 	
 	exportAnimation(ourScene, rootNode);
+	createCustomFile();
 
 	//Create the Custom File
-	if (isLevel)
-		createCustomLevelFile();
+	/*if (isLevel)
+		createCustomLevelFile();*/
 	//else
-		//createCustomFile();
+
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -409,6 +413,15 @@ void Converter::loadMaterial(FbxNode* currentNode)
 		}
 	}
 
+	//Path if there is any
+	if (textureName != nullptr)
+	{
+		for (int i = 0; i < strlen(textureName) + 1; i++)
+		{
+			matInfo->textureFilePath[i] = textureName[i];
+		}
+	}
+
 	//Opacity
 	matInfo->opacity = (float)transparency;
 }
@@ -577,6 +590,8 @@ void Converter::loadCamera(FbxCamera* currentNode)
 
 	if (camera)
 	{
+		exportCamera = new Camera[1];
+
 		position = currentNode->Position.Get();
 		upVector = currentNode->UpVector.Get();
 		forwardVector = currentNode->InterestPosition.Get();
@@ -586,6 +601,20 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		fov = currentNode->FieldOfView.Get();
 		nearPlane = currentNode->NearPlane.Get();
 		farPlane = currentNode->FarPlane.Get();
+
+		for (int i = 0; i < COLOR_RANGE; i++)
+		{
+			exportCamera->position[i] = position[i];
+			exportCamera->up[i] = upVector[i];
+			exportCamera->forward[i] = forwardVector[i];
+		}
+
+		exportCamera->roll = roll;
+		exportCamera->aspectWidth = aspectWidth;
+		exportCamera->aspectHeight = aspectHeight;
+		exportCamera->fov = fov;
+		exportCamera->nearPlane = nearPlane;
+		exportCamera->farPlane = farPlane;
 
 	/*	FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
 		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
@@ -632,33 +661,49 @@ void Converter::loadGroups(FbxNode* currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
 {
+	exportLight = new Light[1];
+
 	FbxString lightType = currentLight->LightType.Get();
 	FbxDouble3 lightColor = currentLight->Color.Get();
 	FbxFloat intensity = currentLight->Intensity.Get();
 	FbxFloat innerCone = currentLight->InnerAngle.Get();
 	FbxFloat outerCone = currentLight->OuterAngle.Get();
 
-	if (lightType == "0")
+	for (int i = 0; i < strlen(lightType); i++)
 	{
-		//FBXSDK_printf("\tLight Type: Point Light\n");
-	}
-	else if(lightType == "1")
-	{
-		//FBXSDK_printf("\tLight Type: Directional Light\n");
-	}
-	else if(lightType == "2")
-	{
-		//FBXSDK_printf("\tLight Type: Spotlight\n");
+		exportLight->type[i] = lightType[i];
 	}
 
-	//FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
-	//FBXSDK_printf("\tIntensity: %.2f\n", intensity);
-
-	if (lightType == "2")
+	for (int i = 0; i < COLOR_RANGE; i++)
 	{
-		//FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
-		//FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+		exportLight->color[i] = lightColor[i];
 	}
+
+	exportLight->intensity = intensity;
+	exportLight->innerCone = innerCone;
+	exportLight->outerCone = outerCone;
+
+	//if (lightType == "0")
+	//{
+	//	//FBXSDK_printf("\tLight Type: Point Light\n");
+	//}
+	//else if(lightType == "1")
+	//{
+	//	//FBXSDK_printf("\tLight Type: Directional Light\n");
+	//}
+	//else if(lightType == "2")
+	//{
+	//	//FBXSDK_printf("\tLight Type: Spotlight\n");
+	//}
+
+	////FBXSDK_printf("\tColor: %.3f %.3f %.3f\n", lightColor[0], lightColor[1], lightColor[2]);
+	////FBXSDK_printf("\tIntensity: %.2f\n", intensity);
+
+	//if (lightType == "2")
+	//{
+	//	//FBXSDK_printf("\tInner Cone: %.2f\n", innerCone);
+	//	//FBXSDK_printf("\tOuter Cone: %.2f\n", outerCone);
+	//}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
@@ -840,6 +885,7 @@ void Converter::createCustomFile()
 	outfile.write((const char*)&counter, sizeof(Counter));
 	outfile.write((const char*)vertices, sizeof(VertexInformation)*counter.vertexCount);
 	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	outfile.write((const char*)matInfo, sizeof(MaterialInformation));
 
 	// write the fixed part (blendShapeCount, keyFramecount)
 	outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
@@ -850,26 +896,6 @@ void Converter::createCustomFile()
 	}
 	outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
 
-	// for each blendshape in "blendshape"
-	//   write blendshapevertexcount
-	//   write pointer to blendshapevertex (source address), count, size is sizeof(blendshapevertex)
-	// for each keyframe in keyframes
-	//   write all keyframes (pointer to the first one, and the count, and the size of each)
-
-
-	//outfile.write((const char*)objectBlendShapes, (sizeof(BlendShapes)*counter.blendShapeCount) + (sizeof(objectBlendShapes->blendShape)*objectBlendShapes->blendShapeCount) + (sizeof(objectBlendShapes->blendShape[0].blendShapeVertices)*objectBlendShapes->blendShape[0].blendShapeVertexCount) + (sizeof(objectBlendShapes->keyframes)*objectBlendShapes->keyFrameCount));
-	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
-	for (int i = 0; i < vBBox.size(); i++)
-	{
-		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
-	}
-	//outfile.write((const char*)groups, sizeof(Group));
-
-	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
-	//outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
-
-	//size_t aLen = strlen(animationInfo->animationName);
-	//animationInfo->animationName[len + 1] += '\0';
 	outfile.write((const char*)animationInfo->animationName, sizeof(char) * 9);
 	outfile.write((const char*)&animationInfo->keyFrameCount, sizeof(int));
 	outfile.write((const char*)&animationInfo->nrOfJoints, sizeof(int));
@@ -884,6 +910,27 @@ void Converter::createCustomFile()
 
 		outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame)*animationInfo->keyFrameCount);
 	}
+
+	// for each blendshape in "blendshape"
+	//   write blendshapevertexcount
+	//   write pointer to blendshapevertex (source address), count, size is sizeof(blendshapevertex)
+	// for each keyframe in keyframes
+	//   write all keyframes (pointer to the first one, and the count, and the size of each)
+
+
+	//outfile.write((const char*)objectBlendShapes, (sizeof(BlendShapes)*counter.blendShapeCount) + (sizeof(objectBlendShapes->blendShape)*objectBlendShapes->blendShapeCount) + (sizeof(objectBlendShapes->blendShape[0].blendShapeVertices)*objectBlendShapes->blendShape[0].blendShapeVertexCount) + (sizeof(objectBlendShapes->keyframes)*objectBlendShapes->keyFrameCount));
+	//outfile.write((const char*)meshInfo, sizeof(MeshInfo));
+	/*for (int i = 0; i < vBBox.size(); i++)
+	{
+		outfile.write((const char*)&vBBox[i], sizeof(BoundingBox));
+	}*/
+	//outfile.write((const char*)groups, sizeof(Group));
+
+	//outfile.write((const char*)matInfo, sizeof(MaterialInformation));
+	//outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes));
+
+	//size_t aLen = strlen(animationInfo->animationName);
+	//animationInfo->animationName[len + 1] += '\0';
 
 	outfile.close();
 
