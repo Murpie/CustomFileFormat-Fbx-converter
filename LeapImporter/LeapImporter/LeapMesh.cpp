@@ -2,6 +2,18 @@
 
 LeapMesh::LeapMesh()
 {
+
+	//transform = new MeshInfo();
+	//material = new MaterialInformation();
+	//joints = new JointInformation();
+	//animation = new AnimationInformation();
+	//keyFrame = new KeyFrame();
+	//keyFrameData = new KeyFrameData();
+	//blendShape = new BlendShape();
+	//blendShapeVertices = new BlendShapeVertex();
+	//group = new Group();
+	//customMayaAttribute = new CustomMayaAttributes();
+	//customMayaAttribute->meshType = 0;
 }
 
 LeapMesh::LeapMesh(const char* fileName)
@@ -16,11 +28,8 @@ LeapMesh::~LeapMesh()
 		delete bbox_ptr;
 	}
 	boundingBoxes.clear();
-}
 
-int LeapMesh::getVertexCount()
-{
-	return this->counterReader.vertexCount;
+	//delete customMayaAttribute;
 }
 
 void LeapMesh::loader(const char* fileName)
