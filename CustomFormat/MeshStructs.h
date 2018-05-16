@@ -35,7 +35,7 @@ struct MaterialInformation {
 	float diffuse[3];
 	float emissive[3];
 	float opacity;
-	char* textureFilePath[100];
+	char textureFilePath[100];
 };
 
 struct BoundingBox
@@ -109,7 +109,7 @@ struct LevelObject {
 };
 
 struct Light {
-	char type;
+	char type[10];
 	float color[3];
 	float intensity;
 	float innerCone;
