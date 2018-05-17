@@ -24,21 +24,22 @@ Converter::Converter(const char * fileName)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
-	delete vertices;
 	delete[] objectBlendShapes;
 	delete ret;
-	delete customMayaAttribute;
-	delete exportCamera;
-	delete exportLight;
-	delete groups;
 
 	delete[] animationInfo;
 
+	meshInfo.clear();
+	vertices.clear();
+	matInfo.clear();
+	exportCamera.clear();
+	exportLight.clear();
+	customMayaAttribute.clear();
+	groups.clear();
+	
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
-
-	matInfo.clear();
 	//vBBox.clear();
 	//levelObjects.clear();
 }
@@ -69,9 +70,10 @@ void Converter::importMesh()
 		}
 	}
 	
-	//exportAnimation(ourScene, rootNode);
+	exportAnimation(ourScene, rootNode);
 	//Create the Custom File
-	//createCustomFile();
+	//printInfo();
+	createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -97,13 +99,12 @@ void Converter::exportFile(FbxNode* currentNode)
 				printf("Node: %s\n", tempNode->GetName());
 
 				mesh = tempNode->GetMesh();
-				printf("Mesh: %s\n", mesh->GetName());
 
 				if (mesh)
 				{
-					loadVertex(mesh, currentNode->GetChild(i));
-					loadMaterial(currentNode->GetChild(i));
-					loadCustomMayaAttributes(currentNode->GetChild(i));
+					loadVertex(mesh, tempNode);
+					loadMaterial(tempNode);
+					loadCustomMayaAttributes(tempNode);
 				}
 				
 			}
@@ -115,7 +116,7 @@ void Converter::exportFile(FbxNode* currentNode)
 			{
 				loadVertex(mesh, currentNode);
 				loadMaterial(currentNode);
-				//loadBlendShape(mesh, ourScene);
+				loadBlendShape(mesh, ourScene);
 				loadCustomMayaAttributes(currentNode);
 			}
 		}
@@ -147,26 +148,23 @@ void Converter::exportFile(FbxNode* currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadGlobaltransform(FbxNode* currentNode)
 {
-	meshInfo = new MeshInfo[1];						//There will always just be a single mesh, for now
+	MeshInfo tempMeshInfo;
+	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+	FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+	FbxDouble3 tempScaling = currentNode->LclScaling.Get();
 
-	if (meshInfo)
+	for (int i = 0; i < COLOR_RANGE; i++)
 	{
-		FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
-		FbxDouble3 tempRotation = currentNode->LclRotation.Get();
-		FbxDouble3 tempScaling = currentNode->LclScaling.Get();
-
-		for (int i = 0; i < COLOR_RANGE; i++)
-		{
-			meshInfo->globalTranslation[i] = tempTranslation[i];
-			meshInfo->globalRotation[i] = tempRotation[i];
-			meshInfo->globalScaling[i] = tempScaling[i];
-		}
-
-		//FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
-		//FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-		//FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+		tempMeshInfo.globalTranslation[i] = tempTranslation[i];
+		tempMeshInfo.globalRotation[i] = tempRotation[i];
+		tempMeshInfo.globalScaling[i] = tempScaling[i];
 	}
-	delete meshInfo;
+
+	//FBXSDK_printf("Translation: %f %f %f\n", meshInfo->globalTranslation[0], meshInfo->globalTranslation[1], meshInfo->globalTranslation[2]);
+	//FBXSDK_printf("Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+	//FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
+	
+	meshInfo.push_back(tempMeshInfo);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
@@ -177,8 +175,6 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 	controlPoints = currentMesh->GetControlPoints();
 
 	counter.vertexCount = polygonCount * 3;
-
-	vertices = new VertexInformation[counter.vertexCount];
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
@@ -197,6 +193,8 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 	{
 		for (int vertexIndex = 0; vertexIndex < currentMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
+			VertexInformation tempVtx;
+
 			//Positions
 			pos.push_back(controlPoints[currentMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
 
@@ -208,54 +206,51 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			if (vertexBinormal)
 			{
 				foundBinormal = true;
-				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
-				{
-					int lNormalIndex = 0;
-					//reference mode is direct, the normal index is same as vertex index.
-					//get normals by the index of control vertex
-					if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eDirect)
-						lNormalIndex = lVertexIndex;
-					//reference mode is index-to-direct, get normals by the index-to-direct
-					if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-						lNormalIndex = vertexBinormal->GetIndexArray().GetAt(lVertexIndex);
-					//Got normals of each vertex.
-					FbxVector4 lNormal = vertexBinormal->GetDirectArray().GetAt(lNormalIndex);
-					//FBXSDK_printf("Binormals for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
-					//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
-					//. . .
-					biNorm.push_back(lNormal);
-				}
+				
+				int lNormalIndex = 0;
+				//reference mode is direct, the normal index is same as vertex index.
+				//get normals by the index of control vertex
+				if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+					lNormalIndex = vertexIndex;
+				//reference mode is index-to-direct, get normals by the index-to-direct
+				if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+					lNormalIndex = vertexBinormal->GetIndexArray().GetAt(vertexIndex);
+				//Got normals of each vertex.
+				FbxVector4 lNormal = vertexBinormal->GetDirectArray().GetAt(lNormalIndex);
+				//FBXSDK_printf("Binormals for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
+				//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
+				//. . .
+				biNorm.push_back(lNormal);
+				
 
-				vertices[i].bnx = (float)biNorm[i][0];
-				vertices[i].bny = (float)biNorm[i][1];
-				vertices[i].bnz = (float)biNorm[i][2];
+				tempVtx.bnx = (float)biNorm[i][0];
+				tempVtx.bny = (float)biNorm[i][1];
+				tempVtx.bnz = (float)biNorm[i][2];
 			}
 
 			vertexTangent = currentMesh->GetElementTangent();
 			if (vertexTangent)
 			{
 				foundTangent = true;
-				for (int lVertexIndex = 0; lVertexIndex < currentMesh->GetControlPointsCount(); lVertexIndex++)
-				{
-					int lNormalIndex = 0;
-					//reference mode is direct, the normal index is same as vertex index.
-					//get normals by the index of control vertex
-					if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eDirect)
-						lNormalIndex = lVertexIndex;
-					//reference mode is index-to-direct, get normals by the index-to-direct
-					if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-						lNormalIndex = vertexTangent->GetIndexArray().GetAt(lVertexIndex);
-					//Got normals of each vertex.
-					FbxVector4 lNormal = vertexTangent->GetDirectArray().GetAt(lNormalIndex);
-					//FBXSDK_printf("Tangents for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
-					//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
-					//. . .
-					tangent.push_back(lNormal);
-				}
+				
+				int lNormalIndex = 0;
+				//reference mode is direct, the normal index is same as vertex index.
+				//get normals by the index of control vertex
+				if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eDirect)
+					lNormalIndex = vertexIndex;
+				//reference mode is index-to-direct, get normals by the index-to-direct
+				if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+					lNormalIndex = vertexTangent->GetIndexArray().GetAt(vertexIndex);
+				//Got normals of each vertex.
+				FbxVector4 lNormal = vertexTangent->GetDirectArray().GetAt(lNormalIndex);
+				//FBXSDK_printf("Tangents for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
+				//add your custom code here, to output normals or get them into a list, such as KArrayTemplate<FbxVector4>
+				//. . .
+				tangent.push_back(lNormal);
 
-				vertices[i].tx = (float)tangent[i][0];
-				vertices[i].ty = (float)tangent[i][1];
-				vertices[i].tz = (float)tangent[i][2];
+				tempVtx.tx = (float)tangent[i][0];
+				tempVtx.ty = (float)tangent[i][1];
+				tempVtx.tz = (float)tangent[i][2];
 			}
 
 			//UVs
@@ -265,19 +260,19 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			currentMesh->GetPolygonVertexUV(polygonIndex, vertexIndex, uvNames, tempUv, ItIsFalse);
 			uv.push_back(tempUv);
 
-			vertices[i].x = (float)pos[i][0];
-			vertices[i].y = (float)pos[i][1];
-			vertices[i].z = (float)pos[i][2];
+			tempVtx.x = (float)pos[i][0];
+			tempVtx.y = (float)pos[i][1];
+			tempVtx.z = (float)pos[i][2];
 
-			vertices[i].nx = (float)norm[i][0];
-			vertices[i].ny = (float)norm[i][1];
-			vertices[i].nz = (float)norm[i][2];
+			tempVtx.nx = (float)norm[i][0];
+			tempVtx.ny = (float)norm[i][1];
+			tempVtx.nz = (float)norm[i][2];
 
-			vertices[i].u = (float)uv[i][0];
-			vertices[i].v = (float)uv[i][1];
+			tempVtx.u = (float)uv[i][0];
+			tempVtx.v = (float)uv[i][1];
 
 			//Weights
-			loadWeights(currentNode, i);
+			loadWeights(currentNode, tempVtx, i);
 
 			i++;
 		}
@@ -582,18 +577,18 @@ void Converter::loadCamera(FbxCamera* currentNode)
 		}
 	}
 
-	FbxVector4 position;
-	FbxVector4 upVector;
-	FbxVector4 forwardVector;
-	float roll;
-	
-	float aspectWidth, aspectHeight;
-	float fov;
-	float nearPlane, farPlane;
-
 	if (camera)
 	{
-		exportCamera = new Camera[1];
+		FbxVector4 position;
+		FbxVector4 upVector;
+		FbxVector4 forwardVector;
+		float roll;
+
+		float aspectWidth, aspectHeight;
+		float fov;
+		float nearPlane, farPlane;
+
+		Camera tempCamera;
 
 		position = currentNode->Position.Get();
 		upVector = currentNode->UpVector.Get();
@@ -607,19 +602,21 @@ void Converter::loadCamera(FbxCamera* currentNode)
 
 		for (int i = 0; i < COLOR_RANGE; i++)
 		{
-			exportCamera->position[i] = position[i];
-			exportCamera->up[i] = upVector[i];
-			exportCamera->forward[i] = forwardVector[i];
+			tempCamera.position[i] = position[i];
+			tempCamera.up[i] = upVector[i];
+			tempCamera.forward[i] = forwardVector[i];
 		}
 
-		exportCamera->roll = roll;
-		exportCamera->aspectWidth = aspectWidth;
-		exportCamera->aspectHeight = aspectHeight;
-		exportCamera->fov = fov;
-		exportCamera->nearPlane = nearPlane;
-		exportCamera->farPlane = farPlane;
+		tempCamera.roll = roll;
+		tempCamera.aspectWidth = aspectWidth;
+		tempCamera.aspectHeight = aspectHeight;
+		tempCamera.fov = fov;
+		tempCamera.nearPlane = nearPlane;
+		tempCamera.farPlane = farPlane;
 
-	/*	FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
+		exportCamera.push_back(tempCamera);
+
+		/*FBXSDK_printf("\tPosition: %.2f %.2f %.2f\n", position[0], position[1], position[2]);
 		FBXSDK_printf("\tUp: %.2f %.2f %.2f\n", upVector[0], upVector[1], upVector[2]);
 		FBXSDK_printf("\tLook At: %.2f %.2f %.2f\n", forwardVector[0], forwardVector[1], forwardVector[2]);
 		FBXSDK_printf("\tRoll: %.2f\n", roll);
@@ -634,12 +631,13 @@ void Converter::loadGroups(FbxNode* currentNode)
 {
 	if ((std::string)currentNode->GetName() == "Group")
 	{
-		groups = new Group[1];
+		Group tempGroup;
+		GroupChild tempChild;
 
 		const char* tempGroupName = currentNode->GetName();
 		for (int i = 0; i < strlen(tempGroupName) + 1; i++)
 		{
-			groups->groupName[i] = tempGroupName[i];
+			tempGroup.groupName[i] = tempGroupName[i];
 		}
 
 		//std::cout << "GroupName:" << groups->groupName << std::endl << "Nr of children: " << currentNode->GetChildCount() << endl;
@@ -651,11 +649,15 @@ void Converter::loadGroups(FbxNode* currentNode)
 			for (int j = 0; j < strlen(tempChildrenName) + 1; j++)
 			{
 				//FBXSDK_printf("%d\t", j);
-				groups->childName[i][j] = tempChildrenName[j];
+				tempChild.childName[j] = tempChildrenName[j];
 			}
+
+			tempGroup.children.push_back(tempChild);
 			childrenSize++;
 		}
-		groups->childCount = childrenSize;
+		tempGroup.childCount = childrenSize;
+
+		groups.push_back(tempGroup);
 
 		/*for (int i = 0; i < groups->childCount; i++)
 			std::cout << groups->childName[i] << std::endl;*/
@@ -664,28 +666,28 @@ void Converter::loadGroups(FbxNode* currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLights(FbxLight* currentLight)
 {
-	exportLight = new Light[1];
+	//exportLight = new Light[1];
+
+	Light tempLight;
 
 	FbxString lightType = currentLight->LightType.Get();
 	FbxDouble3 lightColor = currentLight->Color.Get();
 	FbxFloat intensity = currentLight->Intensity.Get();
 	FbxFloat innerCone = currentLight->InnerAngle.Get();
 	FbxFloat outerCone = currentLight->OuterAngle.Get();
-
-
-	for (int i = 0; i < strlen(lightType); i++)
-	{
-		exportLight->type[i] = lightType[i];
-	}
+	
+	tempLight.type = lightType[0];	//Type only contains a single number
 
 	for (int i = 0; i < COLOR_RANGE; i++)
 	{
-		exportLight->color[i] = lightColor[i];
+		tempLight.color[i] = lightColor[i];
 	}
 
-	exportLight->intensity = intensity;
-	exportLight->innerCone = innerCone;
-	exportLight->outerCone = outerCone;
+	tempLight.intensity = intensity;
+	tempLight.innerCone = innerCone;
+	tempLight.outerCone = outerCone;
+
+	exportLight.push_back(tempLight);
 
 	//if (lightType == "0")
 	//{
@@ -711,8 +713,9 @@ void Converter::loadLights(FbxLight* currentLight)
 	counter.lightCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
+void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex)
 {
+
 	foundVertexWeight = false;
 	nrOfWeights = 0;
 	//Skin with weights for vertices
@@ -787,8 +790,8 @@ void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
 			}
 			if (store[j].weight > 0)
 			{
-				vertices[vertexIndex].weight[j] = store[j].weight;
-				vertices[vertexIndex].weightID[j] = store[j].ID;
+				currentVertex.weight[j] = store[j].weight;
+				currentVertex.weightID[j] = store[j].ID;
 			}
 		}
 
@@ -796,83 +799,325 @@ void Converter::loadWeights(FbxNode* currentNode, int vertexIndex)
 		{
 			if (nrOfWeights == 3)
 			{
-				vertices[vertexIndex].weight[3] = -1;
-				vertices[vertexIndex].weightID[3] = -1;
+				currentVertex.weight[3] = -1;
+				currentVertex.weightID[3] = -1;
 			}
 			else if (nrOfWeights == 2)
 			{
-				vertices[vertexIndex].weight[2] = -1;
-				vertices[vertexIndex].weightID[2] = -1;
-				vertices[vertexIndex].weight[3] = -1;
-				vertices[vertexIndex].weightID[3] = -1;
+				currentVertex.weight[2] = -1;
+				currentVertex.weightID[2] = -1;
+				currentVertex.weight[3] = -1;
+				currentVertex.weightID[3] = -1;
 			}
 			else if (nrOfWeights == 1)
 			{
-				vertices[vertexIndex].weight[1] = -1;
-				vertices[vertexIndex].weightID[1] = -1;
-				vertices[vertexIndex].weight[2] = -1;
-				vertices[vertexIndex].weightID[2] = -1;
-				vertices[vertexIndex].weight[3] = -1;
-				vertices[vertexIndex].weightID[3] = -1;
+				currentVertex.weight[1] = -1;
+				currentVertex.weightID[1] = -1;
+				currentVertex.weight[2] = -1;
+				currentVertex.weightID[2] = -1;
+				currentVertex.weight[3] = -1;
+				currentVertex.weightID[3] = -1;
 			}
 			else
 			{
-				vertices[vertexIndex].weight[0] = -1;
-				vertices[vertexIndex].weightID[0] = -1;
-				vertices[vertexIndex].weight[1] = -1;
-				vertices[vertexIndex].weightID[1] = -1;
-				vertices[vertexIndex].weight[2] = -1;
-				vertices[vertexIndex].weightID[2] = -1;
-				vertices[vertexIndex].weight[3] = -1;
-				vertices[vertexIndex].weightID[3] = -1;
+				currentVertex.weight[0] = -1;
+				currentVertex.weightID[0] = -1;
+				currentVertex.weight[1] = -1;
+				currentVertex.weightID[1] = -1;
+				currentVertex.weight[2] = -1;
+				currentVertex.weightID[2] = -1;
+				currentVertex.weight[3] = -1;
+				currentVertex.weightID[3] = -1;
 			}
 		}
 
-		store.clear();
 	}
+	else
+	{
+		currentVertex.weight[0] = -1;
+		currentVertex.weightID[0] = -1;
+		currentVertex.weight[1] = -1;
+		currentVertex.weightID[1] = -1;
+		currentVertex.weight[2] = -1;
+		currentVertex.weightID[2] = -1;
+		currentVertex.weight[3] = -1;
+		currentVertex.weightID[3] = -1;
+	}
+
+	store.clear();
+	vertices.push_back(currentVertex);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::printInfo()
 {
-	//Prints
-	for (int i = 0; i < counter.vertexCount; i++)
+	//...Prints
+	char answer;
+
+	//Counter
+	printf("Print Counter? Y/N:\t");
+	std::cin >> answer;
+
+	if (answer == 'Y' || answer == 'y')
 	{
-		FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-		FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+		FBXSDK_printf("\n\tVertex Count: %d\n", counter.vertexCount);
+		FBXSDK_printf("\tBlend Shape Count: %d\n", counter.blendShapeCount);
+		FBXSDK_printf("\tCustom Attribute Count: %d\n", counter.customMayaAttributeCount);
+		FBXSDK_printf("\tLight Count: %d\n", counter.lightCount);
+		FBXSDK_printf("\tCamera Count: %d\n", counter.cameraCount);
+		FBXSDK_printf("\tMaterial Count: %d\n\n", counter.matCount);
+	}
 
-		if (foundBinormal)
-			FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
-		if (foundTangent)
-			FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
-
-		FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
-
-		for (int j = 0; j < 4; j++)
+	//VertexInformation
+	printf("Print VertexInformation? Y/N:\t");
+	std::cin >> answer;
+	if (answer == 'Y' || answer == 'y')
+	{
+		for (int i = 0; i < vertices.size(); i++)
 		{
-			FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
+			FBXSDK_printf("\n\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+
+			if (foundBinormal)
+				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
+			if (foundTangent)
+				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
+
+			FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
+		
+			for (int j = 0; j < 4; j++)
+			{
+				FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
+			}
+			printf("\n");
+		}
+	}
+
+	//MaterialInformation
+	if (matInfo.size() != 0)
+	{
+		printf("Print MaterialInformation? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			for (int i = 0; i < matInfo.size(); i++)
+			{
+				FBXSDK_printf("\n\tAmbient: %.2f %.2f %.2f\n", matInfo[i].ambient);
+				FBXSDK_printf("\tDiffuse: %.2f %.2f %.2f\n", matInfo[i].diffuse);
+				FBXSDK_printf("\tEmissive: %.2f %.2f %.2f\n", matInfo[i].emissive);
+				FBXSDK_printf("\tOpacity: %.2f\n", matInfo[i].opacity);
+				FBXSDK_printf("\tTexture File Path: %s\n", matInfo[i].textureFilePath);
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\nThere's no Material Information\n\n");
+	}
+
+	//AnimationInformation
+	if (animationInfo)
+	{
+		printf("Print Skeleton Animation? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			FBXSDK_printf("\n\tAnimation Name: %s\n", animationInfo->animationName);
+			FBXSDK_printf("\tKey Frame Count: %d\n", animationInfo->keyFrameCount);
+			FBXSDK_printf("\tJoint Count: %d\n", animationInfo->nrOfJoints);
+
+
+			printf("Print Joint & Keyframes? Y/N:\t");
+			std::cin >> answer;
+
+			if (answer == 'Y' || answer == 'y')
+			{
+				for (int i = 0; i < animationInfo->joints.size(); i++)
+				{
+					FBXSDK_printf("\n\tJoint Name: %s\n", animationInfo->joints[i].jointName);
+					FBXSDK_printf("\tParent Name: %s\n", animationInfo->joints[i].parentName);
+
+					for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
+					{
+						FBXSDK_printf("\t\tKey|%d| Time:     %.3f", j, animationInfo->joints[i].keyFrames[j].time);
+						FBXSDK_printf("\tPosition: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].position[0], animationInfo->joints[i].keyFrames[j].position[1], animationInfo->joints[i].keyFrames[j].position[2]);
+						FBXSDK_printf("\tRotation: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].rotation[0], animationInfo->joints[i].keyFrames[j].rotation[1], animationInfo->joints[i].keyFrames[j].rotation[2]);
+						FBXSDK_printf("\tScaling:  %.3f %.3f %.3f\n", j,  animationInfo->joints[i].keyFrames[j].scaling[0] , animationInfo->joints[i].keyFrames[j].scaling[1] , animationInfo->joints[i].keyFrames[j].scaling[2]);
+					}
+				}
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\nThere's no Skeleton Animation\n\n");
+	}
+
+	//BlendShapes
+	if (objectBlendShapes->blendShapeCount != 0)
+	{
+		printf("Print BlendShapes? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			FBXSDK_printf("\n\tBlend Shape Count: %d", objectBlendShapes->blendShapeCount);
+			FBXSDK_printf("\tKey Frame Count:     %d", objectBlendShapes->keyFrameCount);
+
+			for (int i = 0; i < objectBlendShapes->blendShape.size(); i++)
+			{
+				FBXSDK_printf("\tBlend Shape Vertex Count: %d", objectBlendShapes->blendShape[i].blendShapeVertexCount);
+
+				for (int j = 0; j < objectBlendShapes->blendShape[i].blendShapeVertices.size(); j++)
+				{
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  X: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].x);
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Y: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].y);
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Z: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].z);
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NX: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nx);
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NY: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].ny);
+					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NZ: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nz);
+				}
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\nThere's no Blend Shape\n\n");
+	}
+
+	//Groups
+	if (groups.size() != 0)
+	{
+		printf("Print Groups? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			for (int i = 0; i < groups.size(); i++)
+			{
+				FBXSDK_printf("\n\tGroup Name: %s\n", groups[i].groupName);
+				FBXSDK_printf("\tChild Count:   %d\n", groups[i].childCount);
+
+				for (int j = 0; j < groups[i].children.size(); j++)
+				{
+					FBXSDK_printf("\n\tChild|%d| Name: %s\n", i, groups[i].children[j].childName);
+				}
+			}
+
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\nThere's no Groups\n\n");
+	}
+
+
+	//Custom Maya Attribute
+	if (customMayaAttribute.size() != 0)
+	{
+		printf("Print Custom Maya Attribute? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			printf("\n");
+			for (int i = 0; i < customMayaAttribute.size(); i++)
+			{
+				FBXSDK_printf("\tMesh Type: %d\n", customMayaAttribute[i].meshType);
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\nThere's no Custom Maya Attribute\n\n");
+	}
+
+	//Light
+	if (exportLight.size() != 0)
+	{
+		printf("Print Lights? Y/N:\t");
+		std::cin >> answer;
+		if (answer == 'Y' || answer == 'y')
+		{
+			for (int i = 0; i < exportLight.size(); i++)
+			{
+				FBXSDK_printf("\n\tLight Type: ");
+				switch (exportLight[i].type)
+				{
+				case '0':
+					FBXSDK_printf("Point Light\n");
+					break;
+				case '1':
+					FBXSDK_printf("Directional Light\n");
+					break;
+				case '2':
+					FBXSDK_printf("Spotlight\n");
+					break;
+				default:
+					FBXSDK_printf("Unknown\n");
+					break;
+				}
+
+				FBXSDK_printf("\tColor:   R: %.2f G: %.2f B: %.2f\n", exportLight[i].color[0], exportLight[i].color[1], exportLight[i].color[2]);
+				FBXSDK_printf("\tIntensity:  %.2f\n", exportLight[i].intensity);
+				FBXSDK_printf("\tInner Cone:  %.2f\n", exportLight[i].innerCone);
+				FBXSDK_printf("\tOuter Cone: %.2f\n", exportLight[i].outerCone);
+			}
 		}
 		printf("\n");
+	}
+	else
+	{
+		printf("\n\n\tThere's no Light\n\n");
+	}
+
+	if (exportCamera.size() != 0)
+	{
+		printf("Print Camera? Y/N:\t");
+		std::cin >> answer;
+		getchar();
+		if (answer == 'Y' || answer == 'y')
+		{
+			for (int i = 0; i < exportCamera.size(); i++)
+			{
+				FBXSDK_printf("\n\tPosition:     X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].position[0], exportCamera[i].position[1], exportCamera[i].position[2]);
+				FBXSDK_printf("\tUp Vector:      X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].up[0], exportCamera[i].up[1], exportCamera[i].up[2]);
+				FBXSDK_printf("\tForward Vector: X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].forward[0], exportCamera[i].forward[1], exportCamera[i].forward[2]);
+				FBXSDK_printf("\n\tRoll:         %f\n", exportCamera[i].roll);
+				FBXSDK_printf("\tAspect Width:   %f\n", exportCamera[i].aspectWidth);
+				FBXSDK_printf("\tAspect Height:  %f\n", exportCamera[i].aspectHeight);
+				FBXSDK_printf("\tField of View:  %f\n", exportCamera[i].fov);
+				FBXSDK_printf("\tNear Plane:     %f\n", exportCamera[i].nearPlane);
+				FBXSDK_printf("\tFar Plane:      %f\n", exportCamera[i].farPlane);
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("\n\n\tThere's no Camera\n\n");
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
-	customMayaAttribute = new CustomMayaAttributes[1];
-
 	unsigned int attributeValue;
 	std::string attributeName = "";
 
 	FbxProperty prop = currentNode->FindProperty(CUSTOM_ATTRIBUTE, false);
 	if (prop.IsValid())
 	{
+		CustomMayaAttributes tempCustom;
 		attributeName = prop.GetName();
 		attributeValue = prop.Get<int>();
 		
 		//FBXSDK_printf("Custom Attribute: %s\n", attributeName.c_str());
 		//FBXSDK_printf("Value Of Attribute: %d\n", attributeValue);
-		customMayaAttribute->meshType = prop.Get<int>();
+		tempCustom.meshType = prop.Get<int>();
+		customMayaAttribute.push_back(tempCustom);
+		counter.customMayaAttributeCount++;
 	}
-	counter.customMayaAttributeCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
@@ -889,8 +1134,16 @@ void Converter::createCustomFile()
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
-	outfile.write((const char*)meshInfo, sizeof(MeshInfo));
-	outfile.write((const char*)vertices, sizeof(VertexInformation) * counter.vertexCount);
+
+	for (int i = 0; i < meshInfo.size(); i++)
+	{
+		outfile.write((const char*)&meshInfo[i], sizeof(MeshInfo));
+	}
+
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		outfile.write((const char*)&vertices[i], sizeof(VertexInformation));
+	}
 
 	for (int i = 0; i < matInfo.size(); i++)
 	{
@@ -916,14 +1169,29 @@ void Converter::createCustomFile()
 	for (int i = 0; i < counter.blendShapeCount; i++)
 	{
 		outfile.write((const char*)&objectBlendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
-		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex)*objectBlendShapes->blendShape[i].blendShapeVertexCount);
+		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex) * objectBlendShapes->blendShape[i].blendShapeVertexCount);
 	}
 	outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
 
-	outfile.write((const char*)groups, sizeof(Group));
-	outfile.write((const char*)customMayaAttribute, sizeof(CustomMayaAttributes) * counter.customMayaAttributeCount);
-	outfile.write((const char*)exportLight, sizeof(Light) * counter.lightCount);
-	outfile.write((const char*)exportCamera, sizeof(Camera) * counter.cameraCount);
+	for (int i = 0; i < groups.size(); i++)
+	{
+		outfile.write((const char*)&groups[i], sizeof(Group));
+	}
+
+	for (int i = 0; i < customMayaAttribute.size(); i++)
+	{
+		outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
+	}
+	
+	for (int i = 0; i < exportLight.size(); i++)
+	{
+		outfile.write((const char*)&exportLight[i], sizeof(Light));
+	}
+	
+	for (int i = 0; i < exportCamera.size(); i++)
+	{
+		outfile.write((const char*)&exportCamera[i], sizeof(Camera));
+	}
 
 	outfile.close();
 

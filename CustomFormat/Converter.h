@@ -30,7 +30,7 @@ private:
 	void loadGroups(FbxNode* currentNode);
 	void loadLights(FbxLight* currentLight);
 	void loadCustomMayaAttributes(FbxNode* currentNode);
-	void loadWeights(FbxNode* currentNode, int vertexIndex);
+	void loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex);
 	void printInfo();
 	void createCustomFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
@@ -47,22 +47,18 @@ private:
 	FbxImporter* importer;
 
 	Counter counter;
-	MeshInfo* meshInfo;
-	VertexInformation* vertices;
-	struct tempWeight {
-		int ID;
-		float weight;
-	};
-
+	std::vector<MeshInfo> meshInfo;
+	std::vector<VertexInformation> vertices;
 	std::vector<MaterialInformation> matInfo;
+
 	//std::vector<BoundingBox> vBBox;
 	//std::vector<LevelObject> levelObjects;
 	AnimationInformation* animationInfo;
 	BlendShapes* objectBlendShapes;
-	Group* groups;
-	CustomMayaAttributes* customMayaAttribute;
-	Camera* exportCamera;
-	Light* exportLight;
+	std::vector<Group> groups;
+	std::vector<CustomMayaAttributes> customMayaAttribute;
+	std::vector<Camera> exportCamera;
+	std::vector<Light> exportLight;
 
 	FbxVector4* controlPoints;
 	FbxVector4* blendShapeControlPoints;
@@ -87,5 +83,10 @@ private:
 	const char* meshName;
 	const char* textureName = nullptr;
 	char* ret;
+
+	struct tempWeight {
+		int ID;
+		float weight;
+	};
 };
 

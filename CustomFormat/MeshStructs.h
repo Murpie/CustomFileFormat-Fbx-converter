@@ -94,10 +94,14 @@ struct BlendShapes {
 	vector <BlendShapeKeyframe> keyframes;
 };
 
+struct GroupChild {
+	char childName[100];
+};
+
 struct Group {
 	char groupName[100];
 	int childCount;
-	char childName[100][100];
+	vector<GroupChild> children;
 };
 
 struct CustomMayaAttributes {
@@ -111,7 +115,7 @@ struct LevelObject {
 };
 
 struct Light {
-	char type[10];
+	char type;
 	float color[3];
 	float intensity;
 	float innerCone;
