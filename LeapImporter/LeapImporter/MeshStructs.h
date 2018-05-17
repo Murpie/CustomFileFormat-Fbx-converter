@@ -5,13 +5,12 @@ using namespace std;
 struct Counter
 {
 	unsigned int vertexCount;
-	unsigned int boundingBoxCount;
-	unsigned int jointCount;
-	unsigned int animationCount;
+	unsigned int meshCount;
 	unsigned int blendShapeCount;
-	unsigned int groupID;
 	unsigned int customMayaAttributeCount;
-	unsigned int levelObjectCount;
+	unsigned int lightCount;
+	unsigned int cameraCount;
+	unsigned int matCount;
 };
 
 struct MeshInfo {
@@ -23,9 +22,11 @@ struct MeshInfo {
 struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
+	float bnx, bny, bnz;
+	float tx, ty, tz;
 	float u, v;
 	float weight[4];
-	float weightID[4];
+	int weightID[4];
 };
 
 struct MaterialInformation {
@@ -33,19 +34,7 @@ struct MaterialInformation {
 	float diffuse[3];
 	float emissive[3];
 	float opacity;
-	char* textureFilePath[100];
-};
-
-//struct BoundingBoxVertex {
-//	float bx, by, bz;
-//};
-
-struct BoundingBox
-{
-	//BoundingBoxVertex boundingBoxVertices[8];
-	float minVector[3];
-	float maxVector[3];
-	float center[3];
+	char textureFilePath[100];
 };
 
 struct KeyFrame {
@@ -58,8 +47,6 @@ struct KeyFrame {
 struct JointInformation {
 	char jointName[100];
 	char parentName[100];
-	//float localTransformMatrix[16];
-	//float bindPoseMatrix[16];
 	vector<KeyFrame> keyFrames;
 };
 
@@ -73,7 +60,6 @@ struct AnimationInformation {
 struct BlendShapeVertex {
 	float x, y, z;
 	float nx, ny, nz;
-	float u, v;
 };
 
 struct BlendShape
@@ -95,10 +81,14 @@ struct BlendShapes {
 	vector <BlendShapeKeyframe> keyframes;
 };
 
+struct GroupChild {
+	char childName[100];
+};
+
 struct Group {
 	char groupName[100];
 	int childCount;
-	char childName[100][100];
+	vector<GroupChild> children;
 };
 
 struct CustomMayaAttributes {
@@ -109,4 +99,24 @@ struct LevelObject {
 	float x, y, z;
 	float rotationX, rotationY, rotationZ;
 	int id;
+};
+
+struct Light {
+	char type;
+	float color[3];
+	float intensity;
+	float innerCone;
+	float outerCone;
+};
+
+struct Camera {
+	float position[3];
+	float up[3];
+	float forward[3];
+	float roll;
+	float aspectWidth;
+	float aspectHeight;
+	float fov;
+	float nearPlane;
+	float farPlane;
 };

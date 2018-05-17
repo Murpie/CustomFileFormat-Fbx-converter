@@ -18,18 +18,18 @@ public:
 
 	int getVertexCount();
 
-	VertexInformation* vertices;
+	Counter counterReader;
 	MeshInfo* transform;
+	VertexInformation* vertices;
 	MaterialInformation* material;
-	vector <BoundingBox*> boundingBoxes;
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
 	BlendShape* blendShape;
 	BlendShapeVertex* blendShapeVertices;
-	KeyFrameData* keyFrameData;
 	BlendShapes* blendShapes;
 	Group* group;
 	CustomMayaAttributes* customMayaAttribute;
-	Counter counterReader;
+	Light* light;
+	Camera* camera;
 };

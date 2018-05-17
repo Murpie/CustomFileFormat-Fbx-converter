@@ -4,7 +4,7 @@
 
 void LeapLevel::loader(const char * fileName)
 {
-	std::ifstream infile(fileName, std::ifstream::binary);
+	/*std::ifstream infile(fileName, std::ifstream::binary);
 
 	infile.read((char*)&counterReader, sizeof(Counter));
 
@@ -17,7 +17,7 @@ void LeapLevel::loader(const char * fileName)
 	if (infile.is_open())
 	{
 		infile.close();
-	}
+	}*/
 
 	return;
 }

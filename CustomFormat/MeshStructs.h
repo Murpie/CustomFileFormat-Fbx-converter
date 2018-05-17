@@ -4,14 +4,10 @@ using namespace std;
 
 struct Counter
 {
-	unsigned int vertexCount; //d
-	//unsigned int boundingBoxCount;
-	//unsigned int jointCount;
-	//unsigned int animationCount;
-	unsigned int blendShapeCount; //d
-	//unsigned int groupID;
-	unsigned int customMayaAttributeCount; //d
-	//unsigned int levelObjectCount;
+	unsigned int vertexCount;
+	unsigned int meshCount;
+	unsigned int blendShapeCount;
+	unsigned int customMayaAttributeCount;
 	unsigned int lightCount;
 	unsigned int cameraCount;
 	unsigned int matCount;
@@ -41,13 +37,6 @@ struct MaterialInformation {
 	char textureFilePath[100];
 };
 
-/*struct BoundingBox
-{
-	float minVector[3];
-	float maxVector[3];
-	float center[3];
-};*/
-
 struct KeyFrame {
 	float time;
 	float position[3];
@@ -57,9 +46,7 @@ struct KeyFrame {
 
 struct JointInformation {
 	char jointName[100];
-	char parentName[100];
-	//float localTransformMatrix[16];
-	//float bindPoseMatrix[16];					
+	char parentName[100];			
 	vector<KeyFrame> keyFrames;
 };
 

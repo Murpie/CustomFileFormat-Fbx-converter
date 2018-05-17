@@ -70,6 +70,7 @@ void Converter::importMesh()
 		}
 	}
 	
+	counter.vertexCount = totalNrOfVertices;
 	exportAnimation(ourScene, rootNode);
 	//Create the Custom File
 	//printInfo();
@@ -165,6 +166,7 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 	//FBXSDK_printf("Scaling: %f %f %f\n\n", meshInfo->globalScaling[0], meshInfo->globalScaling[1], meshInfo->globalScaling[2]);
 	
 	meshInfo.push_back(tempMeshInfo);
+	counter.meshCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
@@ -173,8 +175,6 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 
 	//Vertices
 	controlPoints = currentMesh->GetControlPoints();
-
-	counter.vertexCount = polygonCount * 3;
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
@@ -275,6 +275,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			loadWeights(currentNode, tempVtx, i);
 
 			i++;
+			totalNrOfVertices++;
 		}
 	}
 }
@@ -1131,6 +1132,7 @@ void Converter::createCustomFile()
 	ret[len] = 'p';
 	ret[len + 1] = '\0';
 	meshName = ret;
+
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
@@ -1175,7 +1177,12 @@ void Converter::createCustomFile()
 
 	for (int i = 0; i < groups.size(); i++)
 	{
-		outfile.write((const char*)&groups[i], sizeof(Group));
+		outfile.write((const char*)groups[i].groupName, sizeof(char) * 100);
+		outfile.write((const char*)&groups[i].childCount, sizeof(int));
+		for (int j = 0; j < groups[i].childCount; j++)
+		{
+			outfile.write((const char*)&groups[i].children[j].childName, sizeof(char) * 100);
+		}
 	}
 
 	for (int i = 0; i < customMayaAttribute.size(); i++)
@@ -1371,222 +1378,3 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::printInformation()
-{
-	std::cout << "Animation Name: " << animationInfo->animationName << std::endl;
-	std::cout << "Keyframe Count: " << animationInfo->keyFrameCount << std::endl;
-	std::cout << "Nr of joints: " << animationInfo->nrOfJoints << std::endl << std::endl;
-	for (int i = 0; i < animationInfo->nrOfJoints; i++)
-	{
-		std::cout << "Joint name: " << animationInfo->joints[i].jointName << std::endl;
-		std::cout << "Parent name: " << animationInfo->joints[i].parentName << std::endl;
-		for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
-		{
-			std::cout << "Keyframe[" << j << "]" << std::endl;
-			std::cout << "Time: " << animationInfo->joints[i].keyFrames[j].time << std::endl;
-			std::cout << "TX: " << animationInfo->joints[i].keyFrames[j].position[0] << std::endl;
-			std::cout << "TY: " << animationInfo->joints[i].keyFrames[j].position[1] << std::endl;
-			std::cout << "TZ: " << animationInfo->joints[i].keyFrames[j].position[2] << std::endl;
-
-			std::cout << "RX: " << animationInfo->joints[i].keyFrames[j].rotation[0] << std::endl;
-			std::cout << "RY: " << animationInfo->joints[i].keyFrames[j].rotation[1] << std::endl;
-			std::cout << "RZ: " << animationInfo->joints[i].keyFrames[j].rotation[2] << std::endl;
-
-			std::cout << "SX: " << animationInfo->joints[i].keyFrames[j].scaling[0] << std::endl;
-			std::cout << "SY: " << animationInfo->joints[i].keyFrames[j].scaling[1] << std::endl;
-			std::cout << "SZ: " << animationInfo->joints[i].keyFrames[j].scaling[2] << std::endl << std::endl;
-		}
-	}
-}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-/*void Converter::loadLevel(FbxNode * currentNode)
-{
-	printf("\n\t|| Node: %s\n", currentNode->GetName());
-
-	mesh = currentNode->GetMesh();
-	light = currentNode->GetLight();
-	camera = currentNode->GetCamera();
-
-	if (currentNode)
-	{
-		if (mesh && !isPartOf(currentNode->GetName()))
-		{
-			LevelObject lvlObj = LevelObject();
-			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
-			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
-			// Save position
-			lvlObj.x = (float)tempTranslation[0];
-			lvlObj.y = (float)tempTranslation[1];
-			lvlObj.z = (float)tempTranslation[2];
-			// Save rotation
-			lvlObj.rotationX = (float)tempTranslation[0];
-			lvlObj.rotationY = (float)tempTranslation[1];
-			lvlObj.rotationZ = (float)tempTranslation[2];
-
-			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", tempRotation[0], tempRotation[1], tempRotation[2]);
-
-			// Save ID
-			unsigned int attributeValue;
-			//std::string attributeName = "";
-
-			FbxProperty prop = currentNode->FindProperty(TYPE_ID, false);
-			if (prop.IsValid())
-			{
-				//attributeName = prop.GetName();
-				attributeValue = prop.Get<int>();
-
-				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
-				//FBXSDK_printf("\t|| ID: %d\n", attributeValue);
-				lvlObj.id = prop.Get<int>();
-			}
-			levelObjects.push_back(lvlObj);
-			counter.levelObjectCount++;
-		}
-		//Load Cameras
-		if (camera)
-		{
-
-		}
-
-		//Load Lights
-		if (light)
-		{
-
-		}
-	}
-	else
-	{
-		printf("Access violation: Node not found\n\n");
-		exit(-2);
-	}
-}*/
-
-/*void Converter::createCustomLevelFile()
-{
-	size_t len = strlen(meshName);
-	ret = new char[len + 2];
-	strcpy(ret, meshName);
-	ret[len - 3] = 'l';
-	ret[len - 2] = 'e';
-	ret[len - 1] = 'a';
-	ret[len] = 'p';
-	ret[len + 1] = '\0';
-	meshName = ret;
-
-	std::ofstream outfile(meshName, std::ofstream::binary);
-
-	outfile.write((const char*)&counter, sizeof(Counter));
-
-	for (int i = 0; i < levelObjects.size(); i++)
-	{
-		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
-	}
-
-	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
-
-	outfile.close();
-}*/
-
-/*bool Converter::isPartOf(const char * nodeName)
-{
-	std::string nodeString;
-	&nodeString.assign(nodeName);
-	std::string findString = "_BBox";
-	std::size_t found = nodeString.find(findString);
-	
-	if (found != std::string::npos)
-	{
-		return true;
-	}
-
-	return false;
-}*/
-
-/*void Converter::loadBbox(FbxNode* currentNode)
-{
-	BoundingBox bBox;
-	FbxMesh* bBoxMesh = currentNode->GetMesh();
-	FbxVector4* holder = bBoxMesh->GetControlPoints();
-	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
-	//FbxDouble3 tempRotation = currentNode->LclRotation.Get();
-	//FbxDouble3 tempScaling = currentNode->LclScaling.Get();
-	//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-	int polyCount = bBoxMesh->GetPolygonCount();
-
-	//Vertex* vert = new Vertex[counter.vertexCount];
-	std::vector<VertexInformation> vert;
-	std::vector<FbxVector4> position;
-
-	bool ItIsFalse = false;
-
-	bBoxMesh->GetPolygonVertices();
-	//bBoxMesh->b
-
-	int i = 0;
-	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
-	{
-		for (int vertexIndex = 0; vertexIndex < bBoxMesh->GetPolygonSize(polygonIndex); vertexIndex++)
-		{
-
-			VertexInformation temp;
-			//Positions
-			position.push_back(holder[bBoxMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
-			//Add translation to vertex position
-			temp.x = (float)position[i][0] + (float)tempTranslation[0];
-			temp.y = (float)position[i][1] + (float)tempTranslation[1];
-			temp.z = (float)position[i][2] + (float)tempTranslation[2];
-
-			vert.push_back(temp);
-			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, (float)position[i][0], (float)position[i][1], (float)position[i][2]);
-			//FBXSDK_printf("\t|%d|Vertex: %f %f %f\n", i, vert[i].x, vert[i].y, vert[i].z);
-
-			i++;
-		}
-	}
-	//FBXSDK_printf("\n");
-
-	bBox.minVector[0] = vert[0].x;
-	bBox.minVector[1] = vert[0].y;
-	bBox.minVector[2] = vert[0].z;
-
-	bBox.maxVector[0] = vert[0].x;
-	bBox.maxVector[1] = vert[0].y;
-	bBox.maxVector[2] = vert[0].z;
-
-	for (int i = 1; i < vert.size(); i++)
-	{
-		//Min
-		if (bBox.minVector[0] > vert[i].x)
-			bBox.minVector[0] = vert[i].x;
-		if (bBox.minVector[1] > vert[i].y)
-			bBox.minVector[1] = vert[i].y;
-		if (bBox.minVector[2] > vert[i].z)
-			bBox.minVector[2] = vert[i].z;
-
-		//Max
-		if (bBox.maxVector[0] < vert[i].x)
-			bBox.maxVector[0] = vert[i].x;
-		if (bBox.maxVector[1] < vert[i].y)
-			bBox.maxVector[1] = vert[i].y;
-		if (bBox.maxVector[2] < vert[i].z)
-			bBox.maxVector[2] = vert[i].z;
-	};
-
-	//Center
-	bBox.center[0] = (bBox.minVector[0] + bBox.maxVector[0]) * 0.5f;
-	bBox.center[1] = (bBox.minVector[1] + bBox.maxVector[1]) * 0.5f;
-	bBox.center[2] = (bBox.minVector[2] + bBox.maxVector[2]) * 0.5f;
-
-	//FBXSDK_printf("\t| |maxVector: %f %f %f\n", bBox.maxVector[0], bBox.maxVector[1], bBox.maxVector[2]);
-	//FBXSDK_printf("\t| |minVector: %f %f %f\n", bBox.minVector[0], bBox.minVector[1], bBox.minVector[2]);
-	//FBXSDK_printf("\t| |center: %f %f %f\n\n", bBox.center[0], bBox.center[1], bBox.center[2]);
-
-	vBBox.push_back(bBox);
-
-	vert.clear();
-	position.clear();
-
-	counter.boundingBoxCount++;
-}*/

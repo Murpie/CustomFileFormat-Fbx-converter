@@ -11,11 +11,7 @@ LeapMesh::LeapMesh(const char* fileName)
 
 LeapMesh::~LeapMesh()
 {
-	for (BoundingBox* bbox_ptr : boundingBoxes)
-	{
-		delete bbox_ptr;
-	}
-	boundingBoxes.clear();
+
 }
 
 int LeapMesh::getVertexCount()
@@ -29,13 +25,31 @@ void LeapMesh::loader(const char* fileName)
 	std::ifstream infile(fileName, std::ifstream::binary);
 
 	infile.read((char*)&counterReader, sizeof(Counter));
-	
-	vertices = new VertexInformation[counterReader.vertexCount];
 
+	transform = new MeshInfo[counterReader.meshCount];
+	infile.read((char*)transform, sizeof(MeshInfo) * counterReader.meshCount);
+
+	vertices = new VertexInformation[counterReader.vertexCount];
 	infile.read((char*)vertices, counterReader.vertexCount * sizeof(VertexInformation));
 
-	blendShapes = new BlendShapes[counterReader.blendShapeCount];
+	material = new MaterialInformation[counterReader.matCount];
+	infile.read((char*)material, sizeof(MaterialInformation) * counterReader.matCount);
 
+	animation = new AnimationInformation[1];
+
+	infile.read((char*)animation->animationName, sizeof(char) * 9);
+	infile.read((char*)&animation->keyFrameCount, sizeof(int));
+	infile.read((char*)&animation->nrOfJoints, sizeof(int));
+	animation->joints.resize(animation->nrOfJoints);
+	for (int i = 0; i < animation->nrOfJoints; i++)
+	{	
+		infile.read((char*)&animation->joints[i].jointName, sizeof(char) * 100);
+		infile.read((char*)&animation->joints[i].parentName, sizeof(char) * 100);
+		animation->joints[i].keyFrames.resize(animation->keyFrameCount);
+		infile.read((char*)animation->joints[i].keyFrames.data(), sizeof(KeyFrame) * animation->keyFrameCount);
+	}
+
+	blendShapes = new BlendShapes[counterReader.blendShapeCount];
 	infile.read((char*)blendShapes, 2 * sizeof(float));
 	blendShapes->blendShape.resize(blendShapes->blendShapeCount);
 	blendShapes->keyframes.resize(blendShapes->keyFrameCount);
@@ -52,40 +66,23 @@ void LeapMesh::loader(const char* fileName)
 
 	infile.read((char*)blendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*blendShapes->keyFrameCount);
 
-	/*infile.read((char*)blendShapes, counterReader.blendShapeCount * sizeof(float));*/
-
-	
-
-	for (int i = 0; i < counterReader.boundingBoxCount; i++)
+	group = new Group[1];
+	infile.read((char*)group->groupName, sizeof(char) * 100);
+	infile.read((char*)&group->childCount, sizeof(int));
+	group->children.resize(group->childCount);
+	for (int i = 0; i < group->childCount; i++)
 	{
-		BoundingBox* bbox = new BoundingBox();
-		boundingBoxes.push_back(bbox);
-		infile.read((char*)boundingBoxes[i], sizeof(BoundingBox));
+		infile.read((char*)&group->children[i].childName, sizeof(char) * 100);
 	}
 
-	//customMayaAttribute = new CustomMayaAttributes;
+	customMayaAttribute = new CustomMayaAttributes[counterReader.customMayaAttributeCount];
+	infile.read((char*)customMayaAttribute, sizeof(CustomMayaAttributes) * counterReader.customMayaAttributeCount);
 
-	//infile.read((char*)&customMayaAttribute, sizeof(CustomMayaAttributes));
-	group = new Group;
-	infile.read((char*)group, sizeof(Group));
+	light = new Light[counterReader.lightCount];
+	infile.read((char*)light, sizeof(Light) * counterReader.lightCount);
 
-
-	//animation = new AnimationInformation[counterReader.animationCount];
-	animation = new AnimationInformation[1];
-
-	infile.read((char*)animation->animationName, sizeof(char) * 9);
-	infile.read((char*)&animation->keyFrameCount, sizeof(int));
-	infile.read((char*)&animation->nrOfJoints, sizeof(int));
-	animation->joints.resize(animation->nrOfJoints);
-	for (int i = 0; i < animation->nrOfJoints; i++)
-	{	
-		infile.read((char*)&animation->joints[i].jointName, sizeof(char) * 100); // name is not 100 chars long
-		infile.read((char*)&animation->joints[i].parentName, sizeof(char) * 100); //name is not 100 chars long
-		animation->joints[i].keyFrames.resize(animation->keyFrameCount);
-		//infile.read((char*)animation->joints[i].localTransformMatrix, sizeof(float) * 16);
-		//infile.read((char*)animation->joints[i].bindPoseMatrix, sizeof(float) * 16);
-		infile.read((char*)animation->joints[i].keyFrames.data(), sizeof(KeyFrame) * animation->keyFrameCount);
-	}
+	camera = new Camera[counterReader.cameraCount];
+	infile.read((char*)camera, sizeof(Camera) * counterReader.cameraCount);
 
 	if (infile.is_open())
 	{

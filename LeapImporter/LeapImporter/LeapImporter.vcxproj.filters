@@ -24,18 +24,12 @@
     <ClInclude Include="LeapMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LeapLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LeapImporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LeapMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LeapLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

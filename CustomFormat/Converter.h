@@ -75,6 +75,7 @@ private:
 	int polygonSize;
 	int textureCount;
 	int nrOfWeights;
+	int totalNrOfVertices;
 
 	bool foundBinormal = false;
 	bool foundTangent = false;
