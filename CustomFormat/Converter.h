@@ -35,11 +35,6 @@ private:
 	void createCustomFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
 	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
-	void printInformation();
-	//void createCustomLevelFile();
-	//void loadBbox(FbxNode* currentNode);
-	//void loadLevel(FbxNode* currentNode);
-	//bool isPartOf(const char* nodeName);
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -51,8 +46,6 @@ private:
 	std::vector<VertexInformation> vertices;
 	std::vector<MaterialInformation> matInfo;
 
-	//std::vector<BoundingBox> vBBox;
-	//std::vector<LevelObject> levelObjects;
 	AnimationInformation* animationInfo;
 	BlendShapes* objectBlendShapes;
 	std::vector<Group> groups;
@@ -69,7 +62,6 @@ private:
 	FbxLight* light;
 	FbxCamera* camera;
 	FbxString lString;
-	//FbxNode* group;
 
 	int polygonCount;
 	int polygonSize;
