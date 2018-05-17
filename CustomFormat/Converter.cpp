@@ -1064,8 +1064,8 @@ void Converter::printInfo()
 				FBXSDK_printf("\tInner Cone:  %.2f\n", exportLight[i].innerCone);
 				FBXSDK_printf("\tOuter Cone: %.2f\n", exportLight[i].outerCone);
 			}
+			printf("\n");
 		}
-		printf("\n");
 	}
 	else
 	{
