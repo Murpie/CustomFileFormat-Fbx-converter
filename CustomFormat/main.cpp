@@ -6,9 +6,9 @@ int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	
-	Converter converter("Cliffside_1.fbx");
+	Converter converter("Lvl12.fbx");
 
-	converter.isLevel = false; // change this when loading levels
+	converter.isLevel = true; // change this when loading levels
 
 	converter.importMesh();
 
