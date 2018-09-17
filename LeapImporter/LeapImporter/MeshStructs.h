@@ -6,14 +6,12 @@ struct Counter
 {
 	unsigned int vertexCount;
 	unsigned int meshCount;
-	unsigned int blendShapeCount;
 	unsigned int customMayaAttributeCount;
-	unsigned int lightCount;
-	unsigned int cameraCount;
 	unsigned int matCount;
 };
 
 struct MeshInfo {
+	char meshName[100];
 	float globalTranslation[3];
 	float globalRotation[3];
 	float globalScaling[3];
@@ -57,42 +55,42 @@ struct AnimationInformation {
 	vector<JointInformation> joints;
 };
 
-struct BlendShapeVertex {
-	float x, y, z;
-	float nx, ny, nz;
-};
-
-struct BlendShape
-{
-	int blendShapeVertexCount;
-	vector <BlendShapeVertex> blendShapeVertices;
-};
-
-struct BlendShapeKeyframe
-{
-	float time;
-	float blendShapeInfluense;
-};
-
-struct BlendShapes {
-	float blendShapeCount;
-	float keyFrameCount;
-	vector <BlendShape> blendShape;
-	vector <BlendShapeKeyframe> keyframes;
-};
-
-struct GroupChild {
-	char childName[100];
-};
-
-struct Group {
-	char groupName[100];
-	int childCount;
-	vector<GroupChild> children;
-};
+//struct BlendShapeVertex {
+//	float x, y, z;
+//	float nx, ny, nz;
+//};
+//
+//struct BlendShape
+//{
+//	int blendShapeVertexCount;
+//	vector <BlendShapeVertex> blendShapeVertices;
+//};
+//
+//struct BlendShapeKeyframe
+//{
+//	float time;
+//	float blendShapeInfluense;
+//};
+//
+//struct BlendShapes {
+//	float blendShapeCount;
+//	float keyFrameCount;
+//	vector <BlendShape> blendShape;
+//	vector <BlendShapeKeyframe> keyframes;
+//};
+//
+//struct GroupChild {
+//	char childName[100];
+//};
+//
+//struct Group {
+//	char groupName[100];
+//	int childCount;
+//	vector<GroupChild> children;
+//};
 
 struct CustomMayaAttributes {
-	unsigned int meshType;
+	float particlePivot[3];
 };
 
 struct LevelObject {
@@ -101,22 +99,22 @@ struct LevelObject {
 	int id;
 };
 
-struct Light {
-	char type;
-	float color[3];
-	float intensity;
-	float innerCone;
-	float outerCone;
-};
-
-struct Camera {
-	float position[3];
-	float up[3];
-	float forward[3];
-	float roll;
-	float aspectWidth;
-	float aspectHeight;
-	float fov;
-	float nearPlane;
-	float farPlane;
-};
+//struct Light {
+//	char type;
+//	float color[3];
+//	float intensity;
+//	float innerCone;
+//	float outerCone;
+//};
+//
+//struct Camera {
+//	float position[3];
+//	float up[3];
+//	float forward[3];
+//	float roll;
+//	float aspectWidth;
+//	float aspectHeight;
+//	float fov;
+//	float nearPlane;
+//	float farPlane;
+//};

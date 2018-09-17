@@ -21,7 +21,7 @@ Converter::Converter(const char * fileName)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
-	delete[] objectBlendShapes;
+	//delete[] objectBlendShapes;
 	delete ret;
 
 	delete[] animationInfo;
@@ -29,10 +29,10 @@ Converter::~Converter()
 	meshInfo.clear();
 	vertices.clear();
 	matInfo.clear();
-	exportCamera.clear();
-	exportLight.clear();
+	//exportCamera.clear();
+	//exportLight.clear();
 	customMayaAttribute.clear();
-	groups.clear();
+	//groups.clear();
 	
 	ourScene->Destroy();
 	settings->Destroy();
@@ -75,8 +75,8 @@ void Converter::exportFile(FbxNode* currentNode)
 {
 	//printf("\nNode: %s\n", currentNode->GetName());
 
-	if (!isLevel)
-		loadGlobaltransform(currentNode);
+	/*if (!isLevel)
+		loadGlobaltransform(currentNode);*/
 	
 	mesh = currentNode->GetMesh();
 	light = currentNode->GetLight();
@@ -84,50 +84,13 @@ void Converter::exportFile(FbxNode* currentNode)
 
 	if (currentNode)
 	{
-		if ((std::string)currentNode->GetName() == "Group")
+		if (mesh)
 		{
-			for (int i = 0; i < currentNode->GetChildCount(); i++)
-			{
-				FbxNode* tempNode = currentNode->GetChild(i);
-				mesh = tempNode->GetMesh();
-
-				if (mesh)
-				{
-					loadVertex(mesh, tempNode);
-					loadMaterial(tempNode);
-					loadCustomMayaAttributes(tempNode);
-				}
-				
-			}
-		}
-		//Load in Vertex data
-		else
-		{
-			if (mesh)
-			{
-				loadVertex(mesh, currentNode);
-				loadMaterial(currentNode);
-				loadBlendShape(mesh, ourScene);
-				loadCustomMayaAttributes(currentNode);
-			}
-		}
-
-		//Load Cameras
-		if (camera)
-		{
-			loadCamera(camera);
-		}
-
-		//Load Lights
-		if (light)
-		{
-			loadLights(light);
-		}
-
-		//Groups
-		if (currentNode)
-		{
-			loadGroups(currentNode);
+			loadGlobaltransform(currentNode);
+			loadVertex(mesh, currentNode);
+			loadMaterial(currentNode);
+			//loadBlendShape(mesh, ourScene);
+			loadCustomMayaAttributes(currentNode);
 		}
 	}
 	else
@@ -140,6 +103,7 @@ void Converter::exportFile(FbxNode* currentNode)
 void Converter::loadGlobaltransform(FbxNode* currentNode)
 {
 	MeshInfo tempMeshInfo;
+	const char* tempString;
 	FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
 	FbxDouble3 tempRotation = currentNode->LclRotation.Get();
 	FbxDouble3 tempScaling = currentNode->LclScaling.Get();
@@ -149,6 +113,13 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 		tempMeshInfo.globalTranslation[i] = tempTranslation[i];
 		tempMeshInfo.globalRotation[i] = tempRotation[i];
 		tempMeshInfo.globalScaling[i] = tempScaling[i];
+	}
+
+	tempString = currentNode->GetName();
+
+	for (unsigned int i = 0; i < strlen(tempString) + 1; i++)
+	{
+		tempMeshInfo.meshName[i] = tempString[i];
 	}
 	
 	meshInfo.push_back(tempMeshInfo);
@@ -349,7 +320,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 	counter.matCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
+/*void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
 {
 	FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>();
 
@@ -446,124 +417,8 @@ void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
 			}
 		}
 	}
-}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadCamera(FbxCamera* currentNode)
-{
-	FbxGlobalSettings& globalSettings = ourScene->GetGlobalSettings();
-	FbxGlobalCameraSettings& globalCameraSettings = ourScene->GlobalCameraSettings();
-	FbxString currentCameraName = globalSettings.GetDefaultCamera();
+}*/
 
-	if (currentCameraName.Compare(FBXSDK_CAMERA_PERSPECTIVE) == 0)
-	{
-		camera = globalCameraSettings.GetCameraProducerPerspective();
-	}
-	else
-	{
-		FbxNode* cameraNode = ourScene->FindNodeByName(currentCameraName);
-		if (cameraNode)
-		{
-			camera = cameraNode->GetCamera();
-		}
-	}
-
-	if (camera)
-	{
-		FbxVector4 position;
-		FbxVector4 upVector;
-		FbxVector4 forwardVector;
-		float roll;
-
-		float aspectWidth, aspectHeight;
-		float fov;
-		float nearPlane, farPlane;
-
-		Camera tempCamera;
-
-		position = currentNode->Position.Get();
-		upVector = currentNode->UpVector.Get();
-		forwardVector = currentNode->InterestPosition.Get();
-		roll = currentNode->Roll.Get();
-		aspectWidth = currentNode->AspectWidth.Get();
-		aspectHeight = currentNode->AspectHeight.Get();
-		fov = currentNode->FieldOfView.Get();
-		nearPlane = currentNode->NearPlane.Get();
-		farPlane = currentNode->FarPlane.Get();
-
-		for (int i = 0; i < COLOR_RANGE; i++)
-		{
-			tempCamera.position[i] = position[i];
-			tempCamera.up[i] = upVector[i];
-			tempCamera.forward[i] = forwardVector[i];
-		}
-
-		tempCamera.roll = roll;
-		tempCamera.aspectWidth = aspectWidth;
-		tempCamera.aspectHeight = aspectHeight;
-		tempCamera.fov = fov;
-		tempCamera.nearPlane = nearPlane;
-		tempCamera.farPlane = farPlane;
-
-		exportCamera.push_back(tempCamera);
-		counter.cameraCount++;
-	}
-}
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadGroups(FbxNode* currentNode)
-{
-	if ((std::string)currentNode->GetName() == "Group")
-	{
-		Group tempGroup;
-		GroupChild tempChild;
-
-		const char* tempGroupName = currentNode->GetName();
-		for (int i = 0; i < strlen(tempGroupName) + 1; i++)
-		{
-			tempGroup.groupName[i] = tempGroupName[i];
-		}
-
-		int childrenSize = 0;
-		for (int i = 0; i < currentNode->GetChildCount(); i++)
-		{
-			const char* tempChildrenName = currentNode->GetChild(i)->GetName();
-			for (int j = 0; j < strlen(tempChildrenName) + 1; j++)
-			{
-				tempChild.childName[j] = tempChildrenName[j];
-			}
-
-			tempGroup.children.push_back(tempChild);
-			childrenSize++;
-		}
-		tempGroup.childCount = childrenSize;
-
-		groups.push_back(tempGroup);
-	}
-}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadLights(FbxLight* currentLight)
-{
-	Light tempLight;
-
-	FbxString lightType = currentLight->LightType.Get();
-	FbxDouble3 lightColor = currentLight->Color.Get();
-	FbxFloat intensity = currentLight->Intensity.Get();
-	FbxFloat innerCone = currentLight->InnerAngle.Get();
-	FbxFloat outerCone = currentLight->OuterAngle.Get();
-	
-	tempLight.type = lightType[0];	//Type only contains a single number
-
-	for (int i = 0; i < COLOR_RANGE; i++)
-	{
-		tempLight.color[i] = lightColor[i];
-	}
-
-	tempLight.intensity = intensity;
-	tempLight.innerCone = innerCone;
-	tempLight.outerCone = outerCone;
-
-	exportLight.push_back(tempLight);
-	counter.lightCount++;
-}
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex)
 {
@@ -699,273 +554,292 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	vertices.push_back(currentVertex);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::printInfo()
-{
-	//...Prints
-	char answer;
-
-	//Counter
-	printf("Print Counter? Y/N:\t");
-	std::cin >> answer;
-
-	if (answer == 'Y' || answer == 'y')
-	{
-		FBXSDK_printf("\n\tVertex Count: %d\n", counter.vertexCount);
-		FBXSDK_printf("\tBlend Shape Count: %d\n", counter.blendShapeCount);
-		FBXSDK_printf("\tCustom Attribute Count: %d\n", counter.customMayaAttributeCount);
-		FBXSDK_printf("\tLight Count: %d\n", counter.lightCount);
-		FBXSDK_printf("\tCamera Count: %d\n", counter.cameraCount);
-		FBXSDK_printf("\tMaterial Count: %d\n\n", counter.matCount);
-	}
-
-	//VertexInformation
-	printf("Print VertexInformation? Y/N:\t");
-	std::cin >> answer;
-	if (answer == 'Y' || answer == 'y')
-	{
-		for (int i = 0; i < vertices.size(); i++)
-		{
-			FBXSDK_printf("\n\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-
-			if (foundBinormal)
-				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
-			if (foundTangent)
-				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
-
-			FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
-		
-			for (int j = 0; j < 4; j++)
-			{
-				FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
-			}
-			printf("\n");
-		}
-	}
-
-	//MaterialInformation
-	if (matInfo.size() != 0)
-	{
-		printf("Print MaterialInformation? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			for (int i = 0; i < matInfo.size(); i++)
-			{
-				FBXSDK_printf("\n\tAmbient: %.2f %.2f %.2f\n", matInfo[i].ambient);
-				FBXSDK_printf("\tDiffuse: %.2f %.2f %.2f\n", matInfo[i].diffuse);
-				FBXSDK_printf("\tEmissive: %.2f %.2f %.2f\n", matInfo[i].emissive);
-				FBXSDK_printf("\tOpacity: %.2f\n", matInfo[i].opacity);
-				FBXSDK_printf("\tTexture File Path: %s\n", matInfo[i].textureFilePath);
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\nThere's no Material Information\n\n");
-	}
-
-	//AnimationInformation
-	if (animationInfo)
-	{
-		printf("Print Skeleton Animation? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			FBXSDK_printf("\n\tAnimation Name: %s\n", animationInfo->animationName);
-			FBXSDK_printf("\tKey Frame Count: %d\n", animationInfo->keyFrameCount);
-			FBXSDK_printf("\tJoint Count: %d\n", animationInfo->nrOfJoints);
-
-
-			printf("Print Joint & Keyframes? Y/N:\t");
-			std::cin >> answer;
-
-			if (answer == 'Y' || answer == 'y')
-			{
-				for (int i = 0; i < animationInfo->joints.size(); i++)
-				{
-					FBXSDK_printf("\n\tJoint Name: %s\n", animationInfo->joints[i].jointName);
-					FBXSDK_printf("\tParent Name: %s\n", animationInfo->joints[i].parentName);
-
-					for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
-					{
-						FBXSDK_printf("\t\tKey|%d| Time:     %.3f", j, animationInfo->joints[i].keyFrames[j].time);
-						FBXSDK_printf("\tPosition: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].position[0], animationInfo->joints[i].keyFrames[j].position[1], animationInfo->joints[i].keyFrames[j].position[2]);
-						FBXSDK_printf("\tRotation: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].rotation[0], animationInfo->joints[i].keyFrames[j].rotation[1], animationInfo->joints[i].keyFrames[j].rotation[2]);
-						FBXSDK_printf("\tScaling:  %.3f %.3f %.3f\n", j,  animationInfo->joints[i].keyFrames[j].scaling[0] , animationInfo->joints[i].keyFrames[j].scaling[1] , animationInfo->joints[i].keyFrames[j].scaling[2]);
-					}
-				}
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\nThere's no Skeleton Animation\n\n");
-	}
-
-	//BlendShapes
-	if (objectBlendShapes->blendShapeCount != 0)
-	{
-		printf("Print BlendShapes? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			FBXSDK_printf("\n\tBlend Shape Count: %d", objectBlendShapes->blendShapeCount);
-			FBXSDK_printf("\tKey Frame Count:     %d", objectBlendShapes->keyFrameCount);
-
-			for (int i = 0; i < objectBlendShapes->blendShape.size(); i++)
-			{
-				FBXSDK_printf("\tBlend Shape Vertex Count: %d", objectBlendShapes->blendShape[i].blendShapeVertexCount);
-
-				for (int j = 0; j < objectBlendShapes->blendShape[i].blendShapeVertices.size(); j++)
-				{
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  X: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].x);
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Y: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].y);
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Z: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].z);
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NX: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nx);
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NY: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].ny);
-					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NZ: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nz);
-				}
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\nThere's no Blend Shape\n\n");
-	}
-
-	//Groups
-	if (groups.size() != 0)
-	{
-		printf("Print Groups? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			for (int i = 0; i < groups.size(); i++)
-			{
-				FBXSDK_printf("\n\tGroup Name: %s\n", groups[i].groupName);
-				FBXSDK_printf("\tChild Count:   %d\n", groups[i].childCount);
-
-				for (int j = 0; j < groups[i].children.size(); j++)
-				{
-					FBXSDK_printf("\n\tChild|%d| Name: %s\n", i, groups[i].children[j].childName);
-				}
-			}
-
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\nThere's no Groups\n\n");
-	}
-
-
-	//Custom Maya Attribute
-	if (customMayaAttribute.size() != 0)
-	{
-		printf("Print Custom Maya Attribute? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			printf("\n");
-			for (int i = 0; i < customMayaAttribute.size(); i++)
-			{
-				FBXSDK_printf("\tMesh Type: %d\n", customMayaAttribute[i].meshType);
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\nThere's no Custom Maya Attribute\n\n");
-	}
-
-	//Light
-	if (exportLight.size() != 0)
-	{
-		printf("Print Lights? Y/N:\t");
-		std::cin >> answer;
-		if (answer == 'Y' || answer == 'y')
-		{
-			for (int i = 0; i < exportLight.size(); i++)
-			{
-				FBXSDK_printf("\n\tLight Type: ");
-				switch (exportLight[i].type)
-				{
-				case '0':
-					FBXSDK_printf("Point Light\n");
-					break;
-				case '1':
-					FBXSDK_printf("Directional Light\n");
-					break;
-				case '2':
-					FBXSDK_printf("Spotlight\n");
-					break;
-				default:
-					FBXSDK_printf("Unknown\n");
-					break;
-				}
-
-				FBXSDK_printf("\tColor:   R: %.2f G: %.2f B: %.2f\n", exportLight[i].color[0], exportLight[i].color[1], exportLight[i].color[2]);
-				FBXSDK_printf("\tIntensity:  %.2f\n", exportLight[i].intensity);
-				FBXSDK_printf("\tInner Cone:  %.2f\n", exportLight[i].innerCone);
-				FBXSDK_printf("\tOuter Cone: %.2f\n", exportLight[i].outerCone);
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\n\tThere's no Light\n\n");
-	}
-
-	if (exportCamera.size() != 0)
-	{
-		printf("Print Camera? Y/N:\t");
-		std::cin >> answer;
-		getchar();
-		if (answer == 'Y' || answer == 'y')
-		{
-			for (int i = 0; i < exportCamera.size(); i++)
-			{
-				FBXSDK_printf("\n\tPosition:     X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].position[0], exportCamera[i].position[1], exportCamera[i].position[2]);
-				FBXSDK_printf("\tUp Vector:      X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].up[0], exportCamera[i].up[1], exportCamera[i].up[2]);
-				FBXSDK_printf("\tForward Vector: X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].forward[0], exportCamera[i].forward[1], exportCamera[i].forward[2]);
-				FBXSDK_printf("\n\tRoll:         %f\n", exportCamera[i].roll);
-				FBXSDK_printf("\tAspect Width:   %f\n", exportCamera[i].aspectWidth);
-				FBXSDK_printf("\tAspect Height:  %f\n", exportCamera[i].aspectHeight);
-				FBXSDK_printf("\tField of View:  %f\n", exportCamera[i].fov);
-				FBXSDK_printf("\tNear Plane:     %f\n", exportCamera[i].nearPlane);
-				FBXSDK_printf("\tFar Plane:      %f\n", exportCamera[i].farPlane);
-			}
-			printf("\n");
-		}
-	}
-	else
-	{
-		printf("\n\n\tThere's no Camera\n\n");
-	}
-}
+//void Converter::printInfo()
+//{
+//	//...Prints
+//	char answer;
+//
+//	//Counter
+//	printf("Print Counter? Y/N:\t");
+//	std::cin >> answer;
+//
+//	if (answer == 'Y' || answer == 'y')
+//	{
+//		FBXSDK_printf("\n\tVertex Count: %d\n", counter.vertexCount);
+//		/*FBXSDK_printf("\tBlend Shape Count: %d\n", counter.blendShapeCount);*/
+//		FBXSDK_printf("\tCustom Attribute Count: %d\n", counter.customMayaAttributeCount);
+//		/*FBXSDK_printf("\tLight Count: %d\n", counter.lightCount);
+//		FBXSDK_printf("\tCamera Count: %d\n", counter.cameraCount);*/
+//		FBXSDK_printf("\tMaterial Count: %d\n\n", counter.matCount);
+//	}
+//
+//	//VertexInformation
+//	printf("Print VertexInformation? Y/N:\t");
+//	std::cin >> answer;
+//	if (answer == 'Y' || answer == 'y')
+//	{
+//		for (int i = 0; i < vertices.size(); i++)
+//		{
+//			FBXSDK_printf("\n\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+//			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
+//
+//			if (foundBinormal)
+//				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
+//			if (foundTangent)
+//				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
+//
+//			FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
+//		
+//			for (int j = 0; j < 4; j++)
+//			{
+//				FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
+//			}
+//			printf("\n");
+//		}
+//	}
+//
+//	//MaterialInformation
+//	if (matInfo.size() != 0)
+//	{
+//		printf("Print MaterialInformation? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			for (int i = 0; i < matInfo.size(); i++)
+//			{
+//				FBXSDK_printf("\n\tAmbient: %.2f %.2f %.2f\n", matInfo[i].ambient);
+//				FBXSDK_printf("\tDiffuse: %.2f %.2f %.2f\n", matInfo[i].diffuse);
+//				FBXSDK_printf("\tEmissive: %.2f %.2f %.2f\n", matInfo[i].emissive);
+//				FBXSDK_printf("\tOpacity: %.2f\n", matInfo[i].opacity);
+//				FBXSDK_printf("\tTexture File Path: %s\n", matInfo[i].textureFilePath);
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\nThere's no Material Information\n\n");
+//	}
+//
+//	//AnimationInformation
+//	if (animationInfo)
+//	{
+//		printf("Print Skeleton Animation? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			FBXSDK_printf("\n\tAnimation Name: %s\n", animationInfo->animationName);
+//			FBXSDK_printf("\tKey Frame Count: %d\n", animationInfo->keyFrameCount);
+//			FBXSDK_printf("\tJoint Count: %d\n", animationInfo->nrOfJoints);
+//
+//
+//			printf("Print Joint & Keyframes? Y/N:\t");
+//			std::cin >> answer;
+//
+//			if (answer == 'Y' || answer == 'y')
+//			{
+//				for (int i = 0; i < animationInfo->joints.size(); i++)
+//				{
+//					FBXSDK_printf("\n\tJoint Name: %s\n", animationInfo->joints[i].jointName);
+//					FBXSDK_printf("\tParent Name: %s\n", animationInfo->joints[i].parentName);
+//
+//					for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
+//					{
+//						FBXSDK_printf("\t\tKey|%d| Time:     %.3f", j, animationInfo->joints[i].keyFrames[j].time);
+//						FBXSDK_printf("\tPosition: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].position[0], animationInfo->joints[i].keyFrames[j].position[1], animationInfo->joints[i].keyFrames[j].position[2]);
+//						FBXSDK_printf("\tRotation: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].rotation[0], animationInfo->joints[i].keyFrames[j].rotation[1], animationInfo->joints[i].keyFrames[j].rotation[2]);
+//						FBXSDK_printf("\tScaling:  %.3f %.3f %.3f\n", j,  animationInfo->joints[i].keyFrames[j].scaling[0] , animationInfo->joints[i].keyFrames[j].scaling[1] , animationInfo->joints[i].keyFrames[j].scaling[2]);
+//					}
+//				}
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\nThere's no Skeleton Animation\n\n");
+//	}
+//
+//	//BlendShapes
+//	if (objectBlendShapes->blendShapeCount != 0)
+//	{
+//		printf("Print BlendShapes? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			FBXSDK_printf("\n\tBlend Shape Count: %d", objectBlendShapes->blendShapeCount);
+//			FBXSDK_printf("\tKey Frame Count:     %d", objectBlendShapes->keyFrameCount);
+//
+//			for (int i = 0; i < objectBlendShapes->blendShape.size(); i++)
+//			{
+//				FBXSDK_printf("\tBlend Shape Vertex Count: %d", objectBlendShapes->blendShape[i].blendShapeVertexCount);
+//
+//				for (int j = 0; j < objectBlendShapes->blendShape[i].blendShapeVertices.size(); j++)
+//				{
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  X: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].x);
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Y: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].y);
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Z: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].z);
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NX: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nx);
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NY: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].ny);
+//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NZ: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nz);
+//				}
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\nThere's no Blend Shape\n\n");
+//	}
+//
+//	//Groups
+//	if (groups.size() != 0)
+//	{
+//		printf("Print Groups? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			for (int i = 0; i < groups.size(); i++)
+//			{
+//				FBXSDK_printf("\n\tGroup Name: %s\n", groups[i].groupName);
+//				FBXSDK_printf("\tChild Count:   %d\n", groups[i].childCount);
+//
+//				for (int j = 0; j < groups[i].children.size(); j++)
+//				{
+//					FBXSDK_printf("\n\tChild|%d| Name: %s\n", i, groups[i].children[j].childName);
+//				}
+//			}
+//
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\nThere's no Groups\n\n");
+//	}
+//
+//
+//	//Custom Maya Attribute
+//	if (customMayaAttribute.size() != 0)
+//	{
+//		printf("Print Custom Maya Attribute? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			printf("\n");
+//			for (int i = 0; i < customMayaAttribute.size(); i++)
+//			{
+//				FBXSDK_printf("\tMesh Type: %d\n", customMayaAttribute[i].meshType);
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\nThere's no Custom Maya Attribute\n\n");
+//	}
+//
+//	//Light
+//	if (exportLight.size() != 0)
+//	{
+//		printf("Print Lights? Y/N:\t");
+//		std::cin >> answer;
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			for (int i = 0; i < exportLight.size(); i++)
+//			{
+//				FBXSDK_printf("\n\tLight Type: ");
+//				switch (exportLight[i].type)
+//				{
+//				case '0':
+//					FBXSDK_printf("Point Light\n");
+//					break;
+//				case '1':
+//					FBXSDK_printf("Directional Light\n");
+//					break;
+//				case '2':
+//					FBXSDK_printf("Spotlight\n");
+//					break;
+//				default:
+//					FBXSDK_printf("Unknown\n");
+//					break;
+//				}
+//
+//				FBXSDK_printf("\tColor:   R: %.2f G: %.2f B: %.2f\n", exportLight[i].color[0], exportLight[i].color[1], exportLight[i].color[2]);
+//				FBXSDK_printf("\tIntensity:  %.2f\n", exportLight[i].intensity);
+//				FBXSDK_printf("\tInner Cone:  %.2f\n", exportLight[i].innerCone);
+//				FBXSDK_printf("\tOuter Cone: %.2f\n", exportLight[i].outerCone);
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\n\tThere's no Light\n\n");
+//	}
+//
+//	if (exportCamera.size() != 0)
+//	{
+//		printf("Print Camera? Y/N:\t");
+//		std::cin >> answer;
+//		getchar();
+//		if (answer == 'Y' || answer == 'y')
+//		{
+//			for (int i = 0; i < exportCamera.size(); i++)
+//			{
+//				FBXSDK_printf("\n\tPosition:     X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].position[0], exportCamera[i].position[1], exportCamera[i].position[2]);
+//				FBXSDK_printf("\tUp Vector:      X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].up[0], exportCamera[i].up[1], exportCamera[i].up[2]);
+//				FBXSDK_printf("\tForward Vector: X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].forward[0], exportCamera[i].forward[1], exportCamera[i].forward[2]);
+//				FBXSDK_printf("\n\tRoll:         %f\n", exportCamera[i].roll);
+//				FBXSDK_printf("\tAspect Width:   %f\n", exportCamera[i].aspectWidth);
+//				FBXSDK_printf("\tAspect Height:  %f\n", exportCamera[i].aspectHeight);
+//				FBXSDK_printf("\tField of View:  %f\n", exportCamera[i].fov);
+//				FBXSDK_printf("\tNear Plane:     %f\n", exportCamera[i].nearPlane);
+//				FBXSDK_printf("\tFar Plane:      %f\n", exportCamera[i].farPlane);
+//			}
+//			printf("\n");
+//		}
+//	}
+//	else
+//	{
+//		printf("\n\n\tThere's no Camera\n\n");
+//	}
+//}
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
-	unsigned int attributeValue;
-	std::string attributeName = "";
+	CustomMayaAttributes tempCustom;		//Kolla så man får in alla värden; x, y och z;
 
-	FbxProperty prop = currentNode->FindProperty(CUSTOM_ATTRIBUTE, false);
+	float attributeValue;
+	std::string attributeName = "";
+	std::string nodeName = currentNode->GetName();
+
+	FbxProperty prop = currentNode->FindProperty("ParticlePivotX", false);
 	if (prop.IsValid())
 	{
-		CustomMayaAttributes tempCustom;
 		attributeName = prop.GetName();
-		attributeValue = prop.Get<int>();
-		tempCustom.meshType = prop.Get<int>();
-		customMayaAttribute.push_back(tempCustom);
-		counter.customMayaAttributeCount++;
+		attributeValue = prop.Get<float>();
+		tempCustom.particlePivot[0] = attributeValue;
 	}
+
+	prop = currentNode->FindProperty("ParticlePivotY", false);
+	if (prop.IsValid())
+	{
+		attributeName = prop.GetName();
+		attributeValue = prop.Get<float>();
+		tempCustom.particlePivot[1] = attributeValue;
+	}
+
+	prop = currentNode->FindProperty("ParticlePivotZ", false);
+	if (prop.IsValid())
+	{
+		attributeName = prop.GetName();
+		attributeValue = prop.Get<float>();
+		tempCustom.particlePivot[2] = attributeValue;
+	}
+
+	customMayaAttribute.push_back(tempCustom);
+	counter.customMayaAttributeCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
@@ -973,11 +847,10 @@ void Converter::createCustomFile()
 	size_t len = strlen(meshName);
 	ret = new char[len + 2];
 	strcpy(ret, meshName);
-	ret[len - 3] = 'l';
-	ret[len - 2] = 'e';
-	ret[len - 1] = 'a';
-	ret[len] = 'p';
-	ret[len + 1] = '\0';
+	ret[len - 3] = 's';
+	ret[len - 2] = 's';
+	ret[len - 1] = 'p';
+	ret[len] = '\0';
 	meshName = ret;
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
@@ -986,66 +859,74 @@ void Converter::createCustomFile()
 
 	for (int i = 0; i < meshInfo.size(); i++)
 	{
-		outfile.write((const char*)&meshInfo[i], sizeof(MeshInfo));
-	}
+		outfile.write((const char*)&meshInfo[i].meshName, sizeof(char) * 100);
+		outfile.write((const char*)&meshInfo[i].globalTranslation, sizeof(float) * 3);
+		outfile.write((const char*)&meshInfo[i].globalRotation, sizeof(float) * 3);
+		outfile.write((const char*)&meshInfo[i].globalScaling, sizeof(float) * 3);
 
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		outfile.write((const char*)&vertices[i], sizeof(VertexInformation));
-	}
+		for (int i = 0; i < vertices.size(); i++)
+		{
+			outfile.write((const char*)&vertices[i], sizeof(VertexInformation));
+		}
 
-	for (int i = 0; i < matInfo.size(); i++)
-	{
-		outfile.write((const char*)&matInfo[i], sizeof(MaterialInformation));
-	}
+		for (int i = 0; i < matInfo.size(); i++)
+		{
+			outfile.write((const char*)&matInfo[i], sizeof(MaterialInformation));
+		}
 
-	//Skeletal animation
-	outfile.write((const char*)animationInfo->animationName, sizeof(char) * 9);
-	outfile.write((const char*)&animationInfo->keyFrameCount, sizeof(int));
-	outfile.write((const char*)&animationInfo->nrOfJoints, sizeof(int));
-	for (int i = 0; i < animationInfo->nrOfJoints; i++)
-	{
-		size_t jLen = strlen(animationInfo->joints[i].jointName);
-		size_t pLen = strlen(animationInfo->joints[i].parentName);
-		outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
-		outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
+		if (animationInfo->nrOfJoints > 0)
+		{
+			//Skeletal animation
+			outfile.write((const char*)animationInfo->animationName, sizeof(char) * 9);
+			outfile.write((const char*)&animationInfo->keyFrameCount, sizeof(int));
+			outfile.write((const char*)&animationInfo->nrOfJoints, sizeof(int));
+			for (int i = 0; i < animationInfo->nrOfJoints; i++)
+			{
+				size_t jLen = strlen(animationInfo->joints[i].jointName);
+				size_t pLen = strlen(animationInfo->joints[i].parentName);
+				outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
+				outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
 
-		outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->keyFrameCount);
-	}
+				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->keyFrameCount);
+			}
+		}
 
-	//Morph animation/Blend shapes
-	outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
-	for (int i = 0; i < counter.blendShapeCount; i++)
-	{
+		//Morph animation/Blend shapes
+		/*outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
+		for (int i = 0; i < counter.blendShapeCount; i++)
+		{
 		outfile.write((const char*)&objectBlendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
 		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex) * objectBlendShapes->blendShape[i].blendShapeVertexCount);
-	}
-	outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
+		}
+		outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
 
-	for (int i = 0; i < groups.size(); i++)
-	{
+		for (int i = 0; i < groups.size(); i++)
+		{
 		outfile.write((const char*)groups[i].groupName, sizeof(char) * 100);
 		outfile.write((const char*)&groups[i].childCount, sizeof(int));
 		for (int j = 0; j < groups[i].childCount; j++)
 		{
-			outfile.write((const char*)&groups[i].children[j].childName, sizeof(char) * 100);
+		outfile.write((const char*)&groups[i].children[j].childName, sizeof(char) * 100);
+		}
+		}*/
+
+		for (int i = 0; i < customMayaAttribute.size(); i++)
+		{
+			outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
 		}
 	}
 
-	for (int i = 0; i < customMayaAttribute.size(); i++)
-	{
-		outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
-	}
+
 	
-	for (int i = 0; i < exportLight.size(); i++)
+	/*for (int i = 0; i < exportLight.size(); i++)
 	{
 		outfile.write((const char*)&exportLight[i], sizeof(Light));
-	}
+	}*/
 	
-	for (int i = 0; i < exportCamera.size(); i++)
+	/*for (int i = 0; i < exportCamera.size(); i++)
 	{
 		outfile.write((const char*)&exportCamera[i], sizeof(Camera));
-	}
+	}*/
 
 	outfile.close();
 }

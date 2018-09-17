@@ -3,7 +3,7 @@
 int main()
 {
 	LeapImporter importer;
-	LeapMesh* mesh = importer.getMesh("Assignment1.leap");
+	LeapMesh* mesh = importer.getMesh("particlePivot.ssp");
 
 	char answer;
 	
@@ -15,11 +15,25 @@ int main()
 	{
 		printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
 		printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
-		printf("\tBlend Shape Count:\t%d\n", mesh->counterReader.blendShapeCount);
+		/*printf("\tBlend Shape Count:\t%d\n", mesh->counterReader.blendShapeCount);*/
 		printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
-		printf("\tLight Count:\t\t%d\n", mesh->counterReader.lightCount);
-		printf("\tCamera Count:\t\t%d\n", mesh->counterReader.cameraCount);
+		/*printf("\tLight Count:\t\t%d\n", mesh->counterReader.lightCount);
+		printf("\tCamera Count:\t\t%d\n", mesh->counterReader.cameraCount);*/
 		printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
+	}
+	
+	
+	//Global Transform
+	printf("Print Global Tranform? Y/N:\t");
+	std::cin >> answer;
+	getchar();
+	if (answer == 'Y' || answer == 'y')
+	{
+		for (int i = 0; i < mesh->counterReader.meshCount; i++)
+		{
+			printf("\t%s\n", mesh[i].transform->meshName);
+			printf("\tGlobal Transform:	X: %f Y: %f Z: %f\n\n", mesh[i].transform->globalTranslation[0], mesh[i].transform->globalTranslation[1], mesh[i].transform->globalTranslation[2]);
+		}
 	}
 
 	//Vertex Information
@@ -114,7 +128,7 @@ int main()
 	}
 
 	//Blend Shapes
-	printf("Print BlendShapes? Y/N:\t");
+	/*printf("Print BlendShapes? Y/N:\t");
 	std::cin >> answer;
 	getchar();
 	if (answer == 'Y' || answer == 'y')
@@ -140,10 +154,10 @@ int main()
 			printf("There's no Blend Shape\n\n");
 		}
 		printf("\n");
-	}
+	}*/
 
 	//Groups
-	printf("Print Groups? Y/N:\t");
+	/*printf("Print Groups? Y/N:\t");
 	std::cin >> answer;
 	getchar();
 	if (answer == 'Y' || answer == 'y')
@@ -163,7 +177,7 @@ int main()
 			printf("There's no Group\n\n");
 		}
 		printf("\n");
-	}
+	}*/
 
 	//Custom Maya Attribute
 	printf("Print Custom Maya Attribute? Y/N:\t");
@@ -176,7 +190,9 @@ int main()
 		{
 			for (int i = 0; i < mesh->counterReader.customMayaAttributeCount; i++)
 			{
-				printf("\tMesh Type: %d\n", mesh->customMayaAttribute[i].meshType);
+				printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].particlePivot[0]);
+				printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].particlePivot[1]);
+				printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].particlePivot[2]);
 			}
 		}
 		else
@@ -186,7 +202,7 @@ int main()
 	}
 
 	//Light
-	printf("Print Lights? Y/N:\t");
+	/*printf("Print Lights? Y/N:\t");
 	std::cin >> answer;
 	getchar();
 	if (answer == 'Y' || answer == 'y')
@@ -223,10 +239,10 @@ int main()
 			printf("There's no Light\n\n");
 		}
 		printf("\n");
-	}
+	}*/
 
 	//Camera
-	printf("Print Camera? Y/N:\t");
+	/*printf("Print Camera? Y/N:\t");
 	std::cin >> answer;
 	getchar();
 	if (answer == 'Y' || answer == 'y')
@@ -251,7 +267,7 @@ int main()
 			printf("There's no Camera\n\n");
 		}
 		printf("\n");
-	}
+	}*/
 
 	printf("Done, press any key");
 	getchar();

@@ -25,10 +25,10 @@ private:
 	void loadGlobaltransform(FbxNode* currentNode);
 	void loadVertex(FbxMesh* currentMesh, FbxNode* currentNode);
 	void loadMaterial(FbxNode* currentNode);
-	void loadBlendShape(FbxMesh* currentMesh, FbxScene* scene);
+	/*void loadBlendShape(FbxMesh* currentMesh, FbxScene* scene);
 	void loadCamera(FbxCamera* currentNode);
 	void loadGroups(FbxNode* currentNode);
-	void loadLights(FbxLight* currentLight);
+	void loadLights(FbxLight* currentLight);*/
 	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex);
 	void printInfo();
@@ -47,11 +47,11 @@ private:
 	std::vector<MaterialInformation> matInfo;
 
 	AnimationInformation* animationInfo;
-	BlendShapes* objectBlendShapes;
-	std::vector<Group> groups;
+	/*BlendShapes* objectBlendShapes;
+	std::vector<Group> groups;*/
 	std::vector<CustomMayaAttributes> customMayaAttribute;
-	std::vector<Camera> exportCamera;
-	std::vector<Light> exportLight;
+	/*std::vector<Camera> exportCamera;
+	std::vector<Light> exportLight;*/
 
 	FbxVector4* controlPoints;
 	FbxVector4* blendShapeControlPoints;

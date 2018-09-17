@@ -25,11 +25,5 @@ public:
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
-	BlendShape* blendShape;
-	BlendShapeVertex* blendShapeVertices;
-	BlendShapes* blendShapes;
-	Group* group;
 	CustomMayaAttributes* customMayaAttribute;
-	Light* light;
-	Camera* camera;
 };
