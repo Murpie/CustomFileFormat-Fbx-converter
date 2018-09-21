@@ -44,11 +44,12 @@ void LeapMesh::loader(const char* fileName)
 
 	animation = new AnimationInformation[1];
 
+	infile.read((char*)animation->animationName, sizeof(char) * 9);
+	infile.read((char*)&animation->keyFrameCount, sizeof(int));
+	infile.read((char*)&animation->nrOfJoints, sizeof(int));
+
 	if (animation->nrOfJoints > 0)
 	{
-		infile.read((char*)animation->animationName, sizeof(char) * 9);
-		infile.read((char*)&animation->keyFrameCount, sizeof(int));
-		infile.read((char*)&animation->nrOfJoints, sizeof(int));
 		animation->joints.resize(animation->nrOfJoints);
 		for (int i = 0; i < animation->nrOfJoints; i++)
 		{	

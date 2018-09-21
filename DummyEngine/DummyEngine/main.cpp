@@ -3,7 +3,7 @@
 int main()
 {
 	LeapImporter importer;
-	LeapMesh* mesh = importer.getMesh("particlePivot.ssp");
+	LeapMesh* mesh = importer.getMesh("cubeSpin.ssp");
 
 	char answer;
 	
@@ -113,9 +113,9 @@ int main()
 					for (int j = 0; j < mesh->animation->keyFrameCount; j++)
 					{
 						printf("\t\tKey|%d|\tTime: %.3f", j, mesh->animation->joints[i].keyFrames[j].time);
-						printf("\tPosition: %.3f %.3f %.3f", j, mesh->animation->joints[i].keyFrames[j].position[0], mesh->animation->joints[i].keyFrames[j].position[1], mesh->animation->joints[i].keyFrames[j].position[2]);
-						printf("\tRotation: %.3f %.3f %.3f", j, mesh->animation->joints[i].keyFrames[j].rotation[0], mesh->animation->joints[i].keyFrames[j].rotation[1], mesh->animation->joints[i].keyFrames[j].rotation[2]);
-						printf("\tScaling: %.3f %.3f %.3f\n", j, mesh->animation->joints[i].keyFrames[j].scaling[0], mesh->animation->joints[i].keyFrames[j].scaling[1], mesh->animation->joints[i].keyFrames[j].scaling[2]);
+						printf("\tPosition: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].position[0], mesh->animation->joints[i].keyFrames[j].position[1], mesh->animation->joints[i].keyFrames[j].position[2]);
+						printf("\tRotation: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].rotation[0], mesh->animation->joints[i].keyFrames[j].rotation[1], mesh->animation->joints[i].keyFrames[j].rotation[2]);
+						printf("\tScaling: %.3f %.3f %.3f\n", mesh->animation->joints[i].keyFrames[j].scaling[0], mesh->animation->joints[i].keyFrames[j].scaling[1], mesh->animation->joints[i].keyFrames[j].scaling[2]);
 					}
 				}
 			}

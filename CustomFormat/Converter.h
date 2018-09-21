@@ -16,6 +16,7 @@ public:
 	~Converter();
 
 	bool isLevel;
+	int currentJointIndex;
 
 	void importMesh();
 	void exportFile(FbxNode* currentNode);
@@ -35,6 +36,7 @@ private:
 	void createCustomFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
 	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+	void fixJointID();
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -46,7 +48,7 @@ private:
 	std::vector<VertexInformation> vertices;
 	std::vector<MaterialInformation> matInfo;
 
-	AnimationInformation* animationInfo;
+	Animation* animationInfo;
 	/*BlendShapes* objectBlendShapes;
 	std::vector<Group> groups;*/
 	std::vector<CustomMayaAttributes> customMayaAttribute;

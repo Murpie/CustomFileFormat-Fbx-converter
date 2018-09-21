@@ -38,57 +38,34 @@ struct MaterialInformation {
 
 struct KeyFrame {
 	float time;
-	float position[3];
+	float translation[3];
 	float rotation[3];
 	float scaling[3];
 };
 
-struct JointInformation {
-	char jointName[100];
-	char parentName[100];			
+struct Joint {
+	char joint_name[100];
+	char parent_name[100];
+	int joint_id;
+	int parent_id;
+	float local_transform_matrix[4][4];
+	float bind_pose_matrix[4][4];
+	float translation[3];
+	float rotation[3];
+	float scale[3];
 	vector<KeyFrame> keyFrames;
 };
 
-struct AnimationInformation {
-	char animationName[9];
-	int keyFrameCount;
-	int nrOfJoints;
-	vector<JointInformation> joints;					
+struct Animation {
+	char animation_name[9];
+	int nr_of_keyframes;
+	int nr_of_joints;
+	float current_time;
+	float max_time;
+	bool looping;
+	bool switching;
+	vector<Joint> joints;
 };
-
-//struct BlendShapeVertex {
-//	float x, y, z;
-//	float nx, ny, nz;
-//};
-//
-//struct BlendShape
-//{
-//	int blendShapeVertexCount;
-//	vector <BlendShapeVertex> blendShapeVertices;
-//};
-//
-//struct BlendShapeKeyframe
-//{
-//	float time;
-//	float blendShapeInfluense;
-//};
-//
-//struct BlendShapes {
-//	float blendShapeCount;
-//	float keyFrameCount;
-//	vector <BlendShape> blendShape;
-//	vector <BlendShapeKeyframe> keyframes;
-//};
-//
-//struct GroupChild {
-//	char childName[100];
-//};
-//
-//struct Group {
-//	char groupName[100];
-//	int childCount;
-//	vector<GroupChild> children;
-//};
 
 struct CustomMayaAttributes {
 	//unsigned int meshType;
@@ -100,23 +77,3 @@ struct LevelObject {
 	float rotationX, rotationY, rotationZ;
 	int id;
 };
-
-//struct Light {
-//	char type;
-//	float color[3];
-//	float intensity;
-//	float innerCone;
-//	float outerCone;
-//};
-//
-//struct Camera {
-//	float position[3];
-//	float up[3];
-//	float forward[3];
-//	float roll;
-//	float aspectWidth;
-//	float aspectHeight;
-//	float fov;
-//	float nearPlane;
-//	float farPlane;
-//};
