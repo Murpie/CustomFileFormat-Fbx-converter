@@ -811,31 +811,70 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 	CustomMayaAttributes tempCustom;		//Kolla så man får in alla värden; x, y och z;
 
 	float attributeValue;
-	std::string attributeName = "";
 	std::string nodeName = currentNode->GetName();
 
 	FbxProperty prop = currentNode->FindProperty("ParticlePivotX", false);
 	if (prop.IsValid())
 	{
-		attributeName = prop.GetName();
 		attributeValue = prop.Get<float>();
 		tempCustom.particlePivot[0] = attributeValue;
+		tempCustom.particlePivot[0] = -999.0f;
+	}
+	else
+	{
+		tempCustom.particlePivot[0] = -999.0f;
 	}
 
 	prop = currentNode->FindProperty("ParticlePivotY", false);
 	if (prop.IsValid())
 	{
-		attributeName = prop.GetName();
 		attributeValue = prop.Get<float>();
 		tempCustom.particlePivot[1] = attributeValue;
+	}
+	else
+	{
+		tempCustom.particlePivot[1] = -999.0f;
 	}
 
 	prop = currentNode->FindProperty("ParticlePivotZ", false);
 	if (prop.IsValid())
 	{
-		attributeName = prop.GetName();
 		attributeValue = prop.Get<float>();
 		tempCustom.particlePivot[2] = attributeValue;
+	}
+	else
+	{
+		tempCustom.particlePivot[2] = -999.0f;
+	}
+
+	prop = currentNode->FindProperty("ID", false);
+	if (prop.IsValid())
+	{
+		tempCustom.id = prop.Get<int>();
+	}
+	else
+	{
+		tempCustom.id = 0;
+	}
+
+	prop = currentNode->FindProperty("CBox_Height", false);
+	if (prop.IsValid())
+	{
+		tempCustom.height = prop.Get<float>();
+	}
+	else
+	{
+		tempCustom.height = -1.0f;
+	}
+
+	prop = currentNode->FindProperty("CBox_Width", false);
+	if (prop.IsValid())
+	{
+		tempCustom.width = prop.Get<float>();
+	}
+	else
+	{
+		tempCustom.width = -1.0f;
 	}
 
 	customMayaAttribute.push_back(tempCustom);

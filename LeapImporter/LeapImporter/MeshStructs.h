@@ -91,6 +91,9 @@ struct AnimationInformation {
 
 struct CustomMayaAttributes {
 	float particlePivot[3];
+	float height;
+	float width;
+	int id;
 };
 
 struct LevelObject {
