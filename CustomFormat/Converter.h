@@ -27,6 +27,7 @@ private:
 	void loadMaterial(FbxNode* currentNode);
 	void loadCustomMayaAttributes(FbxNode* currentNode);
 	void loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex);
+	void loadLevel(FbxNode * currentNode);
 	void createCustomFile();
 	void createCustomLevelFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);

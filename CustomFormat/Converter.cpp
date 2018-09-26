@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+using namespace std;
 #pragma warning(disable : 4996)
 
 #define COLOR_RANGE 3
@@ -777,3 +778,65 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadLevel(FbxNode * currentNode)
+{
+	printf("\n\t|| Node: %s\n", currentNode->GetName());
+
+	mesh = currentNode->GetMesh();
+	light = currentNode->GetLight();
+	camera = currentNode->GetCamera();
+
+	if (currentNode)
+	{
+		if (mesh)// && !isPartOf(currentNode->GetName()))
+		{
+			LevelObject lvlObj = LevelObject();
+			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+			// Save position
+			lvlObj.x = (float)tempTranslation[0];
+			lvlObj.y = (float)tempTranslation[1];
+			lvlObj.z = (float)tempTranslation[2];
+			// Save rotation
+			lvlObj.rotationX = (float)tempRotation[0];
+			lvlObj.rotationY = (float)tempRotation[1];
+			lvlObj.rotationZ = (float)tempRotation[2];
+
+			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+
+			// Save ID
+			unsigned int attributeValue;
+			//std::string attributeName = "";
+
+			FbxProperty prop = currentNode->FindProperty(TYPE_ID, false);
+			if (prop.IsValid())
+			{
+				//attributeName = prop.GetName();
+				attributeValue = prop.Get<int>();
+
+				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
+				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
+				lvlObj.id = prop.Get<int>();
+			}
+			levelObjects.push_back(lvlObj);
+			counter.levelObjectCount++;
+		}
+		//Load Cameras
+		if (camera)
+		{
+
+		}
+
+		//Load Lights
+		if (light)
+		{
+
+		}
+	}
+	else
+	{
+		printf("Access violation: Node not found\n\n");
+		exit(-2);
+	}
+}
