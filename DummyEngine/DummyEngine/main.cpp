@@ -197,6 +197,10 @@ int main()
 				printf("\tID:               %d\n", mesh->customMayaAttribute[i].id);
 				printf("\tHeight:           %f\n", mesh->customMayaAttribute->height);
 				printf("\tWidth:            %f\n", mesh->customMayaAttribute->width);
+
+				printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
+				printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
+				printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
 			}
 		}
 		else

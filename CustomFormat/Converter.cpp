@@ -810,15 +810,12 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
 	CustomMayaAttributes tempCustom;		//Kolla så man får in alla värden; x, y och z;
 
-	float attributeValue;
 	std::string nodeName = currentNode->GetName();
 
 	FbxProperty prop = currentNode->FindProperty("ParticlePivotX", false);
 	if (prop.IsValid())
 	{
-		attributeValue = prop.Get<float>();
-		tempCustom.particlePivot[0] = attributeValue;
-		tempCustom.particlePivot[0] = -999.0f;
+		tempCustom.particlePivot[0] = prop.Get<float>();
 	}
 	else
 	{
@@ -828,8 +825,7 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 	prop = currentNode->FindProperty("ParticlePivotY", false);
 	if (prop.IsValid())
 	{
-		attributeValue = prop.Get<float>();
-		tempCustom.particlePivot[1] = attributeValue;
+		tempCustom.particlePivot[1] = prop.Get<float>();
 	}
 	else
 	{
@@ -839,8 +835,7 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 	prop = currentNode->FindProperty("ParticlePivotZ", false);
 	if (prop.IsValid())
 	{
-		attributeValue = prop.Get<float>();
-		tempCustom.particlePivot[2] = attributeValue;
+		tempCustom.particlePivot[2] = prop.Get<float>();
 	}
 	else
 	{
@@ -875,6 +870,36 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 	else
 	{
 		tempCustom.width = -1.0f;
+	}
+
+	prop = currentNode->FindProperty("CenterPivotX", false);
+	if (prop.IsValid())
+	{
+		tempCustom.centerPivot[0] = prop.Get<float>();
+	}
+	else
+	{
+		tempCustom.centerPivot[0] = -999.0f;
+	}
+
+	prop = currentNode->FindProperty("CenterPivotY", false);
+	if (prop.IsValid())
+	{
+		tempCustom.centerPivot[1] = prop.Get<float>();
+	}
+	else
+	{
+		tempCustom.centerPivot[1] = -999.0f;
+	}
+
+	prop = currentNode->FindProperty("CenterPivotZ", false);
+	if (prop.IsValid())
+	{
+		tempCustom.centerPivot[2] = prop.Get<float>();
+	}
+	else
+	{
+		tempCustom.centerPivot[2] = -999.0f;
 	}
 
 	customMayaAttribute.push_back(tempCustom);
