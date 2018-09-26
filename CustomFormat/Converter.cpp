@@ -21,7 +21,6 @@ Converter::Converter(const char * fileName)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
 {
-	//delete[] objectBlendShapes;
 	delete ret;
 
 	delete[] animationInfo;
@@ -29,10 +28,7 @@ Converter::~Converter()
 	meshInfo.clear();
 	vertices.clear();
 	matInfo.clear();
-	//exportCamera.clear();
-	//exportLight.clear();
 	customMayaAttribute.clear();
-	//groups.clear();
 	
 	ourScene->Destroy();
 	settings->Destroy();
@@ -61,26 +57,25 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			exportFile(rootNode->GetChild(i));
+			if (isLevel)
+			{
+				loadLevel(rootNode->GetChild(i));
+			}
+			else
+			{
+				exportFile(rootNode->GetChild(i));
+			}
 		}
 	}
 	
 	counter.vertexCount = totalNrOfVertices;
 	exportAnimation(ourScene, rootNode);
-	//printInfo();
 	createCustomFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
 {
-	//printf("\nNode: %s\n", currentNode->GetName());
-
-	/*if (!isLevel)
-		loadGlobaltransform(currentNode);*/
-	
 	mesh = currentNode->GetMesh();
-	light = currentNode->GetLight();
-	camera = currentNode->GetCamera();
 
 	if (currentNode)
 	{
@@ -89,7 +84,6 @@ void Converter::exportFile(FbxNode* currentNode)
 			loadGlobaltransform(currentNode);
 			loadVertex(mesh, currentNode);
 			loadMaterial(currentNode);
-			//loadBlendShape(mesh, ourScene);
 			loadCustomMayaAttributes(currentNode);
 		}
 	}
@@ -320,106 +314,6 @@ void Converter::loadMaterial(FbxNode* currentNode)
 	counter.matCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-/*void Converter::loadBlendShape(FbxMesh* currentMesh, FbxScene* scene)
-{
-	FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>();
-
-	int animLayers = animStack->GetMemberCount<FbxAnimLayer>();
-
-	FbxString lOutputString;
-
-	int blendShapeDeformerCount = mesh->GetDeformerCount(FbxDeformer::eBlendShape);
-
-	if (blendShapeDeformerCount != 0)
-	{
-		objectBlendShapes = new BlendShapes[blendShapeDeformerCount];
-
-		for (int animLayerIndex = 0; animLayerIndex < animLayers; animLayerIndex++)
-		{
-			FbxAnimLayer* animLayer = animStack->GetMember<FbxAnimLayer>(animLayerIndex);
-
-			counter.blendShapeCount = blendShapeDeformerCount;
-
-			//Create Blendshapes
-			for (int blendShapeIndex = 0; blendShapeIndex < blendShapeDeformerCount; ++blendShapeIndex)
-			{
-				FbxBlendShape* blendShape = (FbxBlendShape*)mesh->GetDeformer(blendShapeIndex, FbxDeformer::eBlendShape);
-				int blendShapeChannelCount = blendShape->GetBlendShapeChannelCount();
-
-				//Setting blendshapeCount for animation
-				objectBlendShapes[0].blendShapeCount = blendShapeChannelCount;
-
-				BlendShape tempBlendShape;
-
-
-				for (int channelIndex = 0; channelIndex < blendShapeChannelCount; ++channelIndex)
-				{
-					FbxBlendShapeChannel* channel = blendShape->GetBlendShapeChannel(channelIndex);
-					const char* channelName = channel->GetName();
-
-					FbxShape* shape = channel->GetTargetShape(0);
-
-					int blendShapeControlPointsCount = shape->GetControlPointsCount();
-
-					tempBlendShape.blendShapeVertexCount = blendShapeControlPointsCount;
-
-					blendShapeControlPoints = shape->GetControlPoints();
-
-					FbxVector4 bPos;
-					FbxVector4 bNormal;
-
-					FbxGeometry* geom = blendShape->GetGeometry();
-
-					FbxLayerElementNormal* pLayerNormals = geom->GetLayer(channelIndex)->GetNormals();
-
-					BlendShapeVertex tempVertex;
-					BlendShapeKeyframe tempKeyframe;
-
-					for (int blendshapeControlIndex = 0; blendshapeControlIndex < blendShapeControlPointsCount; blendshapeControlIndex++)
-					{
-						bPos = blendShapeControlPoints[blendshapeControlIndex];
-						bNormal = pLayerNormals->GetDirectArray().GetAt(blendshapeControlIndex);
-
-						tempVertex.x = bPos[0];
-						tempVertex.y = bPos[1];
-						tempVertex.z = bPos[2];
-						tempVertex.nx = bNormal[0];
-						tempVertex.ny = bNormal[1];
-						tempVertex.nz = bNormal[2];
-
-						tempBlendShape.blendShapeVertices.push_back(tempVertex);
-					}
-
-					objectBlendShapes[0].blendShape.push_back(tempBlendShape);
-
-					FbxAnimCurve* animCurve = mesh->GetShapeChannel(blendShapeIndex, channelIndex, animLayer, true);
-					if (animCurve)
-					{
-						float keyValue;
-						char timeString[256];
-						int count;
-
-						int keyCount = animCurve->KeyGetCount();
-
-						objectBlendShapes[0].keyFrameCount = keyCount;
-
-						for (count = 0; count < keyCount; count++)
-						{
-							keyValue = static_cast<float>(animCurve->KeyGetValue(count));
-
-							tempKeyframe.blendShapeInfluense = keyValue;
-							tempKeyframe.time = animCurve->KeyGetTime(count).GetSecondDouble();
-
-							objectBlendShapes[0].keyframes.push_back(tempKeyframe);
-						}
-					}
-				}
-			}
-		}
-	}
-}*/
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex)
 {
 	foundVertexWeight = false;
@@ -554,258 +448,6 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	vertices.push_back(currentVertex);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-//void Converter::printInfo()
-//{
-//	//...Prints
-//	char answer;
-//
-//	//Counter
-//	printf("Print Counter? Y/N:\t");
-//	std::cin >> answer;
-//
-//	if (answer == 'Y' || answer == 'y')
-//	{
-//		FBXSDK_printf("\n\tVertex Count: %d\n", counter.vertexCount);
-//		/*FBXSDK_printf("\tBlend Shape Count: %d\n", counter.blendShapeCount);*/
-//		FBXSDK_printf("\tCustom Attribute Count: %d\n", counter.customMayaAttributeCount);
-//		/*FBXSDK_printf("\tLight Count: %d\n", counter.lightCount);
-//		FBXSDK_printf("\tCamera Count: %d\n", counter.cameraCount);*/
-//		FBXSDK_printf("\tMaterial Count: %d\n\n", counter.matCount);
-//	}
-//
-//	//VertexInformation
-//	printf("Print VertexInformation? Y/N:\t");
-//	std::cin >> answer;
-//	if (answer == 'Y' || answer == 'y')
-//	{
-//		for (int i = 0; i < vertices.size(); i++)
-//		{
-//			FBXSDK_printf("\n\t|%d|Vertex: %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-//			FBXSDK_printf("\t|%d|Normals: %f %f %f\n", i, vertices[i].nx, vertices[i].ny, vertices[i].nz);
-//
-//			if (foundBinormal)
-//				FBXSDK_printf("\t|%d|Binormals: %f %f %f\n", i, vertices[i].bnx, vertices[i].bny, vertices[i].bnz);
-//			if (foundTangent)
-//				FBXSDK_printf("\t|%d|Tangents: %f %f %f\n", i, vertices[i].tx, vertices[i].ty, vertices[i].tz);
-//
-//			FBXSDK_printf("\t|%d|UVs: %f %f\n", i, vertices[i].u, vertices[i].v);
-//		
-//			for (int j = 0; j < 4; j++)
-//			{
-//				FBXSDK_printf("\tWeightID[%d]: %f\n", vertices[i].weightID[j], vertices[i].weight[j]);
-//			}
-//			printf("\n");
-//		}
-//	}
-//
-//	//MaterialInformation
-//	if (matInfo.size() != 0)
-//	{
-//		printf("Print MaterialInformation? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			for (int i = 0; i < matInfo.size(); i++)
-//			{
-//				FBXSDK_printf("\n\tAmbient: %.2f %.2f %.2f\n", matInfo[i].ambient);
-//				FBXSDK_printf("\tDiffuse: %.2f %.2f %.2f\n", matInfo[i].diffuse);
-//				FBXSDK_printf("\tEmissive: %.2f %.2f %.2f\n", matInfo[i].emissive);
-//				FBXSDK_printf("\tOpacity: %.2f\n", matInfo[i].opacity);
-//				FBXSDK_printf("\tTexture File Path: %s\n", matInfo[i].textureFilePath);
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\nThere's no Material Information\n\n");
-//	}
-//
-//	//AnimationInformation
-//	if (animationInfo)
-//	{
-//		printf("Print Skeleton Animation? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			FBXSDK_printf("\n\tAnimation Name: %s\n", animationInfo->animationName);
-//			FBXSDK_printf("\tKey Frame Count: %d\n", animationInfo->keyFrameCount);
-//			FBXSDK_printf("\tJoint Count: %d\n", animationInfo->nrOfJoints);
-//
-//
-//			printf("Print Joint & Keyframes? Y/N:\t");
-//			std::cin >> answer;
-//
-//			if (answer == 'Y' || answer == 'y')
-//			{
-//				for (int i = 0; i < animationInfo->joints.size(); i++)
-//				{
-//					FBXSDK_printf("\n\tJoint Name: %s\n", animationInfo->joints[i].jointName);
-//					FBXSDK_printf("\tParent Name: %s\n", animationInfo->joints[i].parentName);
-//
-//					for (int j = 0; j < animationInfo->joints[i].keyFrames.size(); j++)
-//					{
-//						FBXSDK_printf("\t\tKey|%d| Time:     %.3f", j, animationInfo->joints[i].keyFrames[j].time);
-//						FBXSDK_printf("\tPosition: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].position[0], animationInfo->joints[i].keyFrames[j].position[1], animationInfo->joints[i].keyFrames[j].position[2]);
-//						FBXSDK_printf("\tRotation: %.3f %.3f %.3f", j, animationInfo->joints[i].keyFrames[j].rotation[0], animationInfo->joints[i].keyFrames[j].rotation[1], animationInfo->joints[i].keyFrames[j].rotation[2]);
-//						FBXSDK_printf("\tScaling:  %.3f %.3f %.3f\n", j,  animationInfo->joints[i].keyFrames[j].scaling[0] , animationInfo->joints[i].keyFrames[j].scaling[1] , animationInfo->joints[i].keyFrames[j].scaling[2]);
-//					}
-//				}
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\nThere's no Skeleton Animation\n\n");
-//	}
-//
-//	//BlendShapes
-//	if (objectBlendShapes->blendShapeCount != 0)
-//	{
-//		printf("Print BlendShapes? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			FBXSDK_printf("\n\tBlend Shape Count: %d", objectBlendShapes->blendShapeCount);
-//			FBXSDK_printf("\tKey Frame Count:     %d", objectBlendShapes->keyFrameCount);
-//
-//			for (int i = 0; i < objectBlendShapes->blendShape.size(); i++)
-//			{
-//				FBXSDK_printf("\tBlend Shape Vertex Count: %d", objectBlendShapes->blendShape[i].blendShapeVertexCount);
-//
-//				for (int j = 0; j < objectBlendShapes->blendShape[i].blendShapeVertices.size(); j++)
-//				{
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  X: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].x);
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Y: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].y);
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d|  Z: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].z);
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NX: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nx);
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NY: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].ny);
-//					FBXSDK_printf("\t\tBlend Shape|%d|\tVtx|%d| NZ: %f\n", i, j, objectBlendShapes->blendShape[i].blendShapeVertices[j].nz);
-//				}
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\nThere's no Blend Shape\n\n");
-//	}
-//
-//	//Groups
-//	if (groups.size() != 0)
-//	{
-//		printf("Print Groups? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			for (int i = 0; i < groups.size(); i++)
-//			{
-//				FBXSDK_printf("\n\tGroup Name: %s\n", groups[i].groupName);
-//				FBXSDK_printf("\tChild Count:   %d\n", groups[i].childCount);
-//
-//				for (int j = 0; j < groups[i].children.size(); j++)
-//				{
-//					FBXSDK_printf("\n\tChild|%d| Name: %s\n", i, groups[i].children[j].childName);
-//				}
-//			}
-//
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\nThere's no Groups\n\n");
-//	}
-//
-//
-//	//Custom Maya Attribute
-//	if (customMayaAttribute.size() != 0)
-//	{
-//		printf("Print Custom Maya Attribute? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			printf("\n");
-//			for (int i = 0; i < customMayaAttribute.size(); i++)
-//			{
-//				FBXSDK_printf("\tMesh Type: %d\n", customMayaAttribute[i].meshType);
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\nThere's no Custom Maya Attribute\n\n");
-//	}
-//
-//	//Light
-//	if (exportLight.size() != 0)
-//	{
-//		printf("Print Lights? Y/N:\t");
-//		std::cin >> answer;
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			for (int i = 0; i < exportLight.size(); i++)
-//			{
-//				FBXSDK_printf("\n\tLight Type: ");
-//				switch (exportLight[i].type)
-//				{
-//				case '0':
-//					FBXSDK_printf("Point Light\n");
-//					break;
-//				case '1':
-//					FBXSDK_printf("Directional Light\n");
-//					break;
-//				case '2':
-//					FBXSDK_printf("Spotlight\n");
-//					break;
-//				default:
-//					FBXSDK_printf("Unknown\n");
-//					break;
-//				}
-//
-//				FBXSDK_printf("\tColor:   R: %.2f G: %.2f B: %.2f\n", exportLight[i].color[0], exportLight[i].color[1], exportLight[i].color[2]);
-//				FBXSDK_printf("\tIntensity:  %.2f\n", exportLight[i].intensity);
-//				FBXSDK_printf("\tInner Cone:  %.2f\n", exportLight[i].innerCone);
-//				FBXSDK_printf("\tOuter Cone: %.2f\n", exportLight[i].outerCone);
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\n\tThere's no Light\n\n");
-//	}
-//
-//	if (exportCamera.size() != 0)
-//	{
-//		printf("Print Camera? Y/N:\t");
-//		std::cin >> answer;
-//		getchar();
-//		if (answer == 'Y' || answer == 'y')
-//		{
-//			for (int i = 0; i < exportCamera.size(); i++)
-//			{
-//				FBXSDK_printf("\n\tPosition:     X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].position[0], exportCamera[i].position[1], exportCamera[i].position[2]);
-//				FBXSDK_printf("\tUp Vector:      X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].up[0], exportCamera[i].up[1], exportCamera[i].up[2]);
-//				FBXSDK_printf("\tForward Vector: X: %.2f Y: %.2f Z: %.2f\n", exportCamera[i].forward[0], exportCamera[i].forward[1], exportCamera[i].forward[2]);
-//				FBXSDK_printf("\n\tRoll:         %f\n", exportCamera[i].roll);
-//				FBXSDK_printf("\tAspect Width:   %f\n", exportCamera[i].aspectWidth);
-//				FBXSDK_printf("\tAspect Height:  %f\n", exportCamera[i].aspectHeight);
-//				FBXSDK_printf("\tField of View:  %f\n", exportCamera[i].fov);
-//				FBXSDK_printf("\tNear Plane:     %f\n", exportCamera[i].nearPlane);
-//				FBXSDK_printf("\tFar Plane:      %f\n", exportCamera[i].farPlane);
-//			}
-//			printf("\n");
-//		}
-//	}
-//	else
-//	{
-//		printf("\n\n\tThere's no Camera\n\n");
-//	}
-//}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 {
 	CustomMayaAttributes tempCustom;		//Kolla så man får in alla värden; x, y och z;
@@ -849,7 +491,7 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 	}
 	else
 	{
-		tempCustom.id = 0;
+		tempCustom.id = -1;
 	}
 
 	prop = currentNode->FindProperty("CBox_Height", false);
@@ -955,42 +597,37 @@ void Converter::createCustomFile()
 			}
 		}
 
-		//Morph animation/Blend shapes
-		/*outfile.write((const char*)objectBlendShapes, 2 * sizeof(float));
-		for (int i = 0; i < counter.blendShapeCount; i++)
-		{
-		outfile.write((const char*)&objectBlendShapes->blendShape[i].blendShapeVertexCount, sizeof(int));
-		outfile.write((const char*)objectBlendShapes->blendShape[i].blendShapeVertices.data(), sizeof(BlendShapeVertex) * objectBlendShapes->blendShape[i].blendShapeVertexCount);
-		}
-		outfile.write((const char*)objectBlendShapes->keyframes.data(), sizeof(BlendShapeKeyframe)*objectBlendShapes->keyFrameCount);
-
-		for (int i = 0; i < groups.size(); i++)
-		{
-		outfile.write((const char*)groups[i].groupName, sizeof(char) * 100);
-		outfile.write((const char*)&groups[i].childCount, sizeof(int));
-		for (int j = 0; j < groups[i].childCount; j++)
-		{
-		outfile.write((const char*)&groups[i].children[j].childName, sizeof(char) * 100);
-		}
-		}*/
-
 		for (int i = 0; i < customMayaAttribute.size(); i++)
 		{
 			outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
 		}
 	}
 
+	outfile.close();
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::createCustomLevelFile()
+{
+	size_t len = strlen(meshName);
+	ret = new char[len + 2];
+	strcpy(ret, meshName);
+	ret[len - 3] = 'l';
+	ret[len - 2] = 'e';
+	ret[len - 1] = 'a';
+	ret[len] = 'p';
+	ret[len + 1] = '\0';
+	meshName = ret;
 
-	
-	/*for (int i = 0; i < exportLight.size(); i++)
+	std::ofstream outfile(meshName, std::ofstream::binary);
+
+	outfile.write((const char*)&counter, sizeof(Counter));
+
+	for (int i = 0; i < levelObjects.size(); i++)
 	{
-		outfile.write((const char*)&exportLight[i], sizeof(Light));
-	}*/
-	
-	/*for (int i = 0; i < exportCamera.size(); i++)
-	{
-		outfile.write((const char*)&exportCamera[i], sizeof(Camera));
-	}*/
+		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
+	}
+
+	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
 
 	outfile.close();
 }
