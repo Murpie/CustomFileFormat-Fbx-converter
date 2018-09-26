@@ -6,9 +6,9 @@ int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	
-	Converter converter("Robot_1.0.fbx");
+	Converter converter("test_level.fbx");
 
-	converter.isLevel = false; // change this when loading levels
+	converter.isLevel = true; // change this when loading levels
 	converter.importMesh();
 
 	std::cout << "Done, press any key";

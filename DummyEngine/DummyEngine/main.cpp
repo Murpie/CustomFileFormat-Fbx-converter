@@ -3,7 +3,7 @@
 int main()
 {
 	LeapImporter importer;
-	LeapMesh* mesh = importer.getMesh("Robot_1.0.ssp");
+	LeapMesh* mesh = importer.getMesh("test_level.ssp");
 
 	char answer;
 	

@@ -45,6 +45,7 @@ private:
 
 	AnimationInformation* animationInfo;
 	std::vector<CustomMayaAttributes> customMayaAttribute;
+	std::vector<LevelObject> levelObjects;
 
 	FbxVector4* controlPoints;
 	FbxVector4* blendShapeControlPoints;
