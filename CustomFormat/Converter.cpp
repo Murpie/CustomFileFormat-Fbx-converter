@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+using namespace std;
 #pragma warning(disable : 4996)
 
 #define COLOR_RANGE 3
@@ -57,13 +58,28 @@ void Converter::importMesh()
 	{
 		for (int i = 0; i < rootNode->GetChildCount(); i++)
 		{
-			exportFile(rootNode->GetChild(i));
+			if (isLevel)
+			{
+				loadLevel(rootNode->GetChild(i));
+			}
+			else
+			{
+				exportFile(rootNode->GetChild(i));
+			}
 		}
 	}
 	
 	counter.vertexCount = totalNrOfVertices;
 	exportAnimation(ourScene, rootNode);
-	createCustomFile();
+
+	if (isLevel)
+	{
+		createCustomLevelFile();
+	}
+	else
+	{
+		createCustomFile();
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -599,6 +615,31 @@ void Converter::createCustomFile()
 	outfile.close();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::createCustomLevelFile()
+{
+	size_t len = strlen(meshName);
+	ret = new char[len + 2];
+	strcpy(ret, meshName);
+	ret[len - 3] = 's';
+	ret[len - 2] = 's';
+	ret[len - 1] = 'p';
+	ret[len] = '\0';
+	meshName = ret;
+
+	std::ofstream outfile(meshName, std::ofstream::binary);
+
+	outfile.write((const char*)&counter, sizeof(Counter));
+
+	for (int i = 0; i < levelObjects.size(); i++)
+	{
+		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
+	}
+
+	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
+
+	outfile.close();
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
 	animationInfo = new AnimationInformation[1];
@@ -744,3 +785,56 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::loadLevel(FbxNode * currentNode)
+{
+	printf("\n\t|| Node: %s\n", currentNode->GetName());
+
+	mesh = currentNode->GetMesh();
+
+	if (currentNode)
+	{
+		if (mesh)// && !isPartOf(currentNode->GetName()))
+		{
+			LevelObject lvlObj = LevelObject();
+			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
+			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
+			// Save position
+			lvlObj.x = (float)tempTranslation[0];
+			lvlObj.y = (float)tempTranslation[1];
+			lvlObj.z = (float)tempTranslation[2];
+			// Save rotation
+			lvlObj.rotationX = (float)tempRotation[0];
+			lvlObj.rotationY = (float)tempRotation[1];
+			lvlObj.rotationZ = (float)tempRotation[2];
+
+			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
+			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
+
+			// Save ID
+			unsigned int attributeValue;
+			//std::string attributeName = "";
+
+			FbxProperty prop = currentNode->FindProperty("ID", false);
+			if (prop.IsValid())
+			{
+				//attributeName = prop.GetName();
+				attributeValue = prop.Get<int>();
+
+				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
+				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
+				lvlObj.id = prop.Get<int>();
+			}
+			else
+			{
+				lvlObj.id = -1;
+			}
+			levelObjects.push_back(lvlObj);
+			counter.levelObjectCount++;
+		}
+	}
+	else
+	{
+		printf("Access violation: Node not found\n\n");
+		exit(-2);
+	}
+}

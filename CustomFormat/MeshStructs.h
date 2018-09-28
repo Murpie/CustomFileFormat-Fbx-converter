@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-using namespace std;
 
 struct Counter
 {
@@ -8,10 +7,10 @@ struct Counter
 	unsigned int meshCount;
 	unsigned int customMayaAttributeCount;
 	unsigned int matCount;
+	unsigned int levelObjectCount;
 };
 
-struct MeshInfo
-{
+struct MeshInfo {
 	char meshName[100];
 	float globalTranslation[3];
 	float globalRotation[3];
@@ -45,15 +44,15 @@ struct KeyFrame {
 
 struct JointInformation {
 	char jointName[100];
-	char parentName[100];			
-	vector<KeyFrame> keyFrames;
+	char parentName[100];
+	std::vector<KeyFrame> keyFrames;
 };
 
 struct AnimationInformation {
 	char animationName[9];
 	int keyFrameCount;
 	int nrOfJoints;
-	vector<JointInformation> joints;					
+	std::vector<JointInformation> joints;
 };
 
 struct CustomMayaAttributes {
