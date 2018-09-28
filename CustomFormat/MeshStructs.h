@@ -52,7 +52,7 @@ struct Joint {
 	float translation[3];
 	float rotation[3];
 	float scale[3];
-	vector<KeyFrame> keyFrames;
+	std::vector<KeyFrame> keyFrames;
 };
 
 struct Animation {
@@ -63,7 +63,7 @@ struct Animation {
 	float max_time;
 	bool looping;
 	bool switching;
-	vector<Joint> joints;
+	std::vector<Joint> joints;
 };
 
 struct CustomMayaAttributes {

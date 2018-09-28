@@ -700,7 +700,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 
 		if (animLayers != 0)
 		{
-			for (int j = 1; j < animLayers; j++) // j = 1 to skip BaseLayer/BaseAnimation
+			for (int j = 0; j < animLayers; j++) // j = 1 to skip BaseLayer/BaseAnimation
 			{
 				//GetMember: Returns the member of the collection at the given index.
 				currentJointIndex = 0;

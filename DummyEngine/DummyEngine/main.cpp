@@ -21,7 +21,7 @@ int main()
 	return 0;*/
 
 	LeapImporter importer;
-	LeapMesh* mesh = importer.getMesh("cubeSpin.ssp");
+	LeapMesh* mesh = importer.getMesh("3rd_try.ssp");
 
 	char answer;
 	
@@ -186,9 +186,9 @@ int main()
 					printf("\tHeight:           %f\n", mesh->customMayaAttribute->height);
 					printf("\tWidth:            %f\n", mesh->customMayaAttribute->width);
 
-					printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
-					printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
-					printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
+					printf("\tCenter Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
+					printf("\tCenter Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
+					printf("\tCenter Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
 				}
 			}
 			else
@@ -199,8 +199,6 @@ int main()
 
 		printf("Done, press any key");
 		getchar();
-	}
 
-	
 	return 0;
 }
