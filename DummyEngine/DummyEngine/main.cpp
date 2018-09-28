@@ -15,10 +15,7 @@ int main()
 	{
 		printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
 		printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
-		/*printf("\tBlend Shape Count:\t%d\n", mesh->counterReader.blendShapeCount);*/
 		printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
-		/*printf("\tLight Count:\t\t%d\n", mesh->counterReader.lightCount);
-		printf("\tCamera Count:\t\t%d\n", mesh->counterReader.cameraCount);*/
 		printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
 	}
 	
@@ -93,30 +90,55 @@ int main()
 	getchar();
 	if (answer == 'Y' || answer == 'y')
 	{
-		if (mesh->animation->keyFrameCount > 1)
+		if (mesh->animation->nr_of_keyframes > 1)
 		{
-			printf("\n\tAnimation Name: %s\n", mesh->animation->animationName);
-			printf("\tKey Frame Count: %d\n", mesh->animation->keyFrameCount);
-			printf("\tJoint Count: %d\n", mesh->animation->nrOfJoints);
+			printf("\n\tAnimation Name: %s\n", mesh->animation->animation_name);
+			printf("\tKey Frame Count: %d\n", mesh->animation->nr_of_keyframes);
+			printf("\tJoint Count: %d\n", mesh->animation->nr_of_joints);
+			//printf("\tCurrent Time: %d\n", mesh->animation->current_time);
+			//printf("\tMax Time: %d\n", mesh->animation->max_time);
+			std::cout << "\tCurrent Time: " << mesh->animation->current_time << std::endl;
+			std::cout << "\tMax Time: " << mesh->animation->max_time << std::endl;
+			printf("\tIs Looping: %d\n", mesh->animation->looping);
+			printf("\tIs Switching: %d\n", mesh->animation->switching);
 
-
-			printf("Print Joint & Keyframes? Y/N:\t");
+			printf("\nPrint Joint & Keyframes? Y/N:\t");
 			std::cin >> answer;
 			getchar();
 			if (answer == 'Y' || answer == 'y')
 			{
-				for (int i = 0; i < mesh->animation->nrOfJoints; i++)
+				for (int i = 0; i < mesh->animation->nr_of_joints; i++)
 				{
-					printf("\n\tJoint Name: %s\n", mesh->animation->joints[i].jointName);
-					printf("\tParent Name: %s\n", mesh->animation->joints[i].parentName);
+					printf("---------------------------------------\n");
+					printf("\n\tJoint Name: %s\n", mesh->animation->joints[i].joint_name);
+					printf("\tParent Name: %s\n", mesh->animation->joints[i].parent_name);
+					printf("\tJoint ID: %d\n", mesh->animation->joints[i].joint_id);
+					printf("\tParent ID: %d\n", mesh->animation->joints[i].parent_id);
 
-					for (int j = 0; j < mesh->animation->keyFrameCount; j++)
+					printf("\n\tLocal Transform Matrix:\n");
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[0][0], mesh->animation->joints[i].local_transform_matrix[0][1], mesh->animation->joints[i].local_transform_matrix[0][2], mesh->animation->joints[i].local_transform_matrix[0][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[1][0], mesh->animation->joints[i].local_transform_matrix[1][1], mesh->animation->joints[i].local_transform_matrix[1][2], mesh->animation->joints[i].local_transform_matrix[1][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[2][0], mesh->animation->joints[i].local_transform_matrix[2][1], mesh->animation->joints[i].local_transform_matrix[2][2], mesh->animation->joints[i].local_transform_matrix[2][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[3][0], mesh->animation->joints[i].local_transform_matrix[3][1], mesh->animation->joints[i].local_transform_matrix[3][2], mesh->animation->joints[i].local_transform_matrix[3][3]);
+
+					printf("\n\tBind Pose Matrix:\n");
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[0][0], mesh->animation->joints[i].bind_pose_matrix[0][1], mesh->animation->joints[i].bind_pose_matrix[0][2], mesh->animation->joints[i].bind_pose_matrix[0][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[1][0], mesh->animation->joints[i].bind_pose_matrix[1][1], mesh->animation->joints[i].bind_pose_matrix[1][2], mesh->animation->joints[i].bind_pose_matrix[1][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[2][0], mesh->animation->joints[i].bind_pose_matrix[2][1], mesh->animation->joints[i].bind_pose_matrix[2][2], mesh->animation->joints[i].bind_pose_matrix[2][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[3][0], mesh->animation->joints[i].bind_pose_matrix[3][1], mesh->animation->joints[i].bind_pose_matrix[3][2], mesh->animation->joints[i].bind_pose_matrix[3][3]);
+
+					printf("\n\tJoint Translation: \t%.3f %.3f %.3f\n", mesh->animation->joints[i].translation[0], mesh->animation->joints[i].translation[1], mesh->animation->joints[i].translation[2]);
+					printf("\tJoint Rotation: \t%.3f %.3f %.3f\n", mesh->animation->joints[i].rotation[0], mesh->animation->joints[i].rotation[1], mesh->animation->joints[i].rotation[2]);
+					printf("\tJoint Scale: \t%.3f %.3f %.3f\n\n", mesh->animation->joints[i].scale[0], mesh->animation->joints[i].scale[1], mesh->animation->joints[i].scale[2]);
+
+					for (int j = 0; j < mesh->animation->nr_of_keyframes; j++)
 					{
 						printf("\t\tKey|%d|\tTime: %.3f", j, mesh->animation->joints[i].keyFrames[j].time);
 						printf("\tPosition: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].position[0], mesh->animation->joints[i].keyFrames[j].position[1], mesh->animation->joints[i].keyFrames[j].position[2]);
 						printf("\tRotation: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].rotation[0], mesh->animation->joints[i].keyFrames[j].rotation[1], mesh->animation->joints[i].keyFrames[j].rotation[2]);
 						printf("\tScaling: %.3f %.3f %.3f\n", mesh->animation->joints[i].keyFrames[j].scaling[0], mesh->animation->joints[i].keyFrames[j].scaling[1], mesh->animation->joints[i].keyFrames[j].scaling[2]);
 					}
+					printf("---------------------------------------\n");
 				}
 			}
 		}

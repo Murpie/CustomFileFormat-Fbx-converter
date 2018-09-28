@@ -34,8 +34,8 @@ private:
 	void loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex);
 	void printInfo();
 	void createCustomFile();
-	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
-	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node, FbxScene* scene);
+	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, FbxScene* scene);
 	void fixJointID();
 
 	FbxManager * manager;
