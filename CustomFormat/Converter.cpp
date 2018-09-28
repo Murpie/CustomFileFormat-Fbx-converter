@@ -71,7 +71,15 @@ void Converter::importMesh()
 	
 	counter.vertexCount = totalNrOfVertices;
 	exportAnimation(ourScene, rootNode);
-	createCustomFile();
+
+	if (isLevel)
+	{
+		createCustomLevelFile();
+	}
+	else
+	{
+		createCustomFile();
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -612,11 +620,10 @@ void Converter::createCustomLevelFile()
 	size_t len = strlen(meshName);
 	ret = new char[len + 2];
 	strcpy(ret, meshName);
-	ret[len - 3] = 'l';
-	ret[len - 2] = 'e';
-	ret[len - 1] = 'a';
-	ret[len] = 'p';
-	ret[len + 1] = '\0';
+	ret[len - 3] = 's';
+	ret[len - 2] = 's';
+	ret[len - 1] = 'p';
+	ret[len] = '\0';
 	meshName = ret;
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
@@ -783,8 +790,6 @@ void Converter::loadLevel(FbxNode * currentNode)
 	printf("\n\t|| Node: %s\n", currentNode->GetName());
 
 	mesh = currentNode->GetMesh();
-	light = currentNode->GetLight();
-	camera = currentNode->GetCamera();
 
 	if (currentNode)
 	{
@@ -809,7 +814,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			unsigned int attributeValue;
 			//std::string attributeName = "";
 
-			FbxProperty prop = currentNode->FindProperty(TYPE_ID, false);
+			FbxProperty prop = currentNode->FindProperty("ID", false);
 			if (prop.IsValid())
 			{
 				//attributeName = prop.GetName();
@@ -819,19 +824,12 @@ void Converter::loadLevel(FbxNode * currentNode)
 				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
 				lvlObj.id = prop.Get<int>();
 			}
+			else
+			{
+				lvlObj.id = -1;
+			}
 			levelObjects.push_back(lvlObj);
 			counter.levelObjectCount++;
-		}
-		//Load Cameras
-		if (camera)
-		{
-
-		}
-
-		//Load Lights
-		if (light)
-		{
-
 		}
 	}
 	else

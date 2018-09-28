@@ -1,11 +1,9 @@
 #pragma once
 #include "LeapMesh.h"
-#include "LeapLevel.h"
+#include "CustomLevel.h"
 
 #include <vector>
 #include <iostream>
-
-using namespace std;
 
 class LeapImporter
 {
@@ -14,8 +12,8 @@ public:
 	~LeapImporter();
 
 	LeapMesh* getMesh(const char* meshName);
-	LeapLevel* getLevel(const char* levelName);
+	CustomLevel* getLevel(const char* levelName);
 
 	void deleteObject(LeapMesh* mesh);
-	void deleteObject(LeapLevel* level);
+	void deleteObject(CustomLevel* level);
 };

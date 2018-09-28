@@ -2,10 +2,23 @@
 //int main(int argc, char** argv)
 int main()
 {
-	LeapImporter importer;
-	LeapLevel* level = importer.getLevel("test_level.ssp");
+	
+	LeapImporter level_importer;
 
+	CustomLevel* level = level_importer.getLevel("test_level.ssp");
 
+	for (int i = 0; i < level->counterReader.levelObjectCount; i++)
+	{
+		printf("Mesh: %d \nPositions: %f %f %f\n", i, level->levelObjects[i]->x, level->levelObjects[i]->y, level->levelObjects[i]->z);
+		printf("Rotation: %f %f %f\n", level->levelObjects[i]->rotationX, level->levelObjects[i]->rotationY, level->levelObjects[i]->rotationZ);
+		printf("ID: %d\n\n", level->levelObjects[i]->id);
+	}
+
+	level_importer.deleteObject(level);
+
+	std::getchar();
+	_CrtDumpMemoryLeaks();
+	return 0;
 
 
 	//if (true)

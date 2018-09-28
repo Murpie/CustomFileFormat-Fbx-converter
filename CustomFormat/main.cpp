@@ -8,7 +8,7 @@ int main()
 	
 	Converter converter("test_level.fbx");
 
-	converter.isLevel = true; // change this when loading levels
+	converter.isLevel = false; // change this when loading levels
 	converter.importMesh();
 
 	std::cout << "Done, press any key";
