@@ -21,42 +21,35 @@ int main()
 	return 0;*/
 
 	LeapImporter importer;
+	LeapMesh* mesh = importer.getMesh("cubeSpin.ssp");
 
-	LeapMesh* mesh = importer.getMesh("Robot_1.0.ssp");
-
-
-	if (true)
+	char answer;
+	
+	//Counter
+	printf("Print Counter? Y/N:\t");
+	std::cin >> answer;
+	getchar();
+	if (answer == 'Y' || answer == 'y')
 	{
-		char answer;
-
-		//Counter
-		printf("Print Counter? Y/N:\t");
-		std::cin >> answer;
-		getchar();
-		if (answer == 'Y' || answer == 'y')
+		printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
+		printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
+		printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
+		printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
+	}
+	
+	
+	//Global Transform
+	printf("Print Global Tranform? Y/N:\t");
+	std::cin >> answer;
+	getchar();
+	if (answer == 'Y' || answer == 'y')
+	{
+		for (int i = 0; i < mesh->counterReader.meshCount; i++)
 		{
-			printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
-			printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
-			/*printf("\tBlend Shape Count:\t%d\n", mesh->counterReader.blendShapeCount);*/
-			printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
-			/*printf("\tLight Count:\t\t%d\n", mesh->counterReader.lightCount);
-			printf("\tCamera Count:\t\t%d\n", mesh->counterReader.cameraCount);*/
-			printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
+			printf("\t%s\n", mesh[i].transform->meshName);
+			printf("\tGlobal Transform:	X: %f Y: %f Z: %f\n\n", mesh[i].transform->globalTranslation[0], mesh[i].transform->globalTranslation[1], mesh[i].transform->globalTranslation[2]);
 		}
-
-
-		//Global Transform
-		printf("Print Global Tranform? Y/N:\t");
-		std::cin >> answer;
-		getchar();
-		if (answer == 'Y' || answer == 'y')
-		{
-			for (int i = 0; i < mesh->counterReader.meshCount; i++)
-			{
-				printf("\t%s\n", mesh[i].transform->meshName);
-				printf("\tGlobal Transform:	X: %f Y: %f Z: %f\n\n", mesh[i].transform->globalTranslation[0], mesh[i].transform->globalTranslation[1], mesh[i].transform->globalTranslation[2]);
-			}
-		}
+	}
 
 		//Vertex Information
 		printf("Printf VertexInformation? Y/N:\t");
@@ -109,45 +102,70 @@ int main()
 			}
 		}
 
-		//Skeleton Animation
-		printf("Print Skeleton Animation? Y/N:\t");
-		std::cin >> answer;
-		getchar();
-		if (answer == 'Y' || answer == 'y')
+	//Skeleton Animation
+	printf("Print Skeleton Animation? Y/N:\t");
+	std::cin >> answer;
+	getchar();
+	if (answer == 'Y' || answer == 'y')
+	{
+		if (mesh->animation->nr_of_keyframes > 1)
 		{
-			if (mesh->animation->keyFrameCount > 1)
+			printf("\n\tAnimation Name: %s\n", mesh->animation->animation_name);
+			printf("\tKey Frame Count: %d\n", mesh->animation->nr_of_keyframes);
+			printf("\tJoint Count: %d\n", mesh->animation->nr_of_joints);
+			//printf("\tCurrent Time: %d\n", mesh->animation->current_time);
+			//printf("\tMax Time: %d\n", mesh->animation->max_time);
+			std::cout << "\tCurrent Time: " << mesh->animation->current_time << std::endl;
+			std::cout << "\tMax Time: " << mesh->animation->max_time << std::endl;
+			printf("\tIs Looping: %d\n", mesh->animation->looping);
+			printf("\tIs Switching: %d\n", mesh->animation->switching);
+
+			printf("\nPrint Joint & Keyframes? Y/N:\t");
+			std::cin >> answer;
+			getchar();
+			if (answer == 'Y' || answer == 'y')
 			{
-				printf("\n\tAnimation Name: %s\n", mesh->animation->animationName);
-				printf("\tKey Frame Count: %d\n", mesh->animation->keyFrameCount);
-				printf("\tJoint Count: %d\n", mesh->animation->nrOfJoints);
-
-
-				printf("Print Joint & Keyframes? Y/N:\t");
-				std::cin >> answer;
-				getchar();
-				if (answer == 'Y' || answer == 'y')
+				for (int i = 0; i < mesh->animation->nr_of_joints; i++)
 				{
-					for (int i = 0; i < mesh->animation->nrOfJoints; i++)
-					{
-						printf("\n\tJoint Name: %s\n", mesh->animation->joints[i].jointName);
-						printf("\tParent Name: %s\n", mesh->animation->joints[i].parentName);
+					printf("---------------------------------------\n");
+					printf("\n\tJoint Name: %s\n", mesh->animation->joints[i].joint_name);
+					printf("\tParent Name: %s\n", mesh->animation->joints[i].parent_name);
+					printf("\tJoint ID: %d\n", mesh->animation->joints[i].joint_id);
+					printf("\tParent ID: %d\n", mesh->animation->joints[i].parent_id);
 
-						for (int j = 0; j < mesh->animation->keyFrameCount; j++)
-						{
-							printf("\t\tKey|%d|\tTime: %.3f", j, mesh->animation->joints[i].keyFrames[j].time);
-							printf("\tPosition: %.3f %.3f %.3f", j, mesh->animation->joints[i].keyFrames[j].position[0], mesh->animation->joints[i].keyFrames[j].position[1], mesh->animation->joints[i].keyFrames[j].position[2]);
-							printf("\tRotation: %.3f %.3f %.3f", j, mesh->animation->joints[i].keyFrames[j].rotation[0], mesh->animation->joints[i].keyFrames[j].rotation[1], mesh->animation->joints[i].keyFrames[j].rotation[2]);
-							printf("\tScaling: %.3f %.3f %.3f\n", j, mesh->animation->joints[i].keyFrames[j].scaling[0], mesh->animation->joints[i].keyFrames[j].scaling[1], mesh->animation->joints[i].keyFrames[j].scaling[2]);
-						}
+					printf("\n\tLocal Transform Matrix:\n");
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[0][0], mesh->animation->joints[i].local_transform_matrix[0][1], mesh->animation->joints[i].local_transform_matrix[0][2], mesh->animation->joints[i].local_transform_matrix[0][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[1][0], mesh->animation->joints[i].local_transform_matrix[1][1], mesh->animation->joints[i].local_transform_matrix[1][2], mesh->animation->joints[i].local_transform_matrix[1][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[2][0], mesh->animation->joints[i].local_transform_matrix[2][1], mesh->animation->joints[i].local_transform_matrix[2][2], mesh->animation->joints[i].local_transform_matrix[2][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].local_transform_matrix[3][0], mesh->animation->joints[i].local_transform_matrix[3][1], mesh->animation->joints[i].local_transform_matrix[3][2], mesh->animation->joints[i].local_transform_matrix[3][3]);
+
+					printf("\n\tBind Pose Matrix:\n");
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[0][0], mesh->animation->joints[i].bind_pose_matrix[0][1], mesh->animation->joints[i].bind_pose_matrix[0][2], mesh->animation->joints[i].bind_pose_matrix[0][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[1][0], mesh->animation->joints[i].bind_pose_matrix[1][1], mesh->animation->joints[i].bind_pose_matrix[1][2], mesh->animation->joints[i].bind_pose_matrix[1][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[2][0], mesh->animation->joints[i].bind_pose_matrix[2][1], mesh->animation->joints[i].bind_pose_matrix[2][2], mesh->animation->joints[i].bind_pose_matrix[2][3]);
+					printf("\t\t%.4f  %.4f  %.4f  %.4f\n", mesh->animation->joints[i].bind_pose_matrix[3][0], mesh->animation->joints[i].bind_pose_matrix[3][1], mesh->animation->joints[i].bind_pose_matrix[3][2], mesh->animation->joints[i].bind_pose_matrix[3][3]);
+
+					printf("\n\tJoint Translation: \t%.3f %.3f %.3f\n", mesh->animation->joints[i].translation[0], mesh->animation->joints[i].translation[1], mesh->animation->joints[i].translation[2]);
+					printf("\tJoint Rotation: \t%.3f %.3f %.3f\n", mesh->animation->joints[i].rotation[0], mesh->animation->joints[i].rotation[1], mesh->animation->joints[i].rotation[2]);
+					printf("\tJoint Scale: \t%.3f %.3f %.3f\n\n", mesh->animation->joints[i].scale[0], mesh->animation->joints[i].scale[1], mesh->animation->joints[i].scale[2]);
+
+					for (int j = 0; j < mesh->animation->nr_of_keyframes; j++)
+					{
+						printf("\t\tKey|%d|\tTime: %.3f", j, mesh->animation->joints[i].keyFrames[j].time);
+						printf("\tPosition: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].position[0], mesh->animation->joints[i].keyFrames[j].position[1], mesh->animation->joints[i].keyFrames[j].position[2]);
+						printf("\tRotation: %.3f %.3f %.3f", mesh->animation->joints[i].keyFrames[j].rotation[0], mesh->animation->joints[i].keyFrames[j].rotation[1], mesh->animation->joints[i].keyFrames[j].rotation[2]);
+						printf("\tScaling: %.3f %.3f %.3f\n", mesh->animation->joints[i].keyFrames[j].scaling[0], mesh->animation->joints[i].keyFrames[j].scaling[1], mesh->animation->joints[i].keyFrames[j].scaling[2]);
 					}
+					printf("---------------------------------------\n");
 				}
 			}
-			else
-			{
-				printf("There's no Skeleton Animation\n\n");
-			}
-			printf("\n");
 		}
+		else
+		{
+			printf("There's no Skeleton Animation\n\n");
+		}
+		printf("\n");
+	}
 
 		//Custom Maya Attribute
 		printf("Print Custom Maya Attribute? Y/N:\t");

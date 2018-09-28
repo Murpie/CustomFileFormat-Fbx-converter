@@ -42,17 +42,28 @@ struct KeyFrame {
 	float scaling[3];
 };
 
-struct JointInformation {
-	char jointName[100];
-	char parentName[100];
-	std::vector<KeyFrame> keyFrames;
+struct Joint {
+	char joint_name[100];
+	char parent_name[100];
+	int joint_id;
+	int parent_id;
+	float local_transform_matrix[4][4];
+	float bind_pose_matrix[4][4];
+	float translation[3];
+	float rotation[3];
+	float scale[3];
+	vector<KeyFrame> keyFrames;
 };
 
-struct AnimationInformation {
-	char animationName[9];
-	int keyFrameCount;
-	int nrOfJoints;
-	std::vector<JointInformation> joints;
+struct Animation {
+	char animation_name[9];
+	int nr_of_keyframes;
+	int nr_of_joints;
+	float current_time;
+	float max_time;
+	bool looping;
+	bool switching;
+	vector<Joint> joints;
 };
 
 struct CustomMayaAttributes {

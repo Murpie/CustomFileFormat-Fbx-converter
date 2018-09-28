@@ -23,7 +23,6 @@ Converter::Converter(const char * fileName)
 Converter::~Converter()
 {
 	delete ret;
-
 	delete[] animationInfo;
 
 	meshInfo.clear();
@@ -589,23 +588,36 @@ void Converter::createCustomFile()
 			outfile.write((const char*)&matInfo[i], sizeof(MaterialInformation));
 		}
 
-		if (animationInfo->nrOfJoints > 0)
+		if (animationInfo->nr_of_joints > 0)
 		{
 			//Skeletal animation
-			outfile.write((const char*)animationInfo->animationName, sizeof(char) * 9);
-			outfile.write((const char*)&animationInfo->keyFrameCount, sizeof(int));
-			outfile.write((const char*)&animationInfo->nrOfJoints, sizeof(int));
-			for (int i = 0; i < animationInfo->nrOfJoints; i++)
-			{
-				size_t jLen = strlen(animationInfo->joints[i].jointName);
-				size_t pLen = strlen(animationInfo->joints[i].parentName);
-				outfile.write((const char*)&animationInfo->joints[i].jointName, sizeof(char) * 100);
-				outfile.write((const char*)&animationInfo->joints[i].parentName, sizeof(char) * 100);
+			outfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
+			outfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
+			outfile.write((const char*)&animationInfo->nr_of_joints, sizeof(int));
 
-				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->keyFrameCount);
+			outfile.write((const char*)&animationInfo->current_time, sizeof(float));
+			outfile.write((const char*)&animationInfo->max_time, sizeof(float));
+			outfile.write((const char*)&animationInfo->looping, sizeof(bool));
+			outfile.write((const char*)&animationInfo->switching, sizeof(bool));
+
+			for (int i = 0; i < animationInfo->nr_of_joints; i++)
+			{
+				outfile.write((const char*)&animationInfo->joints[i].joint_name, sizeof(char) * 100);
+				outfile.write((const char*)&animationInfo->joints[i].parent_name, sizeof(char) * 100);
+
+				outfile.write((const char*)&animationInfo->joints[i].joint_id, sizeof(int));
+				outfile.write((const char*)&animationInfo->joints[i].parent_id, sizeof(int));
+
+				outfile.write((const char*)&animationInfo->joints[i].local_transform_matrix, sizeof(float) * 16);
+				outfile.write((const char*)&animationInfo->joints[i].bind_pose_matrix, sizeof(float) * 16);
+
+				outfile.write((const char*)&animationInfo->joints[i].translation, sizeof(float) * 3);
+				outfile.write((const char*)&animationInfo->joints[i].rotation, sizeof(float) * 3);
+				outfile.write((const char*)&animationInfo->joints[i].scale, sizeof(float) * 3);
+
+				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
 			}
 		}
-
 		for (int i = 0; i < customMayaAttribute.size(); i++)
 		{
 			outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
@@ -642,8 +654,8 @@ void Converter::createCustomLevelFile()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 {
-	animationInfo = new AnimationInformation[1];
-	animationInfo->nrOfJoints = 0;
+	animationInfo = new Animation[1];
+	animationInfo->nr_of_joints = 0;
 	//GetSrcObjectCount: Returns the number of source objects with which this object connects. 
 	for (int i = 0; i < scene->GetSrcObjectCount<FbxAnimStack>(); i++)
 	{
@@ -651,10 +663,36 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		//GetSrcObject: Returns the source object with which this object connects at the specified index.
 		FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>(i);
 		
-		//STORE: AnimationInformation char animationName[]
-		const char* tempAnimName = animStack->GetInitialName();
+		/*const char* tempAnimName = animStack->GetInitialName();
 		for (int n = 0; n < strlen(tempAnimName) + 1; n++)
-			animationInfo->animationName[n] = tempAnimName[n];
+			animationInfo->animation_name[n] = tempAnimName[n];*/
+
+		char animation_name_input[9];
+		std::cout << "Enter animation name (max 9 characters): ";
+		std::cin >> animation_name_input;
+		for(int n = 0; n < strlen(animation_name_input) +1; n++)
+			animationInfo->animation_name[n] = animation_name_input[n];
+		std::cout << "Name Saved." << std::endl << std::endl;
+
+		char answer;
+		bool is_looping = false;
+		std::cout << "Looping animation (y/n): ";
+		std::cin >> answer;
+		if (answer == 'y' || answer == 'Y')
+			is_looping = true;
+		animationInfo->looping = is_looping;
+		std::cout << "Looping set to " << animationInfo->looping << ". (1 = true, 0 = false) " << std::endl << std::endl;
+
+		bool is_switching = false;
+		std::cout << "Switching animation (y/n): ";
+		std::cin >> answer;
+		if (answer == 'y' || answer == 'Y')
+			is_switching = true;
+		animationInfo->switching = is_switching;
+		std::cout << "Switching set to " << animationInfo->switching << ". (1 = true, 0 = false) " << std::endl << std::endl;
+
+		float leons_number = 1.1;
+		animationInfo->current_time = leons_number;
 
 		//AnimLayer: The animation layer is a collection of animation curve nodes. 
 		//GetMemberCount: Returns the number of objects contained within the collection.
@@ -662,32 +700,37 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 
 		if (animLayers != 0)
 		{
-			for (int j = 0; j < animLayers; j++)
+			for (int j = 1; j < animLayers; j++) // j = 1 to skip BaseLayer/BaseAnimation
 			{
-				//GetMember: Returns the member of the collection at the given index. 
+				//GetMember: Returns the member of the collection at the given index.
+				currentJointIndex = 0;
 				FbxAnimLayer* currentAnimLayer = animStack->GetMember<FbxAnimLayer>(j);
-				getAnimation(currentAnimLayer, node);
+				getAnimation(currentAnimLayer, node, scene);
 			}
 		}
+		fixJointID();
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node)
+void Converter::getAnimation(FbxAnimLayer* animLayer, FbxNode* node, FbxScene* scene)
 {
 	int modelCount;
-	getAnimationChannels(node, animLayer);
+	const char* baseCheck;
+
+	getAnimationChannels(node, animLayer, scene);
 
 	for (modelCount = 0; modelCount < node->GetChildCount(); modelCount++)
 	{
-		getAnimation(animLayer, node->GetChild(modelCount));
+		//std::cout << node->GetChild(modelCount)->GetName() << std::endl;
+		getAnimation(animLayer, node->GetChild(modelCount), scene);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
+void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, FbxScene* scene)
 {
 	//AnimCurve: An animation curve, defined by a collection of keys (FbxAnimCurveKey), and indicating how a value changes over time. 
 	FbxAnimCurve* animCurve = NULL;
-	FbxString outputString;
+	//FbxString outputString;
 
 	float keyValue;
 	int keyCount;
@@ -698,28 +741,106 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 	std::vector<float> tempScaling;
 	
 	//LclTranslation: This property contains the translation information of the node.
-	animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	animCurve = node->LclTranslation.GetCurve(animLayer);
 	if (animCurve)
 	{
-		JointInformation jointInformation;
+		Joint jointInformation;
 		//STORE: JointInformation char jointName[]
 		const char* tempJointName = node->GetName();
 		for (unsigned int n = 0; n < strlen(tempJointName) + 1; n++)
-			jointInformation.jointName[n] = tempJointName[n];
+			jointInformation.joint_name[n] = tempJointName[n];
 
 		//STORE: JointInformation char parentName[]
 		const char* tempJointParentName = node->GetParent()->GetName();
 		for (unsigned int n = 0; n < strlen(tempJointParentName) + 1; n++)
-			jointInformation.parentName[n] = tempJointParentName[n];
+			jointInformation.parent_name[n] = tempJointParentName[n];
+
+		jointInformation.joint_id = currentJointIndex;
+		jointInformation.parent_id = - 1;
+		currentJointIndex++;
+
+		for (int i = 0; i < 3; i++)
+		{
+			jointInformation.translation[i] = 1;
+			jointInformation.rotation[i] = 1;
+			jointInformation.scale[i] = 1;
+		}
+
+		/*FbxPatch* jPatch = (FbxPatch*)node->GetNodeAttribute();
+		FbxCluster* jCluster;
+		FbxAMatrix jMatrix;
+		int clusterCount;
+		int skinCount = jPatch->GetDeformerCount(FbxDeformer::eSkin);
+		for (int a = 0; a < skinCount; a++)
+		{
+			clusterCount = ((FbxSkin*)jPatch->GetDeformer(a, FbxDeformer::eSkin))->GetClusterCount();
+			for (int b = 0; b < clusterCount; b++)
+			{
+				jCluster = ((FbxSkin*)jPatch->GetDeformer(a, FbxDeformer::eSkin))->GetCluster(b);
+				jMatrix = jCluster->GetTransformMatrix(jMatrix);
+			}
+		}
+		FbxVector4 jT = jMatrix.GetT();
+		FBXSDK_printf("Wtf: %f, %f, %f, %f: ", jT[0], jT[1], jT[2], jT[3]);*/
+
+		//FbxAMatrix x = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE, FbxNode::eSourcePivot, false, false);
+		//std::cout << "Current node: " << node->GetName() << std::endl;
+		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
+		
+		/*std::cout << "Local Transform Matrix: " << std::endl;
+		FBXSDK_printf("%f %f %f %f\n", tempTransform[0][0], tempTransform[0][1], tempTransform[0][2], tempTransform[0][3]);
+		FBXSDK_printf("%f %f %f %f\n", tempTransform[1][0], tempTransform[1][1], tempTransform[1][2], tempTransform[1][3]);
+		FBXSDK_printf("%f %f %f %f\n", tempTransform[2][0], tempTransform[2][1], tempTransform[2][2], tempTransform[2][3]);
+		FBXSDK_printf("%f %f %f %f\n\n", tempTransform[3][0], tempTransform[3][1], tempTransform[3][2], tempTransform[3][3]);*/
+
+		for (int k = 0; k < 4; k++)
+		{
+			for (int l = 0; l < 4; l++)
+			{
+				jointInformation.local_transform_matrix[k][l] = tempTransform[k][l];
+				jointInformation.bind_pose_matrix[k][l] = tempTransform[k][l];
+			}
+		}
+
+		/*int poseCount = scene->GetPoseCount();
+		for (int k = 0; k < poseCount; k++)
+		{
+			FbxPose* jPose = scene->GetPose(k);
+			FbxString poseName = jPose->GetName();
+			//std::cout << "Pose name: " << poseName << std::endl;
+			//std::cout << "Is a bind pose: " << jPose->IsBindPose() << std::endl;
+			//std::cout << "Number of items in the pose: " << jPose->GetCount() << std::endl << std::endl;
+			for (int l = 0; l < jPose->GetCount(); l++)
+			{
+				FbxString itemName = jPose->GetNodeName(l).GetCurrentName();
+				if (strcmp(itemName, node->GetName()) == 0)
+				{
+					//std::cout << "Item name: " << itemName << std::endl;
+					if (!jPose->IsBindPose())
+						std::cout << "Is local space matrix: " << jPose->IsLocalMatrix(l);
+				
+					FbxMatrix bindPoseMatrix = jPose->GetMatrix(l);
+					std::cout << "Bindpose matrix: " << std::endl;
+					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[0][0], bindPoseMatrix[0][1], bindPoseMatrix[0][2], bindPoseMatrix[0][3]);
+					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[1][0], bindPoseMatrix[1][1], bindPoseMatrix[1][2], bindPoseMatrix[1][3]);
+					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[2][0], bindPoseMatrix[2][1], bindPoseMatrix[2][2], bindPoseMatrix[2][3]);
+					FBXSDK_printf("%f %f %f %f\n\n", bindPoseMatrix[3][0], bindPoseMatrix[3][1], bindPoseMatrix[3][2], bindPoseMatrix[3][3]);
+					std::cout << "-------------------------------" << std::endl << std::endl;
+				}
+			}
+		}*/
 
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount
-		animationInfo->keyFrameCount = keyCount;
+		animationInfo->nr_of_keyframes = keyCount;
 
 		for (int j = 0; j < keyCount; j++)
 		{
 			keyTime = animCurve->KeyGetTime(j).GetSecondDouble();
-			//STORE: KeyFrame float time
+
+			if (j == (keyCount - 1))
+				animationInfo->max_time = keyTime;
 
 			tempPosition.clear();
 			tempRotation.clear();
@@ -763,12 +884,11 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
 			tempScaling.push_back(keyValue);
 
-
 			KeyFrame tempKeyFrameData;
 			tempKeyFrameData.time = keyTime;
-			tempKeyFrameData.position[0] = tempPosition[0];
-			tempKeyFrameData.position[1] = tempPosition[1];
-			tempKeyFrameData.position[2] = tempPosition[2];
+			tempKeyFrameData.translation[0] = tempPosition[0];
+			tempKeyFrameData.translation[1] = tempPosition[1];
+			tempKeyFrameData.translation[2] = tempPosition[2];
 
 			tempKeyFrameData.rotation[0] = tempRotation[0];
 			tempKeyFrameData.rotation[1] = tempRotation[1];
@@ -780,8 +900,23 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer)
 
 			jointInformation.keyFrames.push_back(tempKeyFrameData);
 		}
+		
 		animationInfo->joints.push_back(jointInformation);
-		animationInfo->nrOfJoints += 1;
+		animationInfo->nr_of_joints++;
+	}
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::fixJointID()
+{
+	for (int i = 0; i < animationInfo->joints.size(); i++)
+	{
+		for (int k = 0; k < animationInfo->joints.size(); k++)
+		{
+			if (strcmp(animationInfo->joints[i].parent_name, animationInfo->joints[k].joint_name) == 0)
+			{
+				animationInfo->joints[i].parent_id = k;
+			}
+		}
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
