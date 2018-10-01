@@ -6,9 +6,6 @@
 #include <iostream>   
 #include "MeshStructs.h"
 
-#define CUSTOM_ATTRIBUTE "MeshType"
-#define TYPE_ID  "TypeID"
-
 class Converter
 {
 public:
