@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <iostream>   
 #include "MeshStructs.h"
+#include "AnimationStructs.h"
 
 #define CUSTOM_ATTRIBUTE "MeshType"
 #define TYPE_ID  "TypeID"
@@ -19,6 +20,7 @@ public:
 	int currentJointIndex;
 
 	void importMesh();
+	void importAnimation();
 	void exportFile(FbxNode* currentNode);
 	void exportAnimation(FbxScene* scene, FbxNode* node);
 
@@ -47,8 +49,6 @@ private:
 	std::vector<MaterialInformation> matInfo;
 
 	Animation* animationInfo;
-	/*BlendShapes* objectBlendShapes;
-	std::vector<Group> groups;*/
 	std::vector<CustomMayaAttributes> customMayaAttribute;
 	std::vector<LevelObject> levelObjects;
 

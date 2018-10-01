@@ -71,7 +71,7 @@ void Converter::importMesh()
 	}
 	
 	counter.vertexCount = totalNrOfVertices;
-	exportAnimation(ourScene, rootNode);
+	//exportAnimation(ourScene, rootNode);
 
 	if (isLevel)
 	{
@@ -81,6 +81,14 @@ void Converter::importMesh()
 	{
 		createCustomFile();
 	}
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::importAnimation()
+{
+	//importer->Import(ourScene);
+	//rootNode = ourScene->GetRootNode();
+	exportAnimation(ourScene, rootNode);
+	createCustomAnimationFile();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportFile(FbxNode* currentNode)
@@ -560,8 +568,6 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	//tempMName = (char*)meshInfo[0].meshName;
-
 	size_t len = strlen(meshName);
 	ret = new char[len + 2];
 	strcpy(ret, meshName);
@@ -570,19 +576,6 @@ void Converter::createCustomFile()
 	ret[len - 1] = 'p';
 	ret[len] = '\0';
 	meshName = ret;
-
-	/*char extraSymbol[2] = "_";
-	char animFileName[9] = ".sspAnim";
-	char tempAName[10] = {};
-	
-	for (int i = 0; i < strlen(animationInfo->animation_name); i++)
-	{
-		tempAName[i] = animationInfo->animation_name[i];
-	}
-	
-	strcat(tempMName, extraSymbol);
-	strcat(tempMName, tempAName);
-	strcat(tempMName, animFileName);*/
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
@@ -605,35 +598,6 @@ void Converter::createCustomFile()
 			outfile.write((const char*)&matInfo[i], sizeof(MaterialInformation));
 		}
 
-		if (animationInfo->nr_of_joints > 0)
-		{
-			outfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
-			outfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
-			outfile.write((const char*)&animationInfo->nr_of_joints, sizeof(int));
-
-			outfile.write((const char*)&animationInfo->current_time, sizeof(float));
-			outfile.write((const char*)&animationInfo->max_time, sizeof(float));
-			outfile.write((const char*)&animationInfo->looping, sizeof(bool));
-			outfile.write((const char*)&animationInfo->switching, sizeof(bool));
-
-			for (int i = 0; i < animationInfo->nr_of_joints; i++)
-			{
-				outfile.write((const char*)&animationInfo->joints[i].joint_name, sizeof(char) * 100);
-				outfile.write((const char*)&animationInfo->joints[i].parent_name, sizeof(char) * 100);
-
-				outfile.write((const char*)&animationInfo->joints[i].joint_id, sizeof(int));
-				outfile.write((const char*)&animationInfo->joints[i].parent_id, sizeof(int));
-
-				outfile.write((const char*)&animationInfo->joints[i].local_transform_matrix, sizeof(float) * 16);
-				outfile.write((const char*)&animationInfo->joints[i].bind_pose_matrix, sizeof(float) * 16);
-
-				outfile.write((const char*)&animationInfo->joints[i].translation, sizeof(float) * 3);
-				outfile.write((const char*)&animationInfo->joints[i].rotation, sizeof(float) * 3);
-				outfile.write((const char*)&animationInfo->joints[i].scale, sizeof(float) * 3);
-
-				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
-			}
-		}
 		for (int i = 0; i < customMayaAttribute.size(); i++)
 		{
 			outfile.write((const char*)&customMayaAttribute[i], sizeof(CustomMayaAttributes));
@@ -687,15 +651,6 @@ void Converter::createCustomAnimationFile()
 
 	if (animationInfo->nr_of_joints > 0)
 	{
-		//Skeletal animation
-
-		/*
-		model.fbx --> model.ssp
-		model.fbx --> model_Animname.sspAnim
-		*/
-
-		//cout << tempMeshName << endl;
-
 		std::ofstream animOutfile(tempMName, std::ofstream::binary);
 
 		animOutfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);

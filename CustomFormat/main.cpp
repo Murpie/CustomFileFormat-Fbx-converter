@@ -11,6 +11,14 @@ int main()
 	converter.isLevel = false; // change this when loading levels
 	converter.importMesh();
 
+	int answer = 0;
+	std::cout << "Mesh loaded." << std::endl << "Load animations? 1 = Yes";
+	std::cin >> answer;
+	if (answer == 1)
+	{
+		converter.importAnimation();
+	}
+
 	getchar();
 	std::cout << "Done, press any key";
 	getchar();
