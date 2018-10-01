@@ -18,7 +18,6 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
-	tempAName = (char*)malloc(100);
 	tempMName = (char*)malloc(100);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -36,7 +35,6 @@ Converter::~Converter()
 	settings->Destroy();
 	manager->Destroy();
 
-	free(tempAName);
 	//free(tempMName);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -562,7 +560,7 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	tempMName = (char*)meshName;
+	//tempMName = (char*)meshInfo[0].meshName;
 
 	size_t len = strlen(meshName);
 	ret = new char[len + 2];
@@ -573,13 +571,18 @@ void Converter::createCustomFile()
 	ret[len] = '\0';
 	meshName = ret;
 
-	char extraSymbol[2] = "_";
+	/*char extraSymbol[2] = "_";
 	char animFileName[9] = ".sspAnim";
-	tempAName = animationInfo->animation_name;
-
+	char tempAName[10] = {};
+	
+	for (int i = 0; i < strlen(animationInfo->animation_name); i++)
+	{
+		tempAName[i] = animationInfo->animation_name[i];
+	}
+	
 	strcat(tempMName, extraSymbol);
 	strcat(tempMName, tempAName);
-	strcat(tempMName, animFileName);
+	strcat(tempMName, animFileName);*/
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
@@ -604,17 +607,6 @@ void Converter::createCustomFile()
 
 		if (animationInfo->nr_of_joints > 0)
 		{
-			//Skeletal animation
-
-			/*
-			model.fbx --> model.ssp
-			model.fbx --> model_Animname.sspAnim
-			*/
-
-			//cout << tempMeshName << endl;
-
-			std::ofstream animOutfile(tempMName, std::ofstream::binary);
-
 			outfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
 			outfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
 			outfile.write((const char*)&animationInfo->nr_of_joints, sizeof(int));
@@ -641,7 +633,6 @@ void Converter::createCustomFile()
 
 				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
 			}
-			animOutfile.close();
 		}
 		for (int i = 0; i < customMayaAttribute.size(); i++)
 		{
@@ -675,6 +666,66 @@ void Converter::createCustomLevelFile()
 	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
 
 	outfile.close();
+}
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Converter::createCustomAnimationFile()
+{
+	tempMName = (char*)meshInfo[0].meshName;
+
+	char extraSymbol[2] = "_";
+	char animFileName[9] = ".sspAnim";
+	char tempAName[10] = {};
+
+	for (int i = 0; i < strlen(animationInfo->animation_name); i++)
+	{
+		tempAName[i] = animationInfo->animation_name[i];
+	}
+
+	strcat(tempMName, extraSymbol);
+	strcat(tempMName, tempAName);
+	strcat(tempMName, animFileName);
+
+	if (animationInfo->nr_of_joints > 0)
+	{
+		//Skeletal animation
+
+		/*
+		model.fbx --> model.ssp
+		model.fbx --> model_Animname.sspAnim
+		*/
+
+		//cout << tempMeshName << endl;
+
+		std::ofstream animOutfile(tempMName, std::ofstream::binary);
+
+		animOutfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
+		animOutfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
+		animOutfile.write((const char*)&animationInfo->nr_of_joints, sizeof(int));
+
+		animOutfile.write((const char*)&animationInfo->current_time, sizeof(float));
+		animOutfile.write((const char*)&animationInfo->max_time, sizeof(float));
+		animOutfile.write((const char*)&animationInfo->looping, sizeof(bool));
+		animOutfile.write((const char*)&animationInfo->switching, sizeof(bool));
+
+		for (int i = 0; i < animationInfo->nr_of_joints; i++)
+		{
+			animOutfile.write((const char*)&animationInfo->joints[i].joint_name, sizeof(char) * 100);
+			animOutfile.write((const char*)&animationInfo->joints[i].parent_name, sizeof(char) * 100);
+			
+			animOutfile.write((const char*)&animationInfo->joints[i].joint_id, sizeof(int));
+			animOutfile.write((const char*)&animationInfo->joints[i].parent_id, sizeof(int));
+			
+			animOutfile.write((const char*)&animationInfo->joints[i].local_transform_matrix, sizeof(float) * 16);
+			animOutfile.write((const char*)&animationInfo->joints[i].bind_pose_matrix, sizeof(float) * 16);
+			
+			animOutfile.write((const char*)&animationInfo->joints[i].translation, sizeof(float) * 3);
+			animOutfile.write((const char*)&animationInfo->joints[i].rotation, sizeof(float) * 3);
+			animOutfile.write((const char*)&animationInfo->joints[i].scale, sizeof(float) * 3);
+			
+			animOutfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
+		}
+		animOutfile.close();
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)

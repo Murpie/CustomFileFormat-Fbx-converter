@@ -31,6 +31,7 @@ private:
 	void loadLevel(FbxNode * currentNode);
 	void createCustomFile();
 	void createCustomLevelFile();
+	void createCustomAnimationFile();
 	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node, FbxScene* scene);
 	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, FbxScene* scene);
 	void fixJointID();
@@ -75,7 +76,6 @@ private:
 	const char* textureName = nullptr;
 	char* ret;
 	
-	char* tempAName = nullptr;
 	char* tempMName = nullptr;
 
 	struct tempWeight {
