@@ -18,6 +18,7 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
+	this->textureName = (char*)malloc(100);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -34,6 +35,8 @@ Converter::~Converter()
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
+
+	free(textureName);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -94,6 +97,7 @@ void Converter::exportFile(FbxNode* currentNode)
 			loadVertex(mesh, currentNode);
 			loadMaterial(currentNode);
 			loadCustomMayaAttributes(currentNode);
+			counter.levelObjectCount = 0;
 		}
 	}
 	else
@@ -270,12 +274,38 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			if (fileTextureProp != NULL)
 			{
 				textureCount = fileTextureProp.GetSrcObjectCount<FbxFileTexture>();
+
+				const char* tempFilePathName = nullptr;
+				char drive[100];
+				char dir[100];
+				char fileName[100];
+				char ext[100];
+
 				for (int i = 0; i < textureCount; i++)
 				{
 					FbxFileTexture* texture = FbxCast<FbxFileTexture>(fileTextureProp.GetSrcObject<FbxFileTexture>(i));
 
-					textureName = texture->GetFileName();
+					tempFilePathName = texture->GetFileName();
 				}
+
+				_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
+
+				tempFilePathName = fileName;
+
+				for (int i = 0; i < sizeof(fileName); i++)
+				{
+					if (fileName[i] != '\0')
+					{
+						textureName[i] = fileName[i];
+					}
+					else
+					{
+						textureName[i] = 0;
+						break;
+					}
+				}
+
+				strcat(textureName, ext);
 			}
 		}
 	}
@@ -313,7 +343,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 	{
 		for (int i = 0; i < strlen(textureName) + 1; i++)
 		{
-			tempMatInfo.textureFilePath[i] = textureName[i];
+			tempMatInfo.textureName[i] = textureName[i];
 		}
 	}
 

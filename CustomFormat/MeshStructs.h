@@ -32,7 +32,7 @@ struct MaterialInformation {
 	float diffuse[3];
 	float emissive[3];
 	float opacity;
-	char textureFilePath[100];
+	char textureName[100];
 };
 
 struct KeyFrame {

@@ -68,7 +68,7 @@ private:
 	bool foundVertexWeight = false;
 
 	const char* meshName;
-	const char* textureName = nullptr;
+	char* textureName = nullptr;
 	char* ret;
 
 	struct tempWeight {
