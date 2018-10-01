@@ -18,6 +18,8 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
+	tempAName = (char*)malloc(100);
+	tempMName = (char*)malloc(100);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -33,6 +35,9 @@ Converter::~Converter()
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
+
+	free(tempAName);
+	//free(tempMName);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -49,7 +54,6 @@ void Converter::importMesh()
 	importer->Destroy();
 
 	rootNode = ourScene->GetRootNode();
-
 	
 	exportFile(rootNode);
 
@@ -558,6 +562,8 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
+	tempMName = (char*)meshName;
+
 	size_t len = strlen(meshName);
 	ret = new char[len + 2];
 	strcpy(ret, meshName);
@@ -566,6 +572,14 @@ void Converter::createCustomFile()
 	ret[len - 1] = 'p';
 	ret[len] = '\0';
 	meshName = ret;
+
+	char extraSymbol[2] = "_";
+	char animFileName[9] = ".sspAnim";
+	tempAName = animationInfo->animation_name;
+
+	strcat(tempMName, extraSymbol);
+	strcat(tempMName, tempAName);
+	strcat(tempMName, animFileName);
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
@@ -591,6 +605,16 @@ void Converter::createCustomFile()
 		if (animationInfo->nr_of_joints > 0)
 		{
 			//Skeletal animation
+
+			/*
+			model.fbx --> model.ssp
+			model.fbx --> model_Animname.sspAnim
+			*/
+
+			//cout << tempMeshName << endl;
+
+			std::ofstream animOutfile(tempMName, std::ofstream::binary);
+
 			outfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
 			outfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
 			outfile.write((const char*)&animationInfo->nr_of_joints, sizeof(int));
@@ -617,6 +641,7 @@ void Converter::createCustomFile()
 
 				outfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
 			}
+			animOutfile.close();
 		}
 		for (int i = 0; i < customMayaAttribute.size(); i++)
 		{
@@ -666,7 +691,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		/*const char* tempAnimName = animStack->GetInitialName();
 		for (int n = 0; n < strlen(tempAnimName) + 1; n++)
 			animationInfo->animation_name[n] = tempAnimName[n];*/
-
+		std::cout << "=====================" << std::endl << "FBX File has animation!" << std::endl << "=====================" << std::endl << std::endl;
 		char animation_name_input[9];
 		std::cout << "Enter animation name (max 9 characters): ";
 		std::cin >> animation_name_input;
@@ -709,6 +734,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 			}
 		}
 		fixJointID();
+		std::cout << "=====================" << std::endl << "Animation saved" << std::endl << "=====================" << std::endl << std::endl;
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -743,7 +769,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 	//LclTranslation: This property contains the translation information of the node.
 	//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	animCurve = node->LclTranslation.GetCurve(animLayer);
-	if (animCurve)
+	if (node->LclTranslation.GetCurve(animLayer) != nullptr || node->LclRotation.GetCurve(animLayer) != nullptr || node->LclScaling.GetCurve(animLayer) != nullptr)
 	{
 		Joint jointInformation;
 		//STORE: JointInformation char jointName[]
@@ -767,32 +793,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			jointInformation.scale[i] = 1;
 		}
 
-		/*FbxPatch* jPatch = (FbxPatch*)node->GetNodeAttribute();
-		FbxCluster* jCluster;
-		FbxAMatrix jMatrix;
-		int clusterCount;
-		int skinCount = jPatch->GetDeformerCount(FbxDeformer::eSkin);
-		for (int a = 0; a < skinCount; a++)
-		{
-			clusterCount = ((FbxSkin*)jPatch->GetDeformer(a, FbxDeformer::eSkin))->GetClusterCount();
-			for (int b = 0; b < clusterCount; b++)
-			{
-				jCluster = ((FbxSkin*)jPatch->GetDeformer(a, FbxDeformer::eSkin))->GetCluster(b);
-				jMatrix = jCluster->GetTransformMatrix(jMatrix);
-			}
-		}
-		FbxVector4 jT = jMatrix.GetT();
-		FBXSDK_printf("Wtf: %f, %f, %f, %f: ", jT[0], jT[1], jT[2], jT[3]);*/
-
-		//FbxAMatrix x = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE, FbxNode::eSourcePivot, false, false);
-		//std::cout << "Current node: " << node->GetName() << std::endl;
 		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
-		
-		/*std::cout << "Local Transform Matrix: " << std::endl;
-		FBXSDK_printf("%f %f %f %f\n", tempTransform[0][0], tempTransform[0][1], tempTransform[0][2], tempTransform[0][3]);
-		FBXSDK_printf("%f %f %f %f\n", tempTransform[1][0], tempTransform[1][1], tempTransform[1][2], tempTransform[1][3]);
-		FBXSDK_printf("%f %f %f %f\n", tempTransform[2][0], tempTransform[2][1], tempTransform[2][2], tempTransform[2][3]);
-		FBXSDK_printf("%f %f %f %f\n\n", tempTransform[3][0], tempTransform[3][1], tempTransform[3][2], tempTransform[3][3]);*/
 
 		for (int k = 0; k < 4; k++)
 		{
@@ -802,34 +803,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 				jointInformation.bind_pose_matrix[k][l] = tempTransform[k][l];
 			}
 		}
-
-		/*int poseCount = scene->GetPoseCount();
-		for (int k = 0; k < poseCount; k++)
-		{
-			FbxPose* jPose = scene->GetPose(k);
-			FbxString poseName = jPose->GetName();
-			//std::cout << "Pose name: " << poseName << std::endl;
-			//std::cout << "Is a bind pose: " << jPose->IsBindPose() << std::endl;
-			//std::cout << "Number of items in the pose: " << jPose->GetCount() << std::endl << std::endl;
-			for (int l = 0; l < jPose->GetCount(); l++)
-			{
-				FbxString itemName = jPose->GetNodeName(l).GetCurrentName();
-				if (strcmp(itemName, node->GetName()) == 0)
-				{
-					//std::cout << "Item name: " << itemName << std::endl;
-					if (!jPose->IsBindPose())
-						std::cout << "Is local space matrix: " << jPose->IsLocalMatrix(l);
-				
-					FbxMatrix bindPoseMatrix = jPose->GetMatrix(l);
-					std::cout << "Bindpose matrix: " << std::endl;
-					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[0][0], bindPoseMatrix[0][1], bindPoseMatrix[0][2], bindPoseMatrix[0][3]);
-					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[1][0], bindPoseMatrix[1][1], bindPoseMatrix[1][2], bindPoseMatrix[1][3]);
-					FBXSDK_printf("%f %f %f %f\n", bindPoseMatrix[2][0], bindPoseMatrix[2][1], bindPoseMatrix[2][2], bindPoseMatrix[2][3]);
-					FBXSDK_printf("%f %f %f %f\n\n", bindPoseMatrix[3][0], bindPoseMatrix[3][1], bindPoseMatrix[3][2], bindPoseMatrix[3][3]);
-					std::cout << "-------------------------------" << std::endl << std::endl;
-				}
-			}
-		}*/
 
 		keyCount = animCurve->KeyGetCount();
 		//STORE: AnimationInformation int keyFrameCount

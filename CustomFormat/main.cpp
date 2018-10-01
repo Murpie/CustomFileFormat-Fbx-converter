@@ -11,7 +11,7 @@ int main()
 	converter.isLevel = false; // change this when loading levels
 	converter.importMesh();
 
-	//getchar();
+	getchar();
 	std::cout << "Done, press any key";
 	getchar();
 	return 0;
