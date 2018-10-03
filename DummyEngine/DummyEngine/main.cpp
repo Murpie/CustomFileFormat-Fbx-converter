@@ -96,7 +96,7 @@ int main()
 					printf("\tDiffuse:  %.2f %.2f %.2f\n", mesh->material[i].diffuse[0], mesh->material[i].diffuse[1], mesh->material[i].diffuse[2]);
 					printf("\tEmissive: %.2f %.2f %.2f\n", mesh->material[i].emissive[0], mesh->material[i].emissive[1], mesh->material[i].emissive[2]);
 					printf("\tOpacity:  %.2f\n", mesh->material[i].opacity);
-					printf("\tTexture File Path: %s\n\n", mesh->material[i].textureFilePath);
+					printf("\tTexture Name: %s\n\n", mesh->material[i].textureName);
 				}
 			}
 			else
