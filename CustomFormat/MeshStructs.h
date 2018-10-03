@@ -1,19 +1,17 @@
 #pragma once
 #include <vector>
-using namespace std;
 
 struct Counter
 {
 	unsigned int vertexCount;
-	unsigned int boundingBoxCount;
-	unsigned int jointCount;
-	unsigned int animationCount;
-	unsigned int blendShapeCount;
-	unsigned int groupID;
+	unsigned int meshCount;
 	unsigned int customMayaAttributeCount;
+	unsigned int matCount;
+	unsigned int levelObjectCount;
 };
 
 struct MeshInfo {
+	char meshName[100];
 	float globalTranslation[3];
 	float globalRotation[3];
 	float globalScaling[3];
@@ -22,9 +20,11 @@ struct MeshInfo {
 struct VertexInformation {
 	float x, y, z;
 	float nx, ny, nz;
+	float bnx, bny, bnz;
+	float tx, ty, tz;
 	float u, v;
 	float weight[4];
-	float weightID[4];
+	int weightID[4];
 };
 
 struct MaterialInformation {
@@ -32,60 +32,39 @@ struct MaterialInformation {
 	float diffuse[3];
 	float emissive[3];
 	float opacity;
-	char* textureFilePath[100];
+	char textureName[100];
 };
 
-//struct BoundingBoxVertex {
-//	float bx, by, bz;
-//};
-
-struct BoundingBox
-{
-	//BoundingBoxVertex boundingBoxVertices[8];
-	float minVector[3];
-	float maxVector[3];
-	float center[3];
+struct KeyFrame {
+	float time;
+	float position[3];
+	float rotation[3];
+	float scaling[3];
 };
 
 struct JointInformation {
 	char jointName[100];
 	char parentName[100];
-	float localTransformMatrix[16];
-	float bindPoseMatrix[16];
-};
-
-struct KeyFrameData {
-	float position[3];
-	float rotation[4];
-	float scaling[3];
-};
-
-struct KeyFrame {
-	float time;
-	vector <KeyFrameData> keyFrameData;
+	std::vector<KeyFrame> keyFrames;
 };
 
 struct AnimationInformation {
-	char animationName[100];
+	char animationName[9];
 	int keyFrameCount;
-	vector <KeyFrame> keyFrames;
-};
-
-struct BlendShapeVertex {
-	float position[3];
-};
-
-struct BlendShape {
-	float time;
-	int blendShapeVertexCount;
-	vector <BlendShapeVertex> blendShapeVertices;
-};
-
-struct Group {
-	char groupName[100];
-	char parentName[100];
+	int nrOfJoints;
+	std::vector<JointInformation> joints;
 };
 
 struct CustomMayaAttributes {
-	unsigned int meshType;
+	float particlePivot[3];
+	float centerPivot[3];
+	float height;
+	float width;
+	int id;
+};
+
+struct LevelObject {
+	float x, y, z;
+	float rotationX, rotationY, rotationZ;
+	int id;
 };
