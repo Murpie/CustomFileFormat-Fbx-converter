@@ -77,6 +77,7 @@ private:
 	char* ret;
 	
 	char* tempMName = nullptr;
+	char* tempMeshName = nullptr;
 
 	struct tempWeight {
 		int ID;

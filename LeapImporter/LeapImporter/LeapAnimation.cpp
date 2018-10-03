@@ -13,6 +13,7 @@ LeapAnimation::LeapAnimation(const char * fileName)
 
 LeapAnimation::~LeapAnimation()
 {
+	//delete[] animation;
 }
 
 void LeapAnimation::animationLoader(const char * fileName)

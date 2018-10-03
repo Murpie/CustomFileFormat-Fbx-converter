@@ -18,7 +18,7 @@ Converter::Converter(const char * fileName)
 	importer = FbxImporter::Create(manager, "");
 	this->counter.customMayaAttributeCount = 0;
 	this->meshName = fileName;
-	tempMName = (char*)malloc(100);
+	//tempMName = (char*)malloc(100);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Converter::~Converter()
@@ -36,6 +36,7 @@ Converter::~Converter()
 	manager->Destroy();
 
 	//free(tempMName);
+	//free(tempMeshName);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importMesh()
@@ -576,6 +577,10 @@ void Converter::createCustomFile()
 	ret[len - 1] = 'p';
 	ret[len] = '\0';
 	meshName = ret;
+
+	/*tempMeshName = (char*)meshInfo[0].meshName;
+	char tempFileName[5] = ".ssp";
+	strcat(tempMeshName, tempFileName);*/
 
 	std::ofstream outfile(meshName, std::ofstream::binary);
 
