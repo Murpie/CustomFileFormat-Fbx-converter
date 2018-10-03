@@ -298,6 +298,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 					tempFilePathName = texture->GetFileName();
 				}
 
+				//kraschar här
 				_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
 
 				tempFilePathName = fileName;
