@@ -288,26 +288,26 @@ void Converter::loadMaterial(FbxNode* currentNode)
 						FbxFileTexture* texture = FbxCast<FbxFileTexture>(fileTextureProp.GetSrcObject<FbxFileTexture>(i));
 
 						tempFilePathName = texture->GetFileName();
-					}
 
-					_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
+						_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
 
-					tempFilePathName = fileName;
+						tempFilePathName = fileName;
 
-					for (int i = 0; i < sizeof(fileName); i++)
-					{
-						if (fileName[i] != '\0')
+						for (int i = 0; i < sizeof(fileName); i++)
 						{
-							textureName[i] = fileName[i];
+							if (fileName[i] != '\0')
+							{
+								textureName[i] = fileName[i];
+							}
+							else
+							{
+								textureName[i] = 0;
+								break;
+							}
 						}
-						else
-						{
-							textureName[i] = 0;
-							break;
-						}
-					}
 
-					strcat(textureName, ext);
+						strcat(textureName, ext);
+					}
 				}
 			}
 		}
