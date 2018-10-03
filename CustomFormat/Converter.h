@@ -7,9 +7,6 @@
 #include "MeshStructs.h"
 #include "AnimationStructs.h"
 
-#define CUSTOM_ATTRIBUTE "MeshType"
-#define TYPE_ID  "TypeID"
-
 class Converter
 {
 public:

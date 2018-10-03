@@ -285,38 +285,40 @@ void Converter::loadMaterial(FbxNode* currentNode)
 			{
 				textureCount = fileTextureProp.GetSrcObjectCount<FbxFileTexture>();
 
-				const char* tempFilePathName = nullptr;
-				char drive[100];
-				char dir[100];
-				char fileName[100];
-				char ext[100];
-
-				for (int i = 0; i < textureCount; i++)
+				if (textureCount != 0)
 				{
-					FbxFileTexture* texture = FbxCast<FbxFileTexture>(fileTextureProp.GetSrcObject<FbxFileTexture>(i));
+					const char* tempFilePathName = nullptr;
+					char drive[100];
+					char dir[100];
+					char fileName[100];
+					char ext[100];
 
-					tempFilePathName = texture->GetFileName();
-				}
-
-				//kraschar här
-				_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
-
-				tempFilePathName = fileName;
-
-				for (int i = 0; i < sizeof(fileName); i++)
-				{
-					if (fileName[i] != '\0')
+					for (int i = 0; i < textureCount; i++)
 					{
-						textureName[i] = fileName[i];
-					}
-					else
-					{
-						textureName[i] = 0;
-						break;
+						FbxFileTexture* texture = FbxCast<FbxFileTexture>(fileTextureProp.GetSrcObject<FbxFileTexture>(i));
+
+						tempFilePathName = texture->GetFileName();
+
+						_splitpath_s(tempFilePathName, drive, dir, fileName, ext);
+
+						tempFilePathName = fileName;
+
+						for (int i = 0; i < sizeof(fileName); i++)
+						{
+							if (fileName[i] != '\0')
+							{
+								textureName[i] = fileName[i];
+							}
+							else
+							{
+								textureName[i] = 0;
+								break;
+							}
+						}
+
+						strcat(textureName, ext);
 					}
 				}
-
-				strcat(textureName, ext);
 			}
 		}
 	}
@@ -350,7 +352,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 	}
 
 	//Path if there is any
-	if (textureName != nullptr)
+	if (textureCount != 0)
 	{
 		for (int i = 0; i < strlen(textureName) + 1; i++)
 		{
