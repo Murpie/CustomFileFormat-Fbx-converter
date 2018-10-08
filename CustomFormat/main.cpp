@@ -8,7 +8,7 @@ int main()
 	
 	Converter converter("level.fbx");
 
-	converter.isLevel = false; // change this when loading levels
+	converter.isLevel = true; // change this when loading levels
 	converter.importMesh();
 
 	int answer = 0;
