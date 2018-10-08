@@ -23,7 +23,7 @@ int main()
 	LeapImporter importer;
 	char answer;
 
-	LeapMesh* mesh = importer.getMesh("RoboTest.ssp");
+	LeapMesh* mesh = importer.getMesh("robot.ssp");
 	printf("=======================\n");
 	printf("Loaded LeapMesh\n");
 	printf("=======================\n");

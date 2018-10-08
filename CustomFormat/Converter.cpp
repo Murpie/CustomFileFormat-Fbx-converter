@@ -451,49 +451,49 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		{
 			if (nrOfWeights == 3)
 			{
-				currentVertex.weight[3] = -1;
-				currentVertex.weightID[3] = -1;
+				currentVertex.weight[3] = 0;
+				currentVertex.weightID[3] = 0;
 			}
 			else if (nrOfWeights == 2)
 			{
-				currentVertex.weight[2] = -1;
-				currentVertex.weightID[2] = -1;
-				currentVertex.weight[3] = -1;
-				currentVertex.weightID[3] = -1;
+				currentVertex.weight[2] = 0;
+				currentVertex.weightID[2] = 0;
+				currentVertex.weight[3] = 0;
+				currentVertex.weightID[3] = 0;
 			}
 			else if (nrOfWeights == 1)
 			{
-				currentVertex.weight[1] = -1;
-				currentVertex.weightID[1] = -1;
-				currentVertex.weight[2] = -1;
-				currentVertex.weightID[2] = -1;
-				currentVertex.weight[3] = -1;
-				currentVertex.weightID[3] = -1;
+				currentVertex.weight[1] = 0;
+				currentVertex.weightID[1] = 0;
+				currentVertex.weight[2] = 0;
+				currentVertex.weightID[2] = 0;
+				currentVertex.weight[3] = 0;
+				currentVertex.weightID[3] = 0;
 			}
 			else
 			{
-				currentVertex.weight[0] = -1;
-				currentVertex.weightID[0] = -1;
-				currentVertex.weight[1] = -1;
-				currentVertex.weightID[1] = -1;
-				currentVertex.weight[2] = -1;
-				currentVertex.weightID[2] = -1;
-				currentVertex.weight[3] = -1;
-				currentVertex.weightID[3] = -1;
+				currentVertex.weight[0] = 0;
+				currentVertex.weightID[0] = 0;
+				currentVertex.weight[1] = 0;
+				currentVertex.weightID[1] = 0;
+				currentVertex.weight[2] = 0;
+				currentVertex.weightID[2] = 0;
+				currentVertex.weight[3] = 0;
+				currentVertex.weightID[3] = 0;
 			}
 		}
 
 	}
 	else
 	{
-		currentVertex.weight[0] = -1;
-		currentVertex.weightID[0] = -1;
-		currentVertex.weight[1] = -1;
-		currentVertex.weightID[1] = -1;
-		currentVertex.weight[2] = -1;
-		currentVertex.weightID[2] = -1;
-		currentVertex.weight[3] = -1;
-		currentVertex.weightID[3] = -1;
+		currentVertex.weight[0] = 0;
+		currentVertex.weightID[0] = 0;
+		currentVertex.weight[1] = 0;
+		currentVertex.weightID[1] = 0;
+		currentVertex.weight[2] = 0;
+		currentVertex.weightID[2] = 0;
+		currentVertex.weight[3] = 0;
+		currentVertex.weightID[3] = 0;
 	}
 
 	store.clear();
