@@ -2,59 +2,70 @@
 //int main(int argc, char** argv)
 int main()
 {
-	
-	LeapImporter level_importer;
-
-	CustomLevel* level = level_importer.getLevel("level.ssp");
-
-	for (int i = 0; i < level->counterReader.levelObjectCount; i++)
-	{
-		printf("Mesh: %d \n\tPositions: %f %f %f\n", i, level->levelObjects[i].position[0], level->levelObjects[i].position[1], level->levelObjects[i].position[2]);
-		printf("\tRotation: %.2f %.2f %.2f\n", level->levelObjects[i].rotation[0], level->levelObjects[i].rotation[1], level->levelObjects[i].rotation[2]);
-		printf("\tHeight: %.2f\n", level->levelObjects[i].collisionBox[0]);
-		printf("\tWidth:  %.2f\n", level->levelObjects[i].collisionBox[1]);
-		printf("\tID: %d\n\n", level->levelObjects[i].id);
-	}
-
-	level_importer.deleteObject(level);
-
-	std::getchar();
-	_CrtDumpMemoryLeaks();
-	return 0;
-
-	LeapImporter importer;
 	char answer;
-
-	LeapMesh* mesh = importer.getMesh("robot.ssp");
-	printf("=======================\n");
-	printf("Loaded LeapMesh\n");
-	printf("=======================\n");
-
-	//Counter
-	printf("Print Counter? Y/N:\t");
+	printf("What would you want to print?\n\t1: Level\n\t2: Mesh\n\t3: Animation\n\t");
 	std::cin >> answer;
 	getchar();
-	if (answer == 'Y' || answer == 'y')
+
+	switch (answer)
 	{
-		printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
-		printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
-		printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
-		printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
-	}
-	
-	
-	//Global Transform
-	printf("Print Global Tranform? Y/N:\t");
-	std::cin >> answer;
-	getchar();
-	if (answer == 'Y' || answer == 'y')
+	case '1':
 	{
-		for (int i = 0; i < mesh->counterReader.meshCount; i++)
+		LeapImporter level_importer;
+
+		CustomLevel* level = level_importer.getLevel("level.ssp");
+
+		for (int i = 0; i < level->counterReader.levelObjectCount; i++)
 		{
-			printf("\t%s\n", mesh[i].transform->meshName);
-			printf("\tGlobal Transform:	X: %f Y: %f Z: %f\n\n", mesh[i].transform->globalTranslation[0], mesh[i].transform->globalTranslation[1], mesh[i].transform->globalTranslation[2]);
+			printf("Mesh: %d \n\tPositions: %f %f %f\n", i, level->levelObjects[i].position[0], level->levelObjects[i].position[1], level->levelObjects[i].position[2]);
+			printf("\tRotation: %.2f %.2f %.2f\n", level->levelObjects[i].rotation[0], level->levelObjects[i].rotation[1], level->levelObjects[i].rotation[2]);
+			printf("\tHeight: %.2f\n", level->levelObjects[i].collisionBox[0]);
+			printf("\tWidth:  %.2f\n", level->levelObjects[i].collisionBox[1]);
+			printf("\tID: %d\n\n", level->levelObjects[i].id);
 		}
+
+		level_importer.deleteObject(level);
+
+		printf("=======================\n");
+		printf("Done, press any key");
+		std::getchar();
+		_CrtDumpMemoryLeaks();
+		return 0;
 	}
+	case '2':
+	{
+		LeapImporter importer;
+
+		LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
+		printf("=======================\n");
+		printf("Loaded LeapMesh\n");
+		printf("=======================\n");
+
+		//Counter
+		printf("Print Counter? Y/N:\t");
+		std::cin >> answer;
+		getchar();
+		if (answer == 'Y' || answer == 'y')
+		{
+			printf("\n\tVertex Count:\t\t%d\n", mesh->counterReader.vertexCount);
+			printf("\tMesh Count:\t\t%d\n", mesh->counterReader.meshCount);
+			printf("\tCustom Attribute Count:\t%d\n", mesh->counterReader.customMayaAttributeCount);
+			printf("\tMaterial Count:\t\t%d\n\n", mesh->counterReader.matCount);
+		}
+
+
+		//Global Transform
+		printf("Print Global Tranform? Y/N:\t");
+		std::cin >> answer;
+		getchar();
+		if (answer == 'Y' || answer == 'y')
+		{
+			for (int i = 0; i < mesh->counterReader.meshCount; i++)
+			{
+				printf("\t%s\n", mesh[i].transform->meshName);
+				printf("\tGlobal Transform:	X: %f Y: %f Z: %f\n\n", mesh[i].transform->globalTranslation[0], mesh[i].transform->globalTranslation[1], mesh[i].transform->globalTranslation[2]);
+			}
+		}
 
 		//Vertex Information
 		printf("Printf VertexInformation? Y/N:\t");
@@ -132,7 +143,15 @@ int main()
 				printf("There's no Custom Attribute\n\n");
 			}
 		}
-
+		printf("=======================\n");
+		printf("Done, press any key");
+		getchar();
+		_CrtDumpMemoryLeaks();
+		return 0;
+	}
+	case '3':
+	{
+		LeapImporter importer;
 		LeapAnimation* anim = importer.getAnimation("Robot_run.sspAnim");
 		printf("=======================\n");
 		printf("Loaded LeapAnimation\n");
@@ -144,7 +163,7 @@ int main()
 		getchar();
 		if (answer == 'Y' || answer == 'y')
 		{
-			
+
 			if (anim->animation->nr_of_keyframes > 1)
 			{
 				printf("\n\tAnimation Name: %s\n", anim->animation->animation_name);
@@ -207,6 +226,13 @@ int main()
 		printf("=======================\n");
 		printf("Done, press any key");
 		getchar();
-
-	return 0;
+		_CrtDumpMemoryLeaks();
+		return 0;
+	}
+	default:
+		printf("\n\tInvalid input");
+		getchar();
+		return 0;
+		break;
+	}
 }
