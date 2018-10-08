@@ -21,6 +21,9 @@ int main()
 			printf("\tRotation: %.2f %.2f %.2f\n", level->levelObjects[i].rotation[0], level->levelObjects[i].rotation[1], level->levelObjects[i].rotation[2]);
 			printf("\tHeight: %.2f\n", level->levelObjects[i].collisionBox[0]);
 			printf("\tWidth:  %.2f\n", level->levelObjects[i].collisionBox[1]);
+			printf("\tCenter Pivot X: %.2f\n", level->levelObjects[i].centerPivot[0]);
+			printf("\tCenter Pivot Y: %.2f\n", level->levelObjects[i].centerPivot[1]);
+			printf("\tCenter Pivot Z: %.2f\n", level->levelObjects[i].centerPivot[2]);
 			printf("\tID: %d\n\n", level->levelObjects[i].id);
 		}
 
@@ -132,10 +135,6 @@ int main()
 					printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].particlePivot[0]);
 					printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].particlePivot[1]);
 					printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].particlePivot[2]);
-
-					printf("\tCenter Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
-					printf("\tCenter Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
-					printf("\tCenter Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
 				}
 			}
 			else

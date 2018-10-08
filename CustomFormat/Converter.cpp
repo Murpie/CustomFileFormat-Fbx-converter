@@ -547,36 +547,6 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		tempCustom.id = -1;
 	}
 
-	prop = currentNode->FindProperty("CenterPivotX", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[0] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[0] = -999.0f;
-	}
-
-	prop = currentNode->FindProperty("CenterPivotY", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[1] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[1] = -999.0f;
-	}
-
-	prop = currentNode->FindProperty("CenterPivotZ", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[2] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[2] = -999.0f;
-	}
-
 	customMayaAttribute.push_back(tempCustom);
 	counter.customMayaAttributeCount++;
 }
@@ -972,6 +942,36 @@ void Converter::loadLevel(FbxNode * currentNode)
 			else
 			{
 				templvlObj.id = -1;
+			}
+
+			prop = currentNode->FindProperty("CenterPivotX", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[0] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[0] = -999.0f;
+			}
+
+			prop = currentNode->FindProperty("CenterPivotY", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[1] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[1] = -999.0f;
+			}
+
+			prop = currentNode->FindProperty("CenterPivotZ", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[2] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[2] = -999.0f;
 			}
 			
 			vectorLvlObj.push_back(templvlObj);
