@@ -573,16 +573,20 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	size_t len = strlen(meshName);
+	tempMName = (char*)meshInfo[0].meshName;
+	char fileName[5] = ".ssp";
+	strcat(tempMName, fileName);
+
+	/*size_t len = strlen(meshName);
 	ret = new char[len + 2];
 	strcpy(ret, meshName);
 	ret[len - 3] = 's';
 	ret[len - 2] = 's';
 	ret[len - 1] = 'p';
 	ret[len] = '\0';
-	meshName = ret;
+	meshName = ret;*/
 
-	std::ofstream outfile(meshName, std::ofstream::binary);
+	std::ofstream outfile(tempMName, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 
@@ -627,6 +631,8 @@ void Converter::createCustomFile()
 	}
 
 	outfile.close();
+
+	tempMName = nullptr;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomLevelFile()
