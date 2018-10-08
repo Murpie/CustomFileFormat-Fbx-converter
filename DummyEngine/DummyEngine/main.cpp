@@ -3,7 +3,7 @@
 int main()
 {
 	
-	/*LeapImporter level_importer;
+	LeapImporter level_importer;
 
 	CustomLevel* level = level_importer.getLevel("level.ssp");
 
@@ -20,11 +20,11 @@ int main()
 
 	std::getchar();
 	_CrtDumpMemoryLeaks();
-	return 0;*/
+	return 0;
 
 	LeapImporter importer;
 
-	LeapMesh* mesh = importer.getMesh("test_file_name.ssp");
+	LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
 
 
 	if (true)
