@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <iostream>   
 #include "MeshStructs.h"
+#include "AnimationStructs.h"
 
 class Converter
 {
@@ -13,8 +14,10 @@ public:
 	~Converter();
 
 	bool isLevel;
+	int currentJointIndex;
 
 	void importMesh();
+	void importAnimation();
 	void exportFile(FbxNode* currentNode);
 	void exportAnimation(FbxScene* scene, FbxNode* node);
 
@@ -27,8 +30,10 @@ private:
 	void loadLevel(FbxNode * currentNode);
 	void createCustomFile();
 	void createCustomLevelFile();
-	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node);
-	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer);
+	void createCustomAnimationFile();
+	void getAnimation(FbxAnimLayer* animLayer, FbxNode* node, FbxScene* scene);
+	void getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, FbxScene* scene);
+	void fixJointID();
 
 	FbxManager * manager;
 	FbxIOSettings* settings;
@@ -40,7 +45,7 @@ private:
 	std::vector<VertexInformation> vertices;
 	std::vector<MaterialInformation> matInfo;
 
-	AnimationInformation* animationInfo;
+	Animation* animationInfo;
 	std::vector<CustomMayaAttributes> customMayaAttribute;
 	std::vector<LevelObject> vectorLvlObj;
 
