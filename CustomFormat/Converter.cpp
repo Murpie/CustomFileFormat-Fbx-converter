@@ -36,6 +36,7 @@ Converter::~Converter()
 	settings->Destroy();
 	manager->Destroy();
 
+
 	free(textureName);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -536,26 +537,6 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		tempCustom.id = -1;
 	}
 
-	prop = currentNode->FindProperty("CBox_Height", false);
-	if (prop.IsValid())
-	{
-		tempCustom.height = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.height = -1.0f;
-	}
-
-	prop = currentNode->FindProperty("CBox_Width", false);
-	if (prop.IsValid())
-	{
-		tempCustom.width = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.width = -1.0f;
-	}
-
 	prop = currentNode->FindProperty("CenterPivotX", false);
 	if (prop.IsValid())
 	{
@@ -663,10 +644,7 @@ void Converter::createCustomLevelFile()
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 
-	for (int i = 0; i < levelObjects.size(); i++)
-	{
-		outfile.write((const char*)&levelObjects[i], sizeof(LevelObject));
-	}
+	outfile.write((const char*)vectorLvlObj.data(), sizeof(LevelObject) * counter.levelObjectCount);
 
 	std::cout << "Number of level objects: " << counter.levelObjectCount << std::endl;
 
@@ -824,44 +802,58 @@ void Converter::loadLevel(FbxNode * currentNode)
 
 	mesh = currentNode->GetMesh();
 
+	LevelObject templvlObj;
+
 	if (currentNode)
 	{
 		if (mesh)// && !isPartOf(currentNode->GetName()))
 		{
-			LevelObject lvlObj = LevelObject();
 			FbxDouble3 tempTranslation = currentNode->LclTranslation.Get();
 			FbxDouble3 tempRotation = currentNode->LclRotation.Get();
 			// Save position
-			lvlObj.x = (float)tempTranslation[0];
-			lvlObj.y = (float)tempTranslation[1];
-			lvlObj.z = (float)tempTranslation[2];
+			templvlObj.position[0] = (float)tempTranslation[0];
+			templvlObj.position[1] = (float)tempTranslation[1];
+			templvlObj.position[2] = (float)tempTranslation[2];
 			// Save rotation
-			lvlObj.rotationX = (float)tempRotation[0];
-			lvlObj.rotationY = (float)tempRotation[1];
-			lvlObj.rotationZ = (float)tempRotation[2];
+			templvlObj.rotation[0] = (float)tempRotation[0];
+			templvlObj.rotation[1] = (float)tempRotation[1];
+			templvlObj.rotation[2] = (float)tempRotation[2];
 
-			//FBXSDK_printf("\t|| Translation: %f %f %f\n", tempTranslation[0], tempTranslation[1], tempTranslation[2]);
-			//FBXSDK_printf("\t|| Rotation: %f %f %f\n", meshInfo->globalRotation[0], meshInfo->globalRotation[1], meshInfo->globalRotation[2]);
-
-			// Save ID
-			unsigned int attributeValue;
-			//std::string attributeName = "";
-
-			FbxProperty prop = currentNode->FindProperty("ID", false);
+			FbxProperty prop = currentNode->FindProperty("CBox_Height", false);
 			if (prop.IsValid())
 			{
-				//attributeName = prop.GetName();
-				attributeValue = prop.Get<int>();
-
-				//FBXSDK_printf("|| Mesh ID: %s\n", attributeName.c_str());
-				FBXSDK_printf("\t|| ID: %d\n", attributeValue);
-				lvlObj.id = prop.Get<int>();
+				//FBXSDK_printf("\t|| Height: %.2f\n", prop.Get<float>());
+				templvlObj.collisionBox[0] = prop.Get<float>();
+				FBXSDK_printf("\t|| Height: %.2f\n", templvlObj.collisionBox[0]);
 			}
 			else
 			{
-				lvlObj.id = -1;
+				templvlObj.collisionBox[0] = -1.0f;
 			}
-			levelObjects.push_back(lvlObj);
+
+			prop = currentNode->FindProperty("CBox_Width", false);
+			if (prop.IsValid())
+			{
+				templvlObj.collisionBox[1] = prop.Get<float>();
+				FBXSDK_printf("\t|| Width: %.2f\n", templvlObj.collisionBox[1]);
+			}
+			else
+			{
+				templvlObj.collisionBox[1] = -1.0f;
+			}
+
+			prop = currentNode->FindProperty("ID", false);
+			if (prop.IsValid())
+			{
+				FBXSDK_printf("\t|| ID: %d\n", prop.Get<int>());
+				templvlObj.id = prop.Get<int>();
+			}
+			else
+			{
+				templvlObj.id = -1;
+			}
+			
+			vectorLvlObj.push_back(templvlObj);
 			counter.levelObjectCount++;
 		}
 	}

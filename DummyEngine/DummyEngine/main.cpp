@@ -5,13 +5,15 @@ int main()
 	
 	/*LeapImporter level_importer;
 
-	CustomLevel* level = level_importer.getLevel("test_level.ssp");
+	CustomLevel* level = level_importer.getLevel("level.ssp");
 
 	for (int i = 0; i < level->counterReader.levelObjectCount; i++)
 	{
-		printf("Mesh: %d \nPositions: %f %f %f\n", i, level->levelObjects[i]->x, level->levelObjects[i]->y, level->levelObjects[i]->z);
-		printf("Rotation: %f %f %f\n", level->levelObjects[i]->rotationX, level->levelObjects[i]->rotationY, level->levelObjects[i]->rotationZ);
-		printf("ID: %d\n\n", level->levelObjects[i]->id);
+		printf("Mesh: %d \n\tPositions: %f %f %f\n", i, level->levelObjects[i].position[0], level->levelObjects[i].position[1], level->levelObjects[i].position[2]);
+		printf("\tRotation: %.2f %.2f %.2f\n", level->levelObjects[i].rotation[0], level->levelObjects[i].rotation[1], level->levelObjects[i].rotation[2]);
+		printf("\tHeight: %.2f\n", level->levelObjects[i].collisionBox[0]);
+		printf("\tWidth:  %.2f\n", level->levelObjects[i].collisionBox[1]);
+		printf("\tID: %d\n\n", level->levelObjects[i].id);
 	}
 
 	level_importer.deleteObject(level);
@@ -162,13 +164,9 @@ int main()
 					printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].particlePivot[1]);
 					printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].particlePivot[2]);
 
-					printf("\tID:               %d\n", mesh->customMayaAttribute[i].id);
-					printf("\tHeight:           %f\n", mesh->customMayaAttribute->height);
-					printf("\tWidth:            %f\n", mesh->customMayaAttribute->width);
-
-					printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
-					printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
-					printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
+					printf("\tCenter Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
+					printf("\tCenter Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
+					printf("\tCenter Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
 				}
 			}
 			else
