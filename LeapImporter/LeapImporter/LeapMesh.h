@@ -4,8 +4,6 @@
 #include <string>
 #include <fstream>
 
-using namespace std;
-
 class LeapMesh
 {
 private:
@@ -18,19 +16,12 @@ public:
 
 	int getVertexCount();
 
-	VertexInformation* vertices;
+	Counter counterReader;
 	MeshInfo* transform;
+	VertexInformation* vertices;
 	MaterialInformation* material;
-	//BoundingBox* BBox;
-	vector <BoundingBox*> boundingBoxes;
-	//BoundingBoxVertex* BBoxVertices;
 	JointInformation* joints;
 	AnimationInformation* animation;
 	KeyFrame* keyFrame;
-	KeyFrameData* keyFrameData;
-	BlendShape* blendShape;
-	BlendShapeVertex* blendShapeVertices;
-	Group* group;
 	CustomMayaAttributes* customMayaAttribute;
-	Counter counterReader;
 };

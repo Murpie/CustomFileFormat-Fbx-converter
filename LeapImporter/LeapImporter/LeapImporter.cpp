@@ -6,6 +6,7 @@ LeapImporter::LeapImporter()
 
 LeapImporter::~LeapImporter()
 {
+
 }
 
 LeapMesh * LeapImporter::getMesh(const char* meshName)
@@ -17,7 +18,20 @@ LeapMesh * LeapImporter::getMesh(const char* meshName)
 	return newMesh;
 }
 
+CustomLevel * LeapImporter::getLevel(const char * levelName)
+{
+
+	CustomLevel* newLevel = new CustomLevel(levelName);
+
+	return newLevel;
+}
+
 void LeapImporter::deleteObject(LeapMesh * mesh)
 {
 	delete mesh;
+}
+
+void LeapImporter::deleteObject(CustomLevel * level)
+{
+	delete level;
 }
