@@ -877,6 +877,7 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 		{
 			jointInformation.translation[i] = 1;
 			jointInformation.rotation[i] = 1;
+
 			jointInformation.scale[i] = 1;
 		}
 
