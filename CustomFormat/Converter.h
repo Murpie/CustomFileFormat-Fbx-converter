@@ -46,6 +46,7 @@ private:
 	std::vector<MaterialInformation> matInfo;
 
 	Animation* animationInfo;
+	std::vector<FbxAMatrix> transformLinkMatrices, transformMatricies;
 	std::vector<CustomMayaAttributes> customMayaAttribute;
 	std::vector<LevelObject> vectorLvlObj;
 

@@ -39,7 +39,7 @@ int main()
 	{
 		LeapImporter importer;
 
-		LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
+		LeapMesh* mesh = importer.getMesh("Robot.ssp");
 		printf("=======================\n");
 		printf("Loaded LeapMesh\n");
 		printf("=======================\n");
@@ -151,7 +151,7 @@ int main()
 	case '3':
 	{
 		LeapImporter importer;
-		LeapAnimation* anim = importer.getAnimation("Robot_run.sspAnim");
+		LeapAnimation* anim = importer.getAnimation("Robot.ssp_run.sspAnim");
 		printf("=======================\n");
 		printf("Loaded LeapAnimation\n");
 		printf("=======================\n");
@@ -208,7 +208,7 @@ int main()
 						{
 							printf("\t\tKey|%d|\tTime: %.3f", j, anim->animation->joints[i].keyFrames[j].time);
 							printf("\tPosition: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].position[0], anim->animation->joints[i].keyFrames[j].position[1], anim->animation->joints[i].keyFrames[j].position[2]);
-							printf("\tRotation: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].rotation[0], anim->animation->joints[i].keyFrames[j].rotation[1], anim->animation->joints[i].keyFrames[j].rotation[2]);
+							printf("\tRotation: %.3f %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].rotation[0], anim->animation->joints[i].keyFrames[j].rotation[1], anim->animation->joints[i].keyFrames[j].rotation[2], anim->animation->joints[i].keyFrames[j].rotation[3]);
 							printf("\tScaling: %.3f %.3f %.3f\n", anim->animation->joints[i].keyFrames[j].scaling[0], anim->animation->joints[i].keyFrames[j].scaling[1], anim->animation->joints[i].keyFrames[j].scaling[2]);
 						}
 						printf("---------------------------------------\n");
