@@ -73,7 +73,7 @@ private:
 	const char* meshName;
 	char* textureName = nullptr;
 	char* ret;
-	char* tempMName = nullptr;
+	char* tempMName;
 
 	struct tempWeight {
 		int ID;

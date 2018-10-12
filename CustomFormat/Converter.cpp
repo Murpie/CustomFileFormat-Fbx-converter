@@ -26,6 +26,7 @@ Converter::~Converter()
 {
 	delete ret;
 	delete[] animationInfo;
+	delete tempMName;
 
 	meshInfo.clear();
 	vertices.clear();
@@ -563,7 +564,8 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	tempMName = new char();
+	memcpy(tempMName, meshInfo[0].meshName, sizeof(meshInfo[0].meshName));
 	char fileName[5] = ".ssp";
 	strcat(tempMName, fileName);
 
@@ -632,7 +634,10 @@ void Converter::createCustomLevelFile()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomAnimationFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	//tempMName = (char*)meshInfo[0].meshName;
+
+	tempMName = new char();
+	memcpy(tempMName, meshInfo[0].meshName, sizeof(meshInfo[0].meshName));
 
 	char extraSymbol[2] = "_";
 	char animFileName[9] = ".sspAnim";
@@ -679,6 +684,7 @@ void Converter::createCustomAnimationFile()
 		}
 		animOutfile.close();
 	}
+
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
@@ -704,19 +710,19 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		std::cout << "Name Saved." << std::endl << std::endl;
 
 		char answer;
-		bool is_looping = false;
-		std::cout << "Looping animation (y/n): ";
-		std::cin >> answer;
-		if (answer == 'y' || answer == 'Y')
-			is_looping = true;
+		bool is_looping = true;
+		//std::cout << "Looping animation (y/n): ";
+		//std::cin >> answer;
+		//if (answer == 'y' || answer == 'Y')
+		//	is_looping = true;
 		animationInfo->looping = is_looping;
-		std::cout << "Looping set to " << animationInfo->looping << ". (1 = true, 0 = false) " << std::endl << std::endl;
+		//std::cout << "Looping set to " << animationInfo->looping << ". (1 = true, 0 = false) " << std::endl << std::endl;
 
 		bool is_switching = false;
-		std::cout << "Switching animation (y/n): ";
-		std::cin >> answer;
-		if (answer == 'y' || answer == 'Y')
-			is_switching = true;
+		//std::cout << "Switching animation (y/n): ";
+		//std::cin >> answer;
+		//if (answer == 'y' || answer == 'Y')
+			//is_switching = true;
 		animationInfo->switching = is_switching;
 		std::cout << "Switching set to " << animationInfo->switching << ". (1 = true, 0 = false) " << std::endl << std::endl;
 

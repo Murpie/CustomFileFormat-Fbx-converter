@@ -12,12 +12,20 @@ int main()
 	converter.importMesh();
 
 	int answer = 0;
-	std::cout << "Mesh loaded." << std::endl << "Load animations? 1 = Yes" << std::endl;
-	std::cin >> answer;
-	if (answer == 1)
+	//std::cout << "Mesh loaded." << std::endl << "Load animations? 1 = Yes" << std::endl;
+
+	bool loadAnim = true;
+	if (loadAnim)
 	{
 		converter.importAnimation();
 	}
+
+
+	/*std::cin >> answer;
+	if (answer == 1)
+	{
+		converter.importAnimation();
+	}*/
 
 	getchar();
 	std::cout << "Done, press any key";
