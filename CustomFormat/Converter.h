@@ -26,7 +26,7 @@ private:
 	void loadVertex(FbxMesh* currentMesh, FbxNode* currentNode);
 	void loadMaterial(FbxNode* currentNode);
 	void loadCustomMayaAttributes(FbxNode* currentNode);
-	void loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex);
+	void loadWeights(FbxNode* currentNode, FbxMesh* currentMesh, VertexInformation currentVertex, int vertexIndex);
 	void loadLevel(FbxNode * currentNode);
 	void createCustomFile();
 	void createCustomLevelFile();
@@ -74,8 +74,12 @@ private:
 	char* ret;
 	char* tempMName = nullptr;
 
+	//Leon test skit
+	std::vector<FbxAMatrix> transformMatricies;
+	std::vector<FbxAMatrix> transformLinkMatrices;
+
 	struct tempWeight {
-		int ID;
+		float ID;
 		float weight;
 	};
 };

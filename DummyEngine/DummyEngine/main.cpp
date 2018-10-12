@@ -36,7 +36,7 @@ int main()
 	{
 		LeapImporter importer;
 
-		LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
+		LeapMesh* mesh = importer.getMesh("Robot.ssp");
 		printf("=======================\n");
 		printf("Loaded LeapMesh\n");
 		printf("=======================\n");
@@ -84,7 +84,7 @@ int main()
 
 					for (int j = 0; j < 4; j++)
 					{
-						printf("\t|%d|WeightID|%d|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
+						printf("\t|%d|WeightID|%f|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
 					}
 					printf("\n");
 				}
@@ -152,7 +152,7 @@ int main()
 	case '3':
 	{
 		LeapImporter importer;
-		LeapAnimation* anim = importer.getAnimation("Robot_run.sspAnim");
+		LeapAnimation* anim = importer.getAnimation("Robot.ssp_run.sspAnim");
 		printf("=======================\n");
 		printf("Loaded LeapAnimation\n");
 		printf("=======================\n");
@@ -207,11 +207,12 @@ int main()
 
 						for (int j = 0; j < anim->animation->nr_of_keyframes; j++)
 						{
-							printf("\t\tKey|%d|\tTime: %.3f", j, anim->animation->joints[i].keyFrames[j].time);
-							printf("\tPosition: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].position[0], anim->animation->joints[i].keyFrames[j].position[1], anim->animation->joints[i].keyFrames[j].position[2]);
-							printf("\tRotation: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].rotation[0], anim->animation->joints[i].keyFrames[j].rotation[1], anim->animation->joints[i].keyFrames[j].rotation[2]);
-							printf("\tScaling: %.3f %.3f %.3f\n", anim->animation->joints[i].keyFrames[j].scaling[0], anim->animation->joints[i].keyFrames[j].scaling[1], anim->animation->joints[i].keyFrames[j].scaling[2]);
-						}
+							printf("\t\tKey|%d|\tTime: %.3f\n", j, anim->animation->joints[i].keyFrames[j].time);
+							printf("\n\Keyframe Translation: \t%.3f %.3f %.3f\n", anim->animation->joints[i].keyFrames[j].translation[0], anim->animation->joints[i].keyFrames[j].translation[1], anim->animation->joints[i].keyFrames[j].translation[2]);
+							printf("\Keyframe Rotation: \t%.3f %.3f %.3f %.3f\n", anim->animation->joints[i].keyFrames[j].rotation[0], anim->animation->joints[i].keyFrames[j].rotation[1], anim->animation->joints[i].keyFrames[j].rotation[2], anim->animation->joints[i].keyFrames[j].rotation[3]);
+							printf("\Keyframe Scale: \t%.3f %.3f %.3f\n\n", anim->animation->joints[i].keyFrames[j].scaling[0], anim->animation->joints[i].keyFrames[j].scaling[1], anim->animation->joints[i].keyFrames[j].scaling[2]);
+
+							}
 						printf("---------------------------------------\n");
 					}
 				}

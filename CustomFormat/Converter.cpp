@@ -239,7 +239,10 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			tempVtx.v = (float)uv[i][1];
 
 			//Weights
-			loadWeights(currentNode, tempVtx, i);
+			
+			loadWeights(currentNode, currentMesh, tempVtx, i);
+
+
 
 			i++;
 			totalNrOfVertices++;
@@ -367,7 +370,7 @@ void Converter::loadMaterial(FbxNode* currentNode)
 	counter.matCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
-void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVertex, int vertexIndex)
+void Converter::loadWeights(FbxNode* currentNode, FbxMesh* currentMesh, VertexInformation currentVertex, int vertexIndex)
 {
 	foundVertexWeight = false;
 	nrOfWeights = 0;
@@ -391,6 +394,14 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		{
 			cluster = ((FbxSkin*)patch->GetDeformer(i, FbxDeformer::eSkin))->GetCluster(j);
 
+			FbxAMatrix transformMatrix;
+			FbxAMatrix linkMatrix;
+			cluster->GetTransformLinkMatrix(linkMatrix);
+			cluster->GetTransformMatrix(transformMatrix);
+
+			transformLinkMatrices.push_back(linkMatrix);
+			transformMatricies.push_back(transformMatrix);
+
 			int* indices = cluster->GetControlPointIndices();
 			int indexCount = cluster->GetControlPointIndicesCount();
 			double* weights = cluster->GetControlPointWeights();
@@ -401,7 +412,9 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			{
 				if (vertexIndex == indices[index])
 				{
-					tempStore.ID = j;
+					if (vertexIndex == 1363)
+						std::cout << "test";
+					tempStore.ID = (float)j;
 					tempStore.weight = weights[index];
 
 					store.push_back(tempStore);
@@ -416,7 +429,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	{
 		for (int i = 0; i < store.size(); i++)
 		{
-			int id = store[i].ID;
+			float id = store[i].ID;
 			float newTempWeight = store[i].weight;
 
 			for (int j = 0; j < store.size(); j++)
@@ -435,67 +448,115 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		}
 
 		
-		for (int j = 0; j < nrOfWeights; j++)
+
+		if (nrOfWeights == 1)
 		{
-			if (j == 4)
-			{
-				break;
-			}
-			if (store[j].weight > 0)
-			{
-				currentVertex.weight[j] = store[j].weight;
-				currentVertex.weightID[j] = store[j].ID;
-			}
+			currentVertex.weight[0] = store[0].weight;
+			currentVertex.weightID[0] = store[0].ID;
+
+			currentVertex.weight[1] = 0.0f;
+			currentVertex.weightID[1] = 0.0f;
+			currentVertex.weight[2] = 0.0f;
+			currentVertex.weightID[2] = 0.0f;
+			currentVertex.weight[3] = 0.0f;
+			currentVertex.weightID[3] = 0.0f;
+		}
+		else if (nrOfWeights == 2)
+		{
+			currentVertex.weight[0] = store[0].weight;
+			currentVertex.weightID[0] = store[0].ID;
+			currentVertex.weight[1] = store[1].weight;
+			currentVertex.weightID[1] = store[1].ID;
+
+			currentVertex.weight[2] = 0.0f;
+			currentVertex.weightID[2] = 0.0f;
+			currentVertex.weight[3] = 0.0f;
+			currentVertex.weightID[3] = 0.0f;
+		}
+		else if (nrOfWeights == 3)
+		{
+			currentVertex.weight[0] = store[0].weight;
+			currentVertex.weightID[0] = store[0].ID;
+			currentVertex.weight[1] = store[1].weight;
+			currentVertex.weightID[1] = store[1].ID;
+			currentVertex.weight[2] = store[2].weight;
+			currentVertex.weightID[2] = store[2].ID;
+			
+			currentVertex.weight[3] = 0.0f;
+			currentVertex.weightID[3] = 0.0f;
+		}
+		else if (nrOfWeights == 4)
+		{
+			currentVertex.weight[0] = store[0].weight;
+			currentVertex.weightID[0] = store[0].ID;
+			currentVertex.weight[1] = store[1].weight;
+			currentVertex.weightID[1] = store[1].ID;
+			currentVertex.weight[2] = store[2].weight;
+			currentVertex.weightID[2] = store[2].ID;
+			currentVertex.weight[3] = store[3].weight;
+			currentVertex.weightID[3] = store[3].ID;
+		}
+		else
+		{
+			currentVertex.weight[0] = 0.0f;
+			currentVertex.weightID[0] = 0.0f;
+			currentVertex.weight[1] = 0.0f;
+			currentVertex.weightID[1] = 0.0f;
+			currentVertex.weight[2] = 0.0f;
+			currentVertex.weightID[2] = 0.0f;
+			currentVertex.weight[3] = 0.0f;
+			currentVertex.weightID[3] = 0.0f;
 		}
 
-		if (nrOfWeights < 4)
-		{
-			if (nrOfWeights == 3)
-			{
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else if (nrOfWeights == 2)
-			{
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else if (nrOfWeights == 1)
-			{
-				currentVertex.weight[1] = 0;
-				currentVertex.weightID[1] = 0;
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else
-			{
-				currentVertex.weight[0] = 0;
-				currentVertex.weightID[0] = 0;
-				currentVertex.weight[1] = 0;
-				currentVertex.weightID[1] = 0;
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-		}
+
+		//if (nrOfWeights < 4)
+		//{
+		//	if (nrOfWeights == 3)
+		//	{
+		//		currentVertex.weight[3] = 0.0f;
+		//		currentVertex.weightID[3] = 0.0f;
+		//	}
+		//	else if (nrOfWeights == 2)
+		//	{
+		//		currentVertex.weight[2] = 0.0f;
+		//		currentVertex.weightID[2] = 0.0f;
+		//		currentVertex.weight[3] = 0.0f;
+		//		currentVertex.weightID[3] = 0.0f;
+		//	}
+		//	else if (nrOfWeights == 1)
+		//	{
+		//		currentVertex.weight[1] = 0.0f;
+		//		currentVertex.weightID[1] = 0.0f;
+		//		currentVertex.weight[2] = 0.0f;
+		//		currentVertex.weightID[2] = 0.0f;
+		//		currentVertex.weight[3] = 0.0f;
+		//		currentVertex.weightID[3] = 0.0f;
+		//	}
+		//	else
+		//	{
+		//		currentVertex.weight[0] = 0.0f;
+		//		currentVertex.weightID[0] = 0.0f;
+		//		currentVertex.weight[1] = 0.0f;
+		//		currentVertex.weightID[1] = 0.0f;
+		//		currentVertex.weight[2] = 0.0f;
+		//		currentVertex.weightID[2] = 0.0f;
+		//		currentVertex.weight[3] = 0.0f;
+		//		currentVertex.weightID[3] = 0.0f;
+		//	}
+		//}
 
 	}
-	else
-	{
-		currentVertex.weight[0] = 0;
-		currentVertex.weightID[0] = 0;
-		currentVertex.weight[1] = 0;
-		currentVertex.weightID[1] = 0;
-		currentVertex.weight[2] = 0;
-		currentVertex.weightID[2] = 0;
-		currentVertex.weight[3] = 0;
-		currentVertex.weightID[3] = 0;
-	}
+	//else
+	//{
+	//	currentVertex.weight[0] = 0.0f;
+	//	currentVertex.weightID[0] = 0.0f;
+	//	currentVertex.weight[1] = 0.0f;
+	//	currentVertex.weightID[1] = 0.0f;
+	//	currentVertex.weight[2] = 0.0f;
+	//	currentVertex.weightID[2] = 0.0f;
+	//	currentVertex.weight[3] = 0.0f;
+	//	currentVertex.weightID[3] = 0.0f;
+	//}
 
 	store.clear();
 	vertices.push_back(currentVertex);
@@ -790,6 +851,8 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 	std::vector<float> tempRotation;
 	std::vector<float> tempScaling;
 	
+	std::vector<FbxMatrix> tempMatrices;
+
 	//LclTranslation: This property contains the translation information of the node.
 	//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	animCurve = node->LclTranslation.GetCurve(animLayer);
@@ -818,13 +881,22 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 		}
 
 		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
+		FbxMatrix tempGTransform = node->EvaluateGlobalTransform(FBXSDK_TIME_INFINITE);
+
+		FbxAMatrix temps = node->GetScene()->GetAnimationEvaluator()->GetNodeGlobalTransform(node, FBXSDK_TIME_INFINITE);
+
+		FbxVector4 tempR = node->GetPreRotation(node->eSourcePivot);
+
+		//FbxMatrix  temp2 = node->GetTransform();
+
+
 
 		for (int k = 0; k < 4; k++)
 		{
 			for (int l = 0; l < 4; l++)
 			{
-				jointInformation.local_transform_matrix[k][l] = tempTransform[k][l];
-				jointInformation.bind_pose_matrix[k][l] = tempTransform[k][l];
+				jointInformation.local_transform_matrix[k][l] = transformLinkMatrices[animationInfo->nr_of_joints][k][l];//tempGTransform[k][l];
+				jointInformation.bind_pose_matrix[k][l] = transformMatricies[animationInfo->nr_of_joints][k][l];//tempTransform[k][l];
 			}
 		}
 
@@ -843,57 +915,63 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			tempRotation.clear();
 			tempScaling.clear();
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempPosition.push_back(keyValue);
+			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempPosition.push_back(keyValue);
+			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempPosition.push_back(keyValue);
+			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempRotation.push_back(keyValue);
+			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempRotation.push_back(keyValue);
+			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempRotation.push_back(keyValue);
+			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempScaling.push_back(keyValue);
+			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempScaling.push_back(keyValue);
+			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
+			//tempScaling.push_back(keyValue);
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			FbxAnimCurveKey key = animCurve->KeyGet(j);
+			FbxTime time = key.GetTime();
+			FbxAMatrix transf = node->EvaluateLocalTransform(time);
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			FbxQuaternion quat = transf.GetQ();
+			tempScaling.push_back((float)transf.GetS()[0]);
+			tempScaling.push_back((float)transf.GetS()[1]);
+			tempScaling.push_back((float)transf.GetS()[2]);
 
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
+			tempPosition.push_back((float)transf.GetT()[0]);
+			tempPosition.push_back((float)transf.GetT()[1]);
+			tempPosition.push_back((float)transf.GetT()[2]);
 
 			KeyFrame tempKeyFrameData;
 			tempKeyFrameData.time = keyTime;
+
 			tempKeyFrameData.translation[0] = tempPosition[0];
 			tempKeyFrameData.translation[1] = tempPosition[1];
 			tempKeyFrameData.translation[2] = tempPosition[2];
-
-			tempKeyFrameData.rotation[0] = tempRotation[0];
-			tempKeyFrameData.rotation[1] = tempRotation[1];
-			tempKeyFrameData.rotation[2] = tempRotation[2];
-
+			
+			tempKeyFrameData.rotation[0] = quat[0];
+			tempKeyFrameData.rotation[1] = quat[1];
+			tempKeyFrameData.rotation[2] = quat[2];
+			tempKeyFrameData.rotation[3] = quat[3];
+			
 			tempKeyFrameData.scaling[0] = tempScaling[0];
 			tempKeyFrameData.scaling[1] = tempScaling[1];
 			tempKeyFrameData.scaling[2] = tempScaling[2];
+
 
 			jointInformation.keyFrames.push_back(tempKeyFrameData);
 		}
