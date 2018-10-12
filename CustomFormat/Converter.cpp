@@ -553,20 +553,22 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	//tempMName = meshInfo[0].meshName;
+
+
+	int length = strlen(meshInfo[0].meshName);
+
+	char * temp = new char[length];
+	for (int i = 0; i < length+1; i++)
+	{
+		temp[i] = meshInfo[0].meshName[i];
+	}
+
+
 	char fileName[5] = ".ssp";
-	strcat(tempMName, fileName);
+	strcat(temp, fileName);
 
-	/*size_t len = strlen(meshName);
-	ret = new char[len + 2];
-	strcpy(ret, meshName);
-	ret[len - 3] = 's';
-	ret[len - 2] = 's';
-	ret[len - 1] = 'p';
-	ret[len] = '\0';
-	meshName = ret;*/
-
-	std::ofstream outfile(tempMName, std::ofstream::binary);
+	std::ofstream outfile(temp, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 
@@ -595,7 +597,7 @@ void Converter::createCustomFile()
 
 	outfile.close();
 
-	tempMName = nullptr;
+	//tempMName = nullptr;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomLevelFile()
@@ -622,7 +624,18 @@ void Converter::createCustomLevelFile()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomAnimationFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	//tempMName = (char*)meshInfo[0].meshName;
+
+	int length = strlen(meshInfo[0].meshName);
+	char * temp = new char[length];
+	for (int i = 0; i < length + 1; i++)
+	{
+		temp[i] = meshInfo[0].meshName[i];
+	}
+
+
+	//char fileName[5] = ".ssp";
+	//strcat(temp, fileName);
 
 	char extraSymbol[2] = "_";
 	char animFileName[9] = ".sspAnim";
@@ -633,13 +646,13 @@ void Converter::createCustomAnimationFile()
 		tempAName[i] = animationInfo->animation_name[i];
 	}
 
-	strcat(tempMName, extraSymbol);
-	strcat(tempMName, tempAName);
-	strcat(tempMName, animFileName);
+	strcat(temp, extraSymbol);
+	strcat(temp, tempAName);
+	strcat(temp, animFileName);
 
 	if (animationInfo->nr_of_joints > 0)
 	{
-		std::ofstream animOutfile(tempMName, std::ofstream::binary);
+		std::ofstream animOutfile(temp, std::ofstream::binary);
 
 		animOutfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
 		animOutfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));

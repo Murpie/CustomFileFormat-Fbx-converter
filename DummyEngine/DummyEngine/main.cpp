@@ -39,7 +39,7 @@ int main()
 	{
 		LeapImporter importer;
 
-		LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
+		LeapMesh* mesh = importer.getMesh("Robot.ssp");
 		printf("=======================\n");
 		printf("Loaded LeapMesh\n");
 		printf("=======================\n");
