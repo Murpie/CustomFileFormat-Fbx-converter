@@ -899,34 +899,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			tempRotation.clear();
 			tempScaling.clear();
 
-			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempPosition.push_back(keyValue);
-			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempPosition.push_back(keyValue);
-			//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempPosition.push_back(keyValue);
-			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempRotation.push_back(keyValue);
-			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempRotation.push_back(keyValue);
-			//animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempRotation.push_back(keyValue);
-			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempScaling.push_back(keyValue);
-			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempScaling.push_back(keyValue);
-			//animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			//keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			//tempScaling.push_back(keyValue);
-
 			FbxAnimCurveKey key = animCurve->KeyGet(j);
 			FbxTime time = key.GetTime();
 			FbxAMatrix transf = node->EvaluateLocalTransform(time);
