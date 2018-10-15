@@ -74,6 +74,9 @@ private:
 	char* ret;
 	char* tempMName = nullptr;
 
+	std::vector<FbxAMatrix> transformLinkMatrices;
+	std::vector<FbxAMatrix> transformMatricies;
+
 	struct tempWeight {
 		int ID;
 		float weight;
