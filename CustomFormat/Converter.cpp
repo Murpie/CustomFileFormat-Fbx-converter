@@ -412,14 +412,13 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			{
 				if (vertexIndex == indices[index])
 				{
-					if (vertexIndex == 1363)
-						std::cout << "test";
 					tempStore.ID = (float)j;
 					tempStore.weight = weights[index];
 
 					store.push_back(tempStore);
 					foundVertexWeight = true;
 					nrOfWeights++;
+					break;
 				}
 			}
 		}
@@ -429,7 +428,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	{
 		for (int i = 0; i < store.size(); i++)
 		{
-			float id = store[i].ID;
+			float id = (float)store[i].ID;
 			float newTempWeight = store[i].weight;
 
 			for (int j = 0; j < store.size(); j++)
@@ -448,114 +447,66 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		}
 
 
+		for (int j = 0; j < nrOfWeights; j++)
+		{
+			if (j == 4)
+			{
+				break;
+			}
+			if (store[j].weight > 0)
+			{
+				currentVertex.weight[j] = store[j].weight;
+				currentVertex.weightID[j] = (float)store[j].ID;
+			}
+		}
 
-		//if (nrOfWeights == 1)
-		//{
-		//	currentVertex.weight[0] = store[0].weight;
-		//	currentVertex.weightID[0] = store[0].ID;
-		//
-		//	currentVertex.weight[1] = 0.0f;
-		//	currentVertex.weightID[1] = 0.0f;
-		//	currentVertex.weight[2] = 0.0f;
-		//	currentVertex.weightID[2] = 0.0f;
-		//	currentVertex.weight[3] = 0.0f;
-		//	currentVertex.weightID[3] = 0.0f;
-		//}
-		//else if (nrOfWeights == 2)
-		//{
-		//	currentVertex.weight[0] = store[0].weight;
-		//	currentVertex.weightID[0] = store[0].ID;
-		//	currentVertex.weight[1] = store[1].weight;
-		//	currentVertex.weightID[1] = store[1].ID;
-		//
-		//	currentVertex.weight[2] = 0.0f;
-		//	currentVertex.weightID[2] = 0.0f;
-		//	currentVertex.weight[3] = 0.0f;
-		//	currentVertex.weightID[3] = 0.0f;
-		//}
-		//else if (nrOfWeights == 3)
-		//{
-		//	currentVertex.weight[0] = store[0].weight;
-		//	currentVertex.weightID[0] = store[0].ID;
-		//	currentVertex.weight[1] = store[1].weight;
-		//	currentVertex.weightID[1] = store[1].ID;
-		//	currentVertex.weight[2] = store[2].weight;
-		//	currentVertex.weightID[2] = store[2].ID;
-		//
-		//	currentVertex.weight[3] = 0.0f;
-		//	currentVertex.weightID[3] = 0.0f;
-		//}
-		//else if (nrOfWeights == 4)
-		//{
-		//	currentVertex.weight[0] = store[0].weight;
-		//	currentVertex.weightID[0] = store[0].ID;
-		//	currentVertex.weight[1] = store[1].weight;
-		//	currentVertex.weightID[1] = store[1].ID;
-		//	currentVertex.weight[2] = store[2].weight;
-		//	currentVertex.weightID[2] = store[2].ID;
-		//	currentVertex.weight[3] = store[3].weight;
-		//	currentVertex.weightID[3] = store[3].ID;
-		//}
-		//else
-		//{
-		//	currentVertex.weight[0] = 0.0f;
-		//	currentVertex.weightID[0] = 0.0f;
-		//	currentVertex.weight[1] = 0.0f;
-		//	currentVertex.weightID[1] = 0.0f;
-		//	currentVertex.weight[2] = 0.0f;
-		//	currentVertex.weightID[2] = 0.0f;
-		//	currentVertex.weight[3] = 0.0f;
-		//	currentVertex.weightID[3] = 0.0f;
-		//}
-
-
-	if (nrOfWeights < 4)
-	{
-		if (nrOfWeights == 3)
+		if (nrOfWeights < 4)
 		{
-			currentVertex.weight[3] = 0.0f;
-			currentVertex.weightID[3] = 0.0f;
+			if (nrOfWeights == 3)
+			{
+				currentVertex.weight[3] = 0.0;
+				currentVertex.weightID[3] = 0.0;
+			}
+			else if (nrOfWeights == 2)
+			{
+				currentVertex.weight[2] = 0.0;
+				currentVertex.weightID[2] = 0.0;
+				currentVertex.weight[3] = 0.0;
+				currentVertex.weightID[3] = 0.0;
+			}
+			else if (nrOfWeights == 1)
+			{
+				currentVertex.weight[1] = 0.0;
+				currentVertex.weightID[1] = 0.0;
+				currentVertex.weight[2] = 0.0;
+				currentVertex.weightID[2] = 0.0;
+				currentVertex.weight[3] = 0.0;
+				currentVertex.weightID[3] = 0.0;
+			}							 
+			else 
+			{
+				currentVertex.weight[0] = 0.0;
+				currentVertex.weightID[0] = 0.0;
+				currentVertex.weight[1] = 0.0;
+				currentVertex.weightID[1] = 0.0;
+				currentVertex.weight[2] = 0.0;
+				currentVertex.weightID[2] = 0.0;
+				currentVertex.weight[3] = 0.0;
+				currentVertex.weightID[3] = 0.0;
+			}
 		}
-		else if (nrOfWeights == 2)
-		{
-			currentVertex.weight[2] = 0.0f;
-			currentVertex.weightID[2] = 0.0f;
-			currentVertex.weight[3] = 0.0f;
-			currentVertex.weightID[3] = 0.0f;
-		}
-		else if (nrOfWeights == 1)
-		{
-			currentVertex.weight[1] = 0.0f;
-			currentVertex.weightID[1] = 0.0f;
-			currentVertex.weight[2] = 0.0f;
-			currentVertex.weightID[2] = 0.0f;
-			currentVertex.weight[3] = 0.0f;
-			currentVertex.weightID[3] = 0.0f;
-		}
-		else
-		{
-			currentVertex.weight[0] = 0.0f;
-			currentVertex.weightID[0] = 0.0f;
-			currentVertex.weight[1] = 0.0f;
-			currentVertex.weightID[1] = 0.0f;
-			currentVertex.weight[2] = 0.0f;
-			currentVertex.weightID[2] = 0.0f;
-			currentVertex.weight[3] = 0.0f;
-			currentVertex.weightID[3] = 0.0f;
-		}
-	}
 
 	}
 	else
 	{
-		currentVertex.weight[0] = 0.0f;
-		currentVertex.weightID[0] = 0.0f;
-		currentVertex.weight[1] = 0.0f;
-		currentVertex.weightID[1] = 0.0f;
-		currentVertex.weight[2] = 0.0f;
-		currentVertex.weightID[2] = 0.0f;
-		currentVertex.weight[3] = 0.0f;
-		currentVertex.weightID[3] = 0.0f;
+		currentVertex.weight[0] = 0.0;
+		currentVertex.weightID[0] = 0.0;
+		currentVertex.weight[1] = 0.0;
+		currentVertex.weightID[1] = 0.0;
+		currentVertex.weight[2] = 0.0;
+		currentVertex.weightID[2] = 0.0;
+		currentVertex.weight[3] = 0.0;
+		currentVertex.weightID[3] = 0.0;
 	}
 
 	store.clear();

@@ -87,7 +87,7 @@ int main()
 
 					for (int j = 0; j < 4; j++)
 					{
-						printf("\t|%d|WeightID|%d|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
+						printf("%d|WeightID|Weight|%f|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
 					}
 					printf("\n");
 				}
