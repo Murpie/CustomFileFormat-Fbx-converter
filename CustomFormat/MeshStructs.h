@@ -23,8 +23,8 @@ struct VertexInformation {
 	float bnx, bny, bnz;
 	float tx, ty, tz;
 	float u, v;
-	float weight[4];
-	float weightID[4];
+	float weight[4] = {};
+	float weightID[4] = {};
 };
 
 struct MaterialInformation {

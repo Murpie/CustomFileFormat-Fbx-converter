@@ -164,14 +164,15 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 	bool ItIsFalse = false;
 
 	int i = 0;
+	int controlPointIndex = 0;
 	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 	{
 		for (int vertexIndex = 0; vertexIndex < currentMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
 			VertexInformation tempVtx;
-
+			controlPointIndex = currentMesh->GetPolygonVertex(polygonIndex, vertexIndex);
 			//Positions
-			pos.push_back(controlPoints[currentMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			pos.push_back(controlPoints[controlPointIndex]);
 
 			//Normals
 			currentMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
@@ -239,10 +240,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			tempVtx.v = (float)uv[i][1];
 
 			//Weights
-
-			loadWeights(currentNode, tempVtx, i);
-
-
+			loadWeights(currentNode, tempVtx, controlPointIndex);
 
 			i++;
 			totalNrOfVertices++;
@@ -460,7 +458,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			}
 		}
 
-		if (nrOfWeights < 4)
+		/*if (nrOfWeights < 4)
 		{
 			if (nrOfWeights == 3)
 			{
@@ -494,10 +492,10 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 				currentVertex.weight[3] = 0.0;
 				currentVertex.weightID[3] = 0.0;
 			}
-		}
+		}*/
 
 	}
-	else
+	/*else
 	{
 		currentVertex.weight[0] = 0.0;
 		currentVertex.weightID[0] = 0.0;
@@ -507,7 +505,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		currentVertex.weightID[2] = 0.0;
 		currentVertex.weight[3] = 0.0;
 		currentVertex.weightID[3] = 0.0;
-	}
+	}*/
 
 	store.clear();
 	vertices.push_back(currentVertex);
@@ -814,17 +812,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 
 			jointInformation.scale[i] = 1;
 		}
-
-		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
-		FbxMatrix tempGTransform = node->EvaluateGlobalTransform(FBXSDK_TIME_INFINITE);
-
-		FbxAMatrix temps = node->GetScene()->GetAnimationEvaluator()->GetNodeGlobalTransform(node, FBXSDK_TIME_INFINITE);
-
-		FbxVector4 tempR = node->GetPreRotation(node->eSourcePivot);
-
-		//FbxMatrix  temp2 = node->GetTransform();
-
-
 
 		for (int k = 0; k < 4; k++)
 		{
