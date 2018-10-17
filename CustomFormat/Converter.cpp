@@ -148,8 +148,9 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 {
 	polygonCount = currentMesh->GetPolygonCount();
 
-	//Vertices
+	//Vertices, FbxVector4
 	controlPoints = currentMesh->GetControlPoints();
+
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
@@ -164,14 +165,16 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 	bool ItIsFalse = false;
 
 	int i = 0;
+	int controlPointIndex = 0;
 	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 	{
 		for (int vertexIndex = 0; vertexIndex < currentMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
 			VertexInformation tempVtx;
 
+			controlPointIndex = currentMesh->GetPolygonVertex(polygonIndex, vertexIndex);
 			//Positions
-			pos.push_back(controlPoints[currentMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			pos.push_back(controlPoints[controlPointIndex]);
 
 			//Normals
 			currentMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
@@ -240,7 +243,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 
 			//Weights
 
-			loadWeights(currentNode, tempVtx, i);
+			loadWeights(currentNode, tempVtx, controlPointIndex);
 
 
 
@@ -460,53 +463,6 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			}
 		}
 
-		if (nrOfWeights < 4)
-		{
-			if (nrOfWeights == 3)
-			{
-				currentVertex.weight[3] = 0.0;
-				currentVertex.weightID[3] = 0.0;
-			}
-			else if (nrOfWeights == 2)
-			{
-				currentVertex.weight[2] = 0.0;
-				currentVertex.weightID[2] = 0.0;
-				currentVertex.weight[3] = 0.0;
-				currentVertex.weightID[3] = 0.0;
-			}
-			else if (nrOfWeights == 1)
-			{
-				currentVertex.weight[1] = 0.0;
-				currentVertex.weightID[1] = 0.0;
-				currentVertex.weight[2] = 0.0;
-				currentVertex.weightID[2] = 0.0;
-				currentVertex.weight[3] = 0.0;
-				currentVertex.weightID[3] = 0.0;
-			}							 
-			else 
-			{
-				currentVertex.weight[0] = 0.0;
-				currentVertex.weightID[0] = 0.0;
-				currentVertex.weight[1] = 0.0;
-				currentVertex.weightID[1] = 0.0;
-				currentVertex.weight[2] = 0.0;
-				currentVertex.weightID[2] = 0.0;
-				currentVertex.weight[3] = 0.0;
-				currentVertex.weightID[3] = 0.0;
-			}
-		}
-
-	}
-	else
-	{
-		currentVertex.weight[0] = 0.0;
-		currentVertex.weightID[0] = 0.0;
-		currentVertex.weight[1] = 0.0;
-		currentVertex.weightID[1] = 0.0;
-		currentVertex.weight[2] = 0.0;
-		currentVertex.weightID[2] = 0.0;
-		currentVertex.weight[3] = 0.0;
-		currentVertex.weightID[3] = 0.0;
 	}
 
 	store.clear();
@@ -830,8 +786,8 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 		{
 			for (int l = 0; l < 4; l++)
 			{
-				jointInformation.local_transform_matrix[k][l] = transformLinkMatrices[animationInfo->nr_of_joints][k][l];//tempGTransform[k][l];
-				jointInformation.bind_pose_matrix[k][l] = transformMatricies[animationInfo->nr_of_joints][k][l];//tempTransform[k][l];
+				jointInformation.local_transform_matrix[k][l] = transformLinkMatrices[animationInfo->nr_of_joints][k][l];
+				jointInformation.bind_pose_matrix[k][l] = transformMatricies[animationInfo->nr_of_joints][k][l];
 			}
 		}
 

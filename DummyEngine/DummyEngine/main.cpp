@@ -151,7 +151,7 @@ int main()
 	case '3':
 	{
 		LeapImporter importer;
-		LeapAnimation* anim = importer.getAnimation("Robot_run.sspAnim");
+		LeapAnimation* anim = importer.getAnimation("pCube4_kub.sspAnim");
 		printf("=======================\n");
 		printf("Loaded LeapAnimation\n");
 		printf("=======================\n");
