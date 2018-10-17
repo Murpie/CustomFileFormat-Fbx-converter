@@ -76,7 +76,6 @@ void Converter::importMesh()
 	}
 
 	counter.vertexCount = totalNrOfVertices;
-	//exportAnimation(ourScene, rootNode);
 
 	if (isLevel)
 	{
@@ -90,8 +89,6 @@ void Converter::importMesh()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importAnimation()
 {
-	//importer->Import(ourScene);
-	//rootNode = ourScene->GetRootNode();
 	exportAnimation(ourScene, rootNode);
 	createCustomAnimationFile();
 }
@@ -172,6 +169,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			VertexInformation tempVtx;
 
 			controlPointIndex = currentMesh->GetPolygonVertex(polygonIndex, vertexIndex);
+
 			//Positions
 			pos.push_back(controlPoints[controlPointIndex]);
 
