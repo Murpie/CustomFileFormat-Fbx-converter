@@ -31,7 +31,7 @@ Converter::~Converter()
 	vertices.clear();
 	matInfo.clear();
 	customMayaAttribute.clear();
-	
+
 	ourScene->Destroy();
 	settings->Destroy();
 	manager->Destroy();
@@ -57,7 +57,7 @@ void Converter::importMesh()
 	importer->Destroy();
 
 	rootNode = ourScene->GetRootNode();
-	
+
 	exportFile(rootNode);
 
 	if (rootNode->GetChildCount() > 0)
@@ -74,9 +74,8 @@ void Converter::importMesh()
 			}
 		}
 	}
-	
+
 	counter.vertexCount = totalNrOfVertices;
-	//exportAnimation(ourScene, rootNode);
 
 	if (isLevel)
 	{
@@ -90,8 +89,6 @@ void Converter::importMesh()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::importAnimation()
 {
-	//importer->Import(ourScene);
-	//rootNode = ourScene->GetRootNode();
 	exportAnimation(ourScene, rootNode);
 	createCustomAnimationFile();
 }
@@ -139,7 +136,7 @@ void Converter::loadGlobaltransform(FbxNode* currentNode)
 	{
 		tempMeshInfo.meshName[i] = tempString[i];
 	}
-	
+
 	meshInfo.push_back(tempMeshInfo);
 	counter.meshCount++;
 }
@@ -164,14 +161,17 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 	bool ItIsFalse = false;
 
 	int i = 0;
+	int controlPointIndex = 0;
 	for (int polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++)
 	{
 		for (int vertexIndex = 0; vertexIndex < currentMesh->GetPolygonSize(polygonIndex); vertexIndex++)
 		{
 			VertexInformation tempVtx;
 
+			controlPointIndex = currentMesh->GetPolygonVertex(polygonIndex, vertexIndex);
+
 			//Positions
-			pos.push_back(controlPoints[currentMesh->GetPolygonVertex(polygonIndex, vertexIndex)]);
+			pos.push_back(controlPoints[controlPointIndex]);
 
 			//Normals
 			currentMesh->GetPolygonVertexNormal(polygonIndex, vertexIndex, temp);
@@ -181,7 +181,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			if (vertexBinormal)
 			{
 				foundBinormal = true;
-				
+
 				int lNormalIndex = 0;
 
 				if (vertexBinormal->GetReferenceMode() == FbxGeometryElement::eDirect)
@@ -192,7 +192,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 
 				FbxVector4 lNormal = vertexBinormal->GetDirectArray().GetAt(lNormalIndex);
 				biNorm.push_back(lNormal);
-				
+
 
 				tempVtx.bnx = (float)biNorm[i][0];
 				tempVtx.bny = (float)biNorm[i][1];
@@ -203,7 +203,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			if (vertexTangent)
 			{
 				foundTangent = true;
-				
+
 				int lNormalIndex = 0;
 
 				if (vertexTangent->GetReferenceMode() == FbxGeometryElement::eDirect)
@@ -239,7 +239,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			tempVtx.v = (float)uv[i][1];
 
 			//Weights
-			loadWeights(currentNode, tempVtx, i);
+			loadWeights(currentNode, tempVtx, controlPointIndex);
 
 			i++;
 			totalNrOfVertices++;
@@ -381,7 +381,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	int nrOfJoints = 0;
 	FbxCluster* cluster;
 	int skinCount = patch->GetDeformerCount(FbxDeformer::eSkin);
-	
+
 	vector<tempWeight> store;
 
 	for (int i = 0; i < skinCount; i++)
@@ -390,6 +390,14 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 		for (int j = 0; j < clusterCount; j++)
 		{
 			cluster = ((FbxSkin*)patch->GetDeformer(i, FbxDeformer::eSkin))->GetCluster(j);
+
+			FbxAMatrix transformMatrix;
+			FbxAMatrix linkMatrix;
+			cluster->GetTransformLinkMatrix(linkMatrix);
+			cluster->GetTransformMatrix(transformMatrix);
+
+			transformLinkMatrices.push_back(linkMatrix);
+			transformMatricies.push_back(transformMatrix);
 
 			int* indices = cluster->GetControlPointIndices();
 			int indexCount = cluster->GetControlPointIndicesCount();
@@ -401,12 +409,13 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			{
 				if (vertexIndex == indices[index])
 				{
-					tempStore.ID = j;
+					tempStore.ID = (float)j;
 					tempStore.weight = weights[index];
 
 					store.push_back(tempStore);
 					foundVertexWeight = true;
 					nrOfWeights++;
+					break;
 				}
 			}
 		}
@@ -416,7 +425,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 	{
 		for (int i = 0; i < store.size(); i++)
 		{
-			int id = store[i].ID;
+			float id = (float)store[i].ID;
 			float newTempWeight = store[i].weight;
 
 			for (int j = 0; j < store.size(); j++)
@@ -434,7 +443,7 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			}
 		}
 
-		
+
 		for (int j = 0; j < nrOfWeights; j++)
 		{
 			if (j == 4)
@@ -444,57 +453,10 @@ void Converter::loadWeights(FbxNode* currentNode, VertexInformation currentVerte
 			if (store[j].weight > 0)
 			{
 				currentVertex.weight[j] = store[j].weight;
-				currentVertex.weightID[j] = store[j].ID;
+				currentVertex.weightID[j] = (float)store[j].ID;
 			}
 		}
 
-		if (nrOfWeights < 4)
-		{
-			if (nrOfWeights == 3)
-			{
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else if (nrOfWeights == 2)
-			{
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else if (nrOfWeights == 1)
-			{
-				currentVertex.weight[1] = 0;
-				currentVertex.weightID[1] = 0;
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-			else
-			{
-				currentVertex.weight[0] = 0;
-				currentVertex.weightID[0] = 0;
-				currentVertex.weight[1] = 0;
-				currentVertex.weightID[1] = 0;
-				currentVertex.weight[2] = 0;
-				currentVertex.weightID[2] = 0;
-				currentVertex.weight[3] = 0;
-				currentVertex.weightID[3] = 0;
-			}
-		}
-
-	}
-	else
-	{
-		currentVertex.weight[0] = 0;
-		currentVertex.weightID[0] = 0;
-		currentVertex.weight[1] = 0;
-		currentVertex.weightID[1] = 0;
-		currentVertex.weight[2] = 0;
-		currentVertex.weightID[2] = 0;
-		currentVertex.weight[3] = 0;
-		currentVertex.weightID[3] = 0;
 	}
 
 	store.clear();
@@ -547,56 +509,28 @@ void Converter::loadCustomMayaAttributes(FbxNode * currentNode)
 		tempCustom.id = -1;
 	}
 
-	prop = currentNode->FindProperty("CenterPivotX", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[0] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[0] = -999.0f;
-	}
-
-	prop = currentNode->FindProperty("CenterPivotY", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[1] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[1] = -999.0f;
-	}
-
-	prop = currentNode->FindProperty("CenterPivotZ", false);
-	if (prop.IsValid())
-	{
-		tempCustom.centerPivot[2] = prop.Get<float>();
-	}
-	else
-	{
-		tempCustom.centerPivot[2] = -999.0f;
-	}
-
 	customMayaAttribute.push_back(tempCustom);
 	counter.customMayaAttributeCount++;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	//tempMName = meshInfo[0].meshName;
+
+
+	int length = strlen(meshInfo[0].meshName);
+
+	char * temp = new char[length];
+	for (int i = 0; i < length + 1; i++)
+	{
+		temp[i] = meshInfo[0].meshName[i];
+	}
+
+
 	char fileName[5] = ".ssp";
-	strcat(tempMName, fileName);
+	strcat(temp, fileName);
 
-	/*size_t len = strlen(meshName);
-	ret = new char[len + 2];
-	strcpy(ret, meshName);
-	ret[len - 3] = 's';
-	ret[len - 2] = 's';
-	ret[len - 1] = 'p';
-	ret[len] = '\0';
-	meshName = ret;*/
-
-	std::ofstream outfile(tempMName, std::ofstream::binary);
+	std::ofstream outfile(temp, std::ofstream::binary);
 
 	outfile.write((const char*)&counter, sizeof(Counter));
 
@@ -625,7 +559,7 @@ void Converter::createCustomFile()
 
 	outfile.close();
 
-	tempMName = nullptr;
+	//tempMName = nullptr;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomLevelFile()
@@ -652,7 +586,18 @@ void Converter::createCustomLevelFile()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::createCustomAnimationFile()
 {
-	tempMName = (char*)meshInfo[0].meshName;
+	//tempMName = (char*)meshInfo[0].meshName;
+
+	int length = strlen(meshInfo[0].meshName);
+	char * temp = new char[length];
+	for (int i = 0; i < length + 1; i++)
+	{
+		temp[i] = meshInfo[0].meshName[i];
+	}
+
+
+	//char fileName[5] = ".ssp";
+	//strcat(temp, fileName);
 
 	char extraSymbol[2] = "_";
 	char animFileName[9] = ".sspAnim";
@@ -663,13 +608,13 @@ void Converter::createCustomAnimationFile()
 		tempAName[i] = animationInfo->animation_name[i];
 	}
 
-	strcat(tempMName, extraSymbol);
-	strcat(tempMName, tempAName);
-	strcat(tempMName, animFileName);
+	strcat(temp, extraSymbol);
+	strcat(temp, tempAName);
+	strcat(temp, animFileName);
 
 	if (animationInfo->nr_of_joints > 0)
 	{
-		std::ofstream animOutfile(tempMName, std::ofstream::binary);
+		std::ofstream animOutfile(temp, std::ofstream::binary);
 
 		animOutfile.write((const char*)animationInfo->animation_name, sizeof(char) * 9);
 		animOutfile.write((const char*)&animationInfo->nr_of_keyframes, sizeof(int));
@@ -684,17 +629,17 @@ void Converter::createCustomAnimationFile()
 		{
 			animOutfile.write((const char*)&animationInfo->joints[i].joint_name, sizeof(char) * 100);
 			animOutfile.write((const char*)&animationInfo->joints[i].parent_name, sizeof(char) * 100);
-			
+
 			animOutfile.write((const char*)&animationInfo->joints[i].joint_id, sizeof(int));
 			animOutfile.write((const char*)&animationInfo->joints[i].parent_id, sizeof(int));
-			
+
 			animOutfile.write((const char*)&animationInfo->joints[i].local_transform_matrix, sizeof(float) * 16);
 			animOutfile.write((const char*)&animationInfo->joints[i].bind_pose_matrix, sizeof(float) * 16);
-			
+
 			animOutfile.write((const char*)&animationInfo->joints[i].translation, sizeof(float) * 3);
 			animOutfile.write((const char*)&animationInfo->joints[i].rotation, sizeof(float) * 3);
 			animOutfile.write((const char*)&animationInfo->joints[i].scale, sizeof(float) * 3);
-			
+
 			animOutfile.write((const char*)animationInfo->joints[i].keyFrames.data(), sizeof(KeyFrame) * animationInfo->nr_of_keyframes);
 		}
 		animOutfile.close();
@@ -711,7 +656,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		//AnimStack: The Animation stack is a collection of animation layers.
 		//GetSrcObject: Returns the source object with which this object connects at the specified index.
 		FbxAnimStack* animStack = scene->GetSrcObject<FbxAnimStack>(i);
-		
+
 		/*const char* tempAnimName = animStack->GetInitialName();
 		for (int n = 0; n < strlen(tempAnimName) + 1; n++)
 			animationInfo->animation_name[n] = tempAnimName[n];*/
@@ -719,7 +664,7 @@ void Converter::exportAnimation(FbxScene * scene, FbxNode* node)
 		char animation_name_input[9];
 		std::cout << "Enter animation name (max 9 characters): ";
 		std::cin >> animation_name_input;
-		for(int n = 0; n < strlen(animation_name_input) +1; n++)
+		for (int n = 0; n < strlen(animation_name_input) + 1; n++)
 			animationInfo->animation_name[n] = animation_name_input[n];
 		std::cout << "Name Saved." << std::endl << std::endl;
 
@@ -789,7 +734,9 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 	std::vector<float> tempPosition;
 	std::vector<float> tempRotation;
 	std::vector<float> tempScaling;
-	
+
+	std::vector<FbxMatrix> tempMatrices;
+
 	//LclTranslation: This property contains the translation information of the node.
 	//animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	animCurve = node->LclTranslation.GetCurve(animLayer);
@@ -807,24 +754,23 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			jointInformation.parent_name[n] = tempJointParentName[n];
 
 		jointInformation.joint_id = currentJointIndex;
-		jointInformation.parent_id = - 1;
+		jointInformation.parent_id = -1;
 		currentJointIndex++;
 
 		for (int i = 0; i < 3; i++)
 		{
 			jointInformation.translation[i] = 1;
 			jointInformation.rotation[i] = 1;
+
 			jointInformation.scale[i] = 1;
 		}
-
-		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
 
 		for (int k = 0; k < 4; k++)
 		{
 			for (int l = 0; l < 4; l++)
 			{
-				jointInformation.local_transform_matrix[k][l] = tempTransform[k][l];
-				jointInformation.bind_pose_matrix[k][l] = tempTransform[k][l];
+				jointInformation.local_transform_matrix[k][l] = transformLinkMatrices[animationInfo->nr_of_joints][k][l];
+				jointInformation.bind_pose_matrix[k][l] = transformMatricies[animationInfo->nr_of_joints][k][l];
 			}
 		}
 
@@ -843,46 +789,26 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			tempRotation.clear();
 			tempScaling.clear();
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			FbxAnimCurveKey key = animCurve->KeyGet(j);
+			FbxTime time = key.GetTime();
+			FbxAMatrix transf = node->EvaluateLocalTransform(time);
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			FbxQuaternion quat = transf.GetQ();
+			tempScaling.push_back((float)transf.GetS()[0]);
+			tempScaling.push_back((float)transf.GetS()[1]);
+			tempScaling.push_back((float)transf.GetS()[2]);
 
-			animCurve = node->LclTranslation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempPosition.push_back(keyValue);
+			tempPosition.push_back((float)transf.GetT()[0]);
+			tempPosition.push_back((float)transf.GetT()[1]);
+			tempPosition.push_back((float)transf.GetT()[2]);
 
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-			animCurve = node->LclRotation.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempRotation.push_back(keyValue);
-
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_X);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
-
-			animCurve = node->LclScaling.GetCurve(animLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-			keyValue = static_cast<float>(animCurve->KeyGetValue(j));
-			tempScaling.push_back(keyValue);
+			tempRotation.push_back((float)transf.GetR()[0]);
+			tempRotation.push_back((float)transf.GetR()[1]);
+			tempRotation.push_back((float)transf.GetR()[2]);
 
 			KeyFrame tempKeyFrameData;
 			tempKeyFrameData.time = keyTime;
+
 			tempKeyFrameData.translation[0] = tempPosition[0];
 			tempKeyFrameData.translation[1] = tempPosition[1];
 			tempKeyFrameData.translation[2] = tempPosition[2];
@@ -891,13 +817,19 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			tempKeyFrameData.rotation[1] = tempRotation[1];
 			tempKeyFrameData.rotation[2] = tempRotation[2];
 
+			tempKeyFrameData.quatern[0] = quat[0];
+			tempKeyFrameData.quatern[1] = quat[1];
+			tempKeyFrameData.quatern[2] = quat[2];
+			tempKeyFrameData.quatern[3] = quat[3];
+
 			tempKeyFrameData.scaling[0] = tempScaling[0];
 			tempKeyFrameData.scaling[1] = tempScaling[1];
 			tempKeyFrameData.scaling[2] = tempScaling[2];
 
+
 			jointInformation.keyFrames.push_back(tempKeyFrameData);
 		}
-		
+
 		animationInfo->joints.push_back(jointInformation);
 		animationInfo->nr_of_joints++;
 	}
@@ -973,7 +905,37 @@ void Converter::loadLevel(FbxNode * currentNode)
 			{
 				templvlObj.id = -1;
 			}
-			
+
+			prop = currentNode->FindProperty("CenterPivotX", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[0] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[0] = -999.0f;
+			}
+
+			prop = currentNode->FindProperty("CenterPivotY", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[1] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[1] = -999.0f;
+			}
+
+			prop = currentNode->FindProperty("CenterPivotZ", false);
+			if (prop.IsValid())
+			{
+				templvlObj.centerPivot[2] = prop.Get<float>();
+			}
+			else
+			{
+				templvlObj.centerPivot[2] = -999.0f;
+			}
+
 			vectorLvlObj.push_back(templvlObj);
 			counter.levelObjectCount++;
 		}

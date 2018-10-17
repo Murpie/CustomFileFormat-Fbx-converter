@@ -24,7 +24,7 @@ struct VertexInformation {
 	float tx, ty, tz;
 	float u, v;
 	float weight[4];
-	int weightID[4];
+	float weightID[4];
 };
 
 struct MaterialInformation {
@@ -37,13 +37,13 @@ struct MaterialInformation {
 
 struct CustomMayaAttributes {
 	float particlePivot[3];
-	float centerPivot[3];
 	int id;
 };
 
 struct LevelObject {
 	float position[3];
 	float rotation[3];
+	float centerPivot[3];
 	float collisionBox[2];
 	int id;
 };

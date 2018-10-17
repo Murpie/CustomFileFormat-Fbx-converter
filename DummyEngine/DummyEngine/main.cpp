@@ -21,6 +21,9 @@ int main()
 			printf("\tRotation: %.2f %.2f %.2f\n", level->levelObjects[i].rotation[0], level->levelObjects[i].rotation[1], level->levelObjects[i].rotation[2]);
 			printf("\tHeight: %.2f\n", level->levelObjects[i].collisionBox[0]);
 			printf("\tWidth:  %.2f\n", level->levelObjects[i].collisionBox[1]);
+			printf("\tCenter Pivot X: %.2f\n", level->levelObjects[i].centerPivot[0]);
+			printf("\tCenter Pivot Y: %.2f\n", level->levelObjects[i].centerPivot[1]);
+			printf("\tCenter Pivot Z: %.2f\n", level->levelObjects[i].centerPivot[2]);
 			printf("\tID: %d\n\n", level->levelObjects[i].id);
 		}
 
@@ -36,7 +39,7 @@ int main()
 	{
 		LeapImporter importer;
 
-		LeapMesh* mesh = importer.getMesh("Controlpanel_1_Wide.ssp");
+		LeapMesh* mesh = importer.getMesh("Robot.ssp");
 		printf("=======================\n");
 		printf("Loaded LeapMesh\n");
 		printf("=======================\n");
@@ -84,7 +87,7 @@ int main()
 
 					for (int j = 0; j < 4; j++)
 					{
-						printf("\t|%d|WeightID|%d|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
+						printf("%d|WeightID|Weight|%f|: %f\n", i, mesh->vertices[i].weightID[j], mesh->vertices[i].weight[j]);
 					}
 					printf("\n");
 				}
@@ -132,10 +135,6 @@ int main()
 					printf("\tParticle Pivot X: %f\n", mesh->customMayaAttribute[i].particlePivot[0]);
 					printf("\tParticle Pivot Y: %f\n", mesh->customMayaAttribute[i].particlePivot[1]);
 					printf("\tParticle Pivot Z: %f\n", mesh->customMayaAttribute[i].particlePivot[2]);
-
-					printf("\tCenter Pivot X: %f\n", mesh->customMayaAttribute[i].centerPivot[0]);
-					printf("\tCenter Pivot Y: %f\n", mesh->customMayaAttribute[i].centerPivot[1]);
-					printf("\tCenter Pivot Z: %f\n", mesh->customMayaAttribute[i].centerPivot[2]);
 				}
 			}
 			else
@@ -152,7 +151,7 @@ int main()
 	case '3':
 	{
 		LeapImporter importer;
-		LeapAnimation* anim = importer.getAnimation("Robot_run.sspAnim");
+		LeapAnimation* anim = importer.getAnimation("pCube4_kub.sspAnim");
 		printf("=======================\n");
 		printf("Loaded LeapAnimation\n");
 		printf("=======================\n");
@@ -208,8 +207,8 @@ int main()
 						for (int j = 0; j < anim->animation->nr_of_keyframes; j++)
 						{
 							printf("\t\tKey|%d|\tTime: %.3f", j, anim->animation->joints[i].keyFrames[j].time);
-							printf("\tPosition: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].position[0], anim->animation->joints[i].keyFrames[j].position[1], anim->animation->joints[i].keyFrames[j].position[2]);
-							printf("\tRotation: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].rotation[0], anim->animation->joints[i].keyFrames[j].rotation[1], anim->animation->joints[i].keyFrames[j].rotation[2]);
+							printf("\tPosition: %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].translation[0], anim->animation->joints[i].keyFrames[j].translation[1], anim->animation->joints[i].keyFrames[j].translation[2]);
+							printf("\tRotation: %.3f %.3f %.3f %.3f", anim->animation->joints[i].keyFrames[j].quatern[0], anim->animation->joints[i].keyFrames[j].quatern[1], anim->animation->joints[i].keyFrames[j].quatern[2], anim->animation->joints[i].keyFrames[j].quatern[3]);
 							printf("\tScaling: %.3f %.3f %.3f\n", anim->animation->joints[i].keyFrames[j].scaling[0], anim->animation->joints[i].keyFrames[j].scaling[1], anim->animation->joints[i].keyFrames[j].scaling[2]);
 						}
 						printf("---------------------------------------\n");
