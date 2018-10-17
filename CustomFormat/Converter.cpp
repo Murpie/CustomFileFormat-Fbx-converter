@@ -767,17 +767,6 @@ void Converter::getAnimationChannels(FbxNode* node, FbxAnimLayer* animLayer, Fbx
 			jointInformation.scale[i] = 1;
 		}
 
-		FbxMatrix tempTransform = node->EvaluateLocalTransform(FBXSDK_TIME_INFINITE);
-		FbxMatrix tempGTransform = node->EvaluateGlobalTransform(FBXSDK_TIME_INFINITE);
-
-		FbxAMatrix temps = node->GetScene()->GetAnimationEvaluator()->GetNodeGlobalTransform(node, FBXSDK_TIME_INFINITE);
-
-		FbxVector4 tempR = node->GetPreRotation(node->eSourcePivot);
-
-		//FbxMatrix  temp2 = node->GetTransform();
-
-
-
 		for (int k = 0; k < 4; k++)
 		{
 			for (int l = 0; l < 4; l++)
