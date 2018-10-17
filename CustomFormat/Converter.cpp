@@ -148,9 +148,8 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 {
 	polygonCount = currentMesh->GetPolygonCount();
 
-	//Vertices, FbxVector4
+	//Vertices
 	controlPoints = currentMesh->GetControlPoints();
-
 
 	std::vector<FbxVector4> pos;
 	std::vector<FbxVector4> norm;
@@ -242,10 +241,7 @@ void Converter::loadVertex(FbxMesh* currentMesh, FbxNode* currentNode)
 			tempVtx.v = (float)uv[i][1];
 
 			//Weights
-
 			loadWeights(currentNode, tempVtx, controlPointIndex);
-
-
 
 			i++;
 			totalNrOfVertices++;
