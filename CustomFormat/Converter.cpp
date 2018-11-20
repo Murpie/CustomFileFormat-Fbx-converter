@@ -851,7 +851,7 @@ void Converter::fixJointID()
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 void Converter::loadLevel(FbxNode * currentNode)
 {
-	printf("\n\t|| Node: %s\n", currentNode->GetName());
+	//printf("\n\t|| Node: %s\n", currentNode->GetName());
 
 	mesh = currentNode->GetMesh();
 
@@ -877,7 +877,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			{
 				//FBXSDK_printf("\t|| Height: %.2f\n", prop.Get<float>());
 				templvlObj.collisionBox[0] = prop.Get<float>();
-				FBXSDK_printf("\t|| Height: %.2f\n", templvlObj.collisionBox[0]);
+				//FBXSDK_printf("\t|| Height: %.2f\n", templvlObj.collisionBox[0]);
 			}
 			else
 			{
@@ -888,7 +888,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			if (prop.IsValid())
 			{
 				templvlObj.collisionBox[1] = prop.Get<float>();
-				FBXSDK_printf("\t|| Width: %.2f\n", templvlObj.collisionBox[1]);
+				//FBXSDK_printf("\t|| Width: %.2f\n", templvlObj.collisionBox[1]);
 			}
 			else
 			{
@@ -898,7 +898,7 @@ void Converter::loadLevel(FbxNode * currentNode)
 			prop = currentNode->FindProperty("ID", false);
 			if (prop.IsValid())
 			{
-				FBXSDK_printf("\t|| ID: %d\n", prop.Get<int>());
+				//FBXSDK_printf("\t|| ID: %d\n", prop.Get<int>());
 				templvlObj.id = prop.Get<int>();
 			}
 			else
